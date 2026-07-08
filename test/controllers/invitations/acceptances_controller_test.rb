@@ -8,6 +8,13 @@ class Invitations::AcceptancesControllerTest < ActionDispatch::IntegrationTest
     Current.reset
   end
 
+  test "unsigned visitor sees prefilled email on GET" do
+    get new_invitation_acceptance_url(invitation_token: @token)
+
+    assert_response :success
+    assert_select "input[name=email_address][value=?]", "new@example.com"
+  end
+
   test "a signed-in user accepts directly" do
     sign_in_as users(:outsider)
 

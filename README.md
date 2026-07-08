@@ -88,6 +88,8 @@ bin/rails db:prepare
 bin/dev
 ```
 
+Registration is open only for the first user; set `OPEN_REGISTRATION=1` to allow more sign-ups.
+
 Run the test suite:
 
 ```bash

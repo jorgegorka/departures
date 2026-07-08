@@ -6,7 +6,7 @@
 <% else %>
   <%= form_with url: invitation_acceptance_path(invitation_token: params[:invitation_token]),
         class: "flex flex-column gap" do |form| %>
-    <%= form.email_field :email_address, class: "input", required: true %>
+    <%= form.email_field :email_address, value: @invitation.email, class: "input", required: true %>
     <%= form.password_field :password, class: "input", required: true, placeholder: "Password" %>
     <%= form.password_field :password_confirmation, class: "input", required: true, placeholder: "Confirm password" %>
     <%= form.submit "Create account & join", class: "btn btn--primary btn--medium" %>
