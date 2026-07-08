@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091726) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091727) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -76,6 +76,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091726) do
     t.index ["ses_message_id"], name: "index_emails_on_ses_message_id"
     t.index ["source_id"], name: "index_emails_on_source_id"
     t.index ["workspace_id"], name: "index_emails_on_workspace_id"
+  end
+
+  create_table "idempotency_keys", force: :cascade do |t|
+    t.integer "api_key_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "email_id", null: false
+    t.datetime "expires_at", null: false
+    t.string "fingerprint", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.index ["api_key_id", "key"], name: "index_idempotency_keys_on_api_key_id_and_key", unique: true
+    t.index ["api_key_id"], name: "index_idempotency_keys_on_api_key_id"
+    t.index ["email_id"], name: "index_idempotency_keys_on_email_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -175,6 +188,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091726) do
   add_foreign_key "emails", "projects"
   add_foreign_key "emails", "sources"
   add_foreign_key "emails", "workspaces"
+  add_foreign_key "idempotency_keys", "api_keys"
+  add_foreign_key "idempotency_keys", "emails"
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "users"
