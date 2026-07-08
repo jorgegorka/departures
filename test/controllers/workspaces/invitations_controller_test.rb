@@ -20,6 +20,16 @@ class Workspaces::InvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "a user with no membership in the target workspace gets a 404" do
+    sign_in_as users(:member)
+
+    assert_no_difference -> { Invitation.count } do
+      post workspace_invitations_url(workspaces(:globex)), params: { invitation: { email: "x@example.com", role: "member" } }
+    end
+
+    assert_response :not_found
+  end
+
   test "a member with manage_members capability can invite" do
     sign_in_as users(:owner)
 
