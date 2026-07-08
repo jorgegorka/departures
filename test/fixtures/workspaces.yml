@@ -1,0 +1,9 @@
+acme:
+  name: Acme
+  slug: acme
+  owner: owner
+
+globex:
+  name: Globex
+  slug: globex
+  owner: outsider

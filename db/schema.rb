@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_082401) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_083649) do
+  create_table "memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.integer "workspace_id", null: false
+    t.index ["user_id"], name: "index_memberships_on_user_id"
+    t.index ["workspace_id", "user_id"], name: "index_memberships_on_workspace_id_and_user_id", unique: true
+    t.index ["workspace_id"], name: "index_memberships_on_workspace_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -28,5 +39,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_082401) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "workspaces", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "onboarded_at"
+    t.integer "owner_id", null: false
+    t.datetime "setup_started_at"
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_id"], name: "index_workspaces_on_owner_id"
+    t.index ["slug"], name: "index_workspaces_on_slug", unique: true
+  end
+
+  add_foreign_key "memberships", "users"
+  add_foreign_key "memberships", "workspaces"
   add_foreign_key "sessions", "users"
+  add_foreign_key "workspaces", "users", column: "owner_id"
 end

@@ -1,13 +1,8 @@
-<% password_digest = BCrypt::Password.create("password") %>
-
-one:
-  email_address: one@example.com
-  password_digest: <%= password_digest %>
-
-two:
-  email_address: two@example.com
-  password_digest: <%= password_digest %>
-
 jorge:
   email_address: jorge@example.com
   password_digest: <%= BCrypt::Password.create("secret123456") %>
+<% %w[ owner member sender api_keys domains read_only outsider ].each do |name| %>
+<%= name %>:
+  email_address: <%= name %>@example.com
+  password_digest: <%= BCrypt::Password.create("secret123456") %>
+<% end %>
