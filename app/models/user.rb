@@ -6,17 +6,23 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
+  validates :email_address, presence: true, uniqueness: true
+
   class << self
     def registration_open?
       none? || ENV["OPEN_REGISTRATION"].present?
     end
 
     def create_owner(attributes)
+      user = new(attributes)
+
       transaction do
-        user = create!(attributes)
-        Workspace.create_with_owner(owner: user, name: default_workspace_name_for(user))
-        user
+        if user.save
+          Workspace.create_with_owner(owner: user, name: default_workspace_name_for(user))
+        end
       end
+
+      user
     end
 
     private

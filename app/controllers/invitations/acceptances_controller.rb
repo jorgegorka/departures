@@ -10,13 +10,19 @@ class Invitations::AcceptancesController < ApplicationController
   def create
     if authenticated?
       @invitation.accept(user: Current.user)
+      redirect_to root_url, notice: "Welcome to #{@invitation.workspace.name}"
     else
-      user = User.create!(user_params)
-      start_new_session_for user
-      @invitation.accept(user: user)
-    end
+      user = User.new(user_params)
 
-    redirect_to root_url, notice: "Welcome to #{@invitation.workspace.name}"
+      if user.save
+        start_new_session_for user
+        @invitation.accept(user: user)
+        redirect_to root_url, notice: "Welcome to #{@invitation.workspace.name}"
+      else
+        @user = user
+        render :new, status: :unprocessable_entity
+      end
+    end
   end
 
   private

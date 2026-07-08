@@ -35,6 +35,26 @@ class Invitations::AcceptancesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
+  test "a visitor with an already-registered email cannot create a duplicate account" do
+    assert_no_difference -> { User.count } do
+      assert_no_difference -> { Membership.count } do
+        post invitation_acceptance_url(invitation_token: @token), params: {
+          email_address: users(:member).email_address, password: "secret123456", password_confirmation: "secret123456" }
+      end
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "a visitor with a mismatched password confirmation cannot create an account" do
+    assert_no_difference -> { User.count } do
+      post invitation_acceptance_url(invitation_token: @token), params: {
+        email_address: "new@example.com", password: "secret123456", password_confirmation: "nope" }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   test "invalid token is not found" do
     post invitation_acceptance_url(invitation_token: "bogus")
 

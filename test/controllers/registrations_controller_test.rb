@@ -32,6 +32,21 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "mismatched password confirmation does not create a user" do
+    Membership.delete_all
+    Project.delete_all
+    Workspace.delete_all
+    Session.delete_all
+    User.delete_all
+
+    assert_no_difference -> { User.count } do
+      post registration_url, params: { email_address: "first@example.com",
+        password: "secret123456", password_confirmation: "nope" }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   test "new renders a flat-params registration form when registration is open" do
     Membership.delete_all
     Project.delete_all
