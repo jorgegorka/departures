@@ -16,6 +16,10 @@ class Project < ApplicationRecord
     archived? && emails.none?
   end
 
+  def default_environment
+    "production"
+  end
+
   private
     def assign_slug
       self.slug ||= name&.parameterize
