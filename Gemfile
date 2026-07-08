@@ -28,6 +28,9 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# AWS SES v2 API client for sending email and managing identities
+gem "aws-sdk-sesv2"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
