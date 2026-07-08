@@ -1,0 +1,21 @@
+acme_production:
+  project: acme_default
+  workspace: acme
+  name: Acme production
+  environment: production
+  region: eu-west-1
+  aws_access_key_id: AKIAACMEEXAMPLE
+  aws_secret_access_key: acme-secret
+  webhook_token: acme-webhook-token-1234567890
+  retention_days: 30
+
+globex_production:
+  project: globex_default
+  workspace: globex
+  name: Globex production
+  environment: production
+  region: us-east-1
+  aws_access_key_id: AKIAGLOBEXEXAMPLE
+  aws_secret_access_key: globex-secret
+  webhook_token: globex-webhook-token-1234567890
+  retention_days: 30
