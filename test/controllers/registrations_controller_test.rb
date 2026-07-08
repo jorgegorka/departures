@@ -1,0 +1,29 @@
+require "test_helper"
+
+class RegistrationsControllerTest < ActionDispatch::IntegrationTest
+  test "first user can register" do
+    User.delete_all
+
+    assert_difference -> { User.count }, +1 do
+      post registration_url, params: { email_address: "first@example.com",
+        password: "secret123456", password_confirmation: "secret123456" }
+    end
+
+    assert_redirected_to root_url
+  end
+
+  test "registration is closed when users exist" do
+    assert_no_difference -> { User.count } do
+      post registration_url, params: { email_address: "second@example.com",
+        password: "secret123456", password_confirmation: "secret123456" }
+    end
+
+    assert_response :not_found
+  end
+
+  test "new is not available when registration closed" do
+    get new_registration_url
+
+    assert_response :not_found
+  end
+end

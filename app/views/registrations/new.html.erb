@@ -1,0 +1,17 @@
+<h1>Create your account</h1>
+
+<%= form_with model: @user, url: registration_path, class: "flex flex-column gap" do |form| %>
+  <div class="flex flex-column gap-half">
+    <%= form.label :email_address %>
+    <%= form.email_field :email_address, class: "input", required: true, autofocus: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :password %>
+    <%= form.password_field :password, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :password_confirmation %>
+    <%= form.password_field :password_confirmation, class: "input", required: true %>
+  </div>
+  <%= form.submit "Create account", class: "btn btn--primary btn--medium" %>
+<% end %>
