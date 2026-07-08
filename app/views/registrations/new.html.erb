@@ -1,6 +1,6 @@
 <h1>Create your account</h1>
 
-<%= form_with model: @user, url: registration_path, class: "flex flex-column gap" do |form| %>
+<%= form_with url: registration_path, class: "flex flex-column gap" do |form| %>
   <div class="flex flex-column gap-half">
     <%= form.label :email_address %>
     <%= form.email_field :email_address, class: "input", required: true, autofocus: true %>

@@ -26,4 +26,15 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "new renders a flat-params registration form when registration is open" do
+    User.delete_all
+
+    get new_registration_url
+
+    assert_response :success
+    assert_select "input[name=?]", "email_address"
+    assert_select "input[name=?]", "password"
+    assert_select "input[name=?]", "password_confirmation"
+  end
 end
