@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091727) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091728) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -160,6 +160,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091727) do
     t.index ["workspace_id"], name: "index_sources_on_workspace_id"
   end
 
+  create_table "suppressions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at"
+    t.integer "project_id", null: false
+    t.string "reason", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["project_id", "email"], name: "index_suppressions_on_project_id_and_email", unique: true
+    t.index ["project_id"], name: "index_suppressions_on_project_id"
+    t.index ["workspace_id"], name: "index_suppressions_on_workspace_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -198,5 +211,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091727) do
   add_foreign_key "sessions", "users"
   add_foreign_key "sources", "projects"
   add_foreign_key "sources", "workspaces"
+  add_foreign_key "suppressions", "projects"
+  add_foreign_key "suppressions", "workspaces"
   add_foreign_key "workspaces", "users", column: "owner_id"
 end

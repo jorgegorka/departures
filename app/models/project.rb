@@ -5,6 +5,7 @@ class Project < ApplicationRecord
   has_many :sources, dependent: :destroy
   has_many :api_keys, dependent: :destroy
   has_many :emails, dependent: :destroy
+  has_many :suppressions, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }

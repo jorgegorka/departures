@@ -11,6 +11,7 @@ class UserTest < ActiveSupport::TestCase
     Membership.delete_all
     Source.delete_all
     ApiKey.delete_all
+    Suppression.delete_all
     Project.delete_all
     Workspace.delete_all
     Session.delete_all

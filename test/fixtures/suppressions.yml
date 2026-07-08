@@ -1,0 +1,19 @@
+acme_blocked:
+  project: acme_default
+  workspace: acme
+  email: blocked@example.com
+  reason: complaint
+
+acme_lapsed:
+  project: acme_default
+  workspace: acme
+  email: lapsed@example.com
+  reason: bounce
+  expires_at: <%= 1.day.ago %>
+
+acme_temporary:
+  project: acme_default
+  workspace: acme
+  email: temporary@example.com
+  reason: bounce
+  expires_at: <%= 1.week.from_now %>
