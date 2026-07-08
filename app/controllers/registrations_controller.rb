@@ -8,7 +8,7 @@ class RegistrationsController < ApplicationController
   end
 
   def create
-    @user = User.create!(user_params)
+    @user = User.create_owner(user_params)
     start_new_session_for @user
     redirect_to root_url
   end

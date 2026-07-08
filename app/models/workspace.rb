@@ -11,6 +11,16 @@ class Workspace < ApplicationRecord
 
   before_validation :assign_slug, on: :create
 
+  class << self
+    def create_with_owner(owner:, **attributes)
+      transaction do
+        workspace = create!(owner: owner, **attributes)
+        workspace.memberships.create!(user: owner, role: "owner")
+        workspace
+      end
+    end
+  end
+
   private
     def assign_slug
       self.slug ||= name&.parameterize

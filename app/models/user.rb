@@ -10,5 +10,18 @@ class User < ApplicationRecord
     def registration_open?
       none? || ENV["OPEN_REGISTRATION"].present?
     end
+
+    def create_owner(attributes)
+      transaction do
+        user = create!(attributes)
+        Workspace.create_with_owner(owner: user, name: default_workspace_name_for(user))
+        user
+      end
+    end
+
+    private
+      def default_workspace_name_for(user)
+        "#{user.email_address.split("@").first.capitalize}'s Workspace"
+      end
   end
 end

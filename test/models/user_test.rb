@@ -26,4 +26,17 @@ class UserTest < ActiveSupport::TestCase
   ensure
     ENV.delete("OPEN_REGISTRATION")
   end
+
+  test "create_owner creates user, workspace, and owner membership" do
+    user = nil
+
+    assert_difference -> { User.count } => +1, -> { Workspace.count } => +1, -> { Membership.count } => +1 do
+      user = User.create_owner(email_address: "founder@example.com",
+        password: "secret123456", password_confirmation: "secret123456")
+    end
+
+    workspace = user.workspaces.sole
+    assert_equal user, workspace.owner
+    assert_equal "owner", workspace.role_for(user)
+  end
 end
