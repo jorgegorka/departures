@@ -1,0 +1,22 @@
+module SetsCurrentWorkspaceAndProject
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :set_current_workspace, :set_current_project
+  end
+
+  private
+    def set_current_workspace
+      if authenticated?
+        Current.workspace = Current.user.workspaces.find_by(id: session[:workspace_id]) ||
+          Current.user.workspaces.order(:id).first
+      end
+    end
+
+    def set_current_project
+      if Current.workspace
+        Current.project = Current.workspace.projects.active.find_by(slug: session[:project_slug]) ||
+          Current.workspace.projects.active.order(:id).first
+      end
+    end
+end

@@ -1,0 +1,9 @@
+owner:
+  user: owner
+  ip_address: 127.0.0.1
+  user_agent: Minitest
+
+read_only:
+  user: read_only
+  ip_address: 127.0.0.1
+  user_agent: Minitest
