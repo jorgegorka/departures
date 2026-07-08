@@ -10,7 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091722) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091723) do
+  create_table "api_keys", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "key_hash", null: false
+    t.datetime "last_used_at"
+    t.string "last_used_ip"
+    t.string "last_used_user_agent"
+    t.string "name"
+    t.string "prefix", null: false
+    t.integer "project_id", null: false
+    t.datetime "revoked_at"
+    t.json "scopes", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["key_hash"], name: "index_api_keys_on_key_hash", unique: true
+    t.index ["project_id"], name: "index_api_keys_on_project_id"
+    t.index ["workspace_id"], name: "index_api_keys_on_workspace_id"
+  end
+
   create_table "invitations", force: :cascade do |t|
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
@@ -100,6 +119,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091722) do
     t.index ["slug"], name: "index_workspaces_on_slug", unique: true
   end
 
+  add_foreign_key "api_keys", "projects"
+  add_foreign_key "api_keys", "workspaces"
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "users"

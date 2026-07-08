@@ -3,6 +3,7 @@ class Project < ApplicationRecord
 
   belongs_to :workspace
   has_many :sources, dependent: :destroy
+  has_many :api_keys, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }
