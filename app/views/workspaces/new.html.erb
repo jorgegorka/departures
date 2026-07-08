@@ -1,0 +1,9 @@
+<h1>Create a workspace</h1>
+
+<%= form_with model: @workspace, url: workspaces_path, class: "flex flex-column gap" do |form| %>
+  <div class="flex flex-column gap-half">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "input", required: true, autofocus: true %>
+  </div>
+  <%= form.submit "Create workspace", class: "btn btn--primary btn--medium" %>
+<% end %>
