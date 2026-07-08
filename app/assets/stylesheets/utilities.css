@@ -1,0 +1,37 @@
+@layer utilities {
+  .flex { display: flex; }
+  .flex-column { flex-direction: column; }
+  .flex-wrap { flex-wrap: wrap; }
+  .flex-1 { flex: 1; }
+  .gap { gap: var(--block-space); }
+  .gap-half { gap: var(--block-space-half); }
+  .align-center { align-items: center; }
+  .justify-space-between { justify-content: space-between; }
+  .full-width { inline-size: 100%; }
+  .center { margin-inline: auto; }
+
+  .pad { padding: var(--block-space) var(--inline-space); }
+  .pad-block { padding-block: var(--block-space); }
+  .pad-inline { padding-inline: var(--inline-space); }
+  .margin-block { margin-block: var(--block-space); }
+  .margin-block-half { margin-block: var(--block-space-half); }
+  .margin-none { margin: 0; }
+
+  .txt-x-small { font-size: var(--text-x-small); }
+  .txt-small { font-size: var(--text-small); }
+  .txt-medium { font-size: var(--text-medium); }
+  .txt-large { font-size: var(--text-large); }
+  .txt-subtle { color: var(--color-ink-lighter); }
+  .txt-negative { color: var(--color-negative); }
+  .txt-positive { color: var(--color-positive); }
+  .font-weight-bold { font-weight: 700; }
+
+  .for-screen-reader {
+    block-size: 1px;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+}

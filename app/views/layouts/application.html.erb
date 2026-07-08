@@ -24,6 +24,15 @@
   </head>
 
   <body>
-    <%= yield %>
+    <% if authenticated? %>
+      <header class="flex align-center justify-space-between pad">
+        <%= link_to "Departures", root_path, class: "font-weight-bold txt-medium" %>
+        <%= render "workspaces/switcher" %>
+        <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain btn--medium" %>
+      </header>
+    <% end %>
+    <main id="main" class="center pad" style="max-inline-size: var(--main-width);">
+      <%= yield %>
+    </main>
   </body>
 </html>

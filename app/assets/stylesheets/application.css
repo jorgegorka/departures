@@ -1,10 +1,13 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * Propshaft's `stylesheet_link_tag :app` includes every CSS file under
+ * app/assets/**/*.css as its own <link> tag, sorted alphabetically by
+ * logical path (application.css, base.css, buttons.css, inputs.css,
+ * utilities.css). No @import/manifest mechanism is needed or used.
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * Because application.css sorts first, it declares the cascade layer
+ * order up front so it is established before any layered rules load.
+ * base.css repeats the same bare declaration (see style-guide.md); a
+ * repeated declaration with the same layer order is a no-op, not a
+ * conflict.
  */
+@layer reset, base, components, modules, utilities;
