@@ -98,6 +98,85 @@ bin/rails test
 
 Detailed setup (AWS credentials, SNS topic wiring, deployment) will be documented as the corresponding features land.
 
+## API
+
+### Authentication
+
+Every request carries a bearer API key:
+
+```
+Authorization: Bearer dp_...
+```
+
+Keys are scoped (`send`, `read:activity`); a key missing the scope required by the endpoint gets a `403`. An invalid, revoked, or expired token gets a `401`.
+
+### `POST /api/emails`
+
+Accepts a message for sending. `to`, `cc`, and `bcc` are always arrays, even for a single recipient:
+
+```bash
+curl -i -X POST https://your-departures-host/api/emails \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: order-42-confirmation" \
+  -d '{
+    "from": "hello@example.com",
+    "to": ["user@example.com"],
+    "cc": [],
+    "bcc": [],
+    "subject": "Welcome",
+    "html": "<p>Hi there</p>",
+    "text": "Hi there",
+    "headers": {},
+    "tags": {},
+    "attachments": [
+      { "filename": "invoice.pdf", "content_type": "application/pdf", "content": "<base64>" }
+    ]
+  }'
+```
+
+Send either `subject` + a body (`html` and/or `text`), or a `template_id` — not both. Up to 50 total recipients across `to`/`cc`/`bcc`, up to 25 attachments capped at 30 MB decoded total.
+
+A successful request returns `202 Accepted` immediately — the email is queued, not yet delivered:
+
+```json
+{ "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6" }
+```
+
+### Idempotency
+
+Pass an `Idempotency-Key` header to make retries safe. Replaying the exact same request body with the same key returns the original email's `id` without creating a second send. Reusing the same key with a **different** body returns `409 Conflict`:
+
+```json
+{ "error": "Idempotency-Key was already used with a different request body" }
+```
+
+### `GET /api/emails`
+
+Lists the calling key's project's most recent emails (requires the `read:activity` scope):
+
+```json
+{ "data": [ { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6", "status": "queued", "created_at": "2026-07-08T13:04:40.146Z" } ] }
+```
+
+### Rate limiting
+
+Each API key is limited to 60 requests per minute. Exceeding it returns `429 Too Many Requests`:
+
+```json
+{ "error": "Too many requests" }
+```
+
+### Error format
+
+| Status | When | Body |
+|---|---|---|
+| 401 | Missing, unknown, revoked, or expired token | `{ "error": "Unauthorized" }` |
+| 403 | Key lacks the required scope | `{ "error": "Forbidden: this key is missing the <scope> scope" }` |
+| 409 | Idempotency key reused with a different body | `{ "error": "..." }` |
+| 422 | Validation failure (bad recipients, suppressed address, unknown environment, etc.) | `{ "errors": ["..."] }` |
+| 429 | Rate limit exceeded | `{ "error": "Too many requests" }` |
+
 ## Contributing
 
 - [Mario Alvarez](https://github.com/marioalna)
