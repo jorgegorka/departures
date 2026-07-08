@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_083649) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_083651) do
   create_table "memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "role", null: false
@@ -20,6 +20,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_083649) do
     t.index ["user_id"], name: "index_memberships_on_user_id"
     t.index ["workspace_id", "user_id"], name: "index_memberships_on_workspace_id_and_user_id", unique: true
     t.index ["workspace_id"], name: "index_memberships_on_workspace_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.string "default_environment", default: "production", null: false
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["workspace_id", "slug"], name: "index_projects_on_workspace_id_and_slug", unique: true
+    t.index ["workspace_id"], name: "index_projects_on_workspace_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -53,6 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_083649) do
 
   add_foreign_key "memberships", "users"
   add_foreign_key "memberships", "workspaces"
+  add_foreign_key "projects", "workspaces", on_delete: :cascade
   add_foreign_key "sessions", "users"
   add_foreign_key "workspaces", "users", column: "owner_id"
 end

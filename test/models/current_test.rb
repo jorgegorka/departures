@@ -2,10 +2,10 @@ require "test_helper"
 
 class CurrentTest < ActiveSupport::TestCase
   test "workspace and project are settable attributes" do
-    Current.workspace = "workspace-sentinel"
-    Current.project = "project-sentinel"
+    Current.workspace = workspaces(:acme)
+    Current.project = projects(:acme_default)
 
-    assert_equal "workspace-sentinel", Current.workspace
-    assert_equal "project-sentinel", Current.project
+    assert_equal workspaces(:acme), Current.workspace
+    assert_equal projects(:acme_default), Current.project
   end
 end

@@ -1,0 +1,9 @@
+acme_default:
+  workspace: acme
+  name: Default
+  slug: default
+
+globex_default:
+  workspace: globex
+  name: Default
+  slug: default
