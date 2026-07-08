@@ -2,6 +2,9 @@ require "test_helper"
 
 class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   test "first user can register" do
+    Membership.delete_all
+    Workspace.delete_all
+    Session.delete_all
     User.delete_all
 
     assert_difference -> { User.count }, +1 do
@@ -28,6 +31,9 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new renders a flat-params registration form when registration is open" do
+    Membership.delete_all
+    Workspace.delete_all
+    Session.delete_all
     User.delete_all
 
     get new_registration_url
