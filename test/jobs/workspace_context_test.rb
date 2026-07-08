@@ -27,4 +27,18 @@ class WorkspaceContextTest < ActiveJob::TestCase
 
     assert_nil ProbeJob.seen_workspace
   end
+
+  test "jobs enqueued with a workspace that is deleted before perform run with none" do
+    doomed = Workspace.create!(name: "Doomed", owner: users(:owner))
+    Current.workspace = doomed
+    ProbeJob.seen_workspace = :sentinel
+    ProbeJob.perform_later
+    Current.reset
+
+    doomed.destroy
+
+    perform_enqueued_jobs
+
+    assert_nil ProbeJob.seen_workspace
+  end
 end

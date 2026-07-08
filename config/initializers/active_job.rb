@@ -17,6 +17,8 @@ module DeparturesJobExtensions
     if workspace_gid = job_data["workspace"]
       @workspace = GlobalID::Locator.locate(workspace_gid)
     end
+  rescue ActiveRecord::RecordNotFound
+    @workspace = nil
   end
 
   def perform_now
