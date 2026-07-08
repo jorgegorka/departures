@@ -1,0 +1,13 @@
+<h1>Invite someone to <%= @workspace.name %></h1>
+
+<%= form_with model: @invitation, url: workspace_invitations_path(@workspace), class: "flex flex-column gap" do |form| %>
+  <div class="flex flex-column gap-half">
+    <%= form.label :email %>
+    <%= form.email_field :email, class: "input", required: true, autofocus: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :role %>
+    <%= form.select :role, Workspace::Roles::ROLE_CAPABILITIES.keys, {}, class: "input input--select", required: true %>
+  </div>
+  <%= form.submit "Send invitation", class: "btn btn--primary btn--medium" %>
+<% end %>

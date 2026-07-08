@@ -10,7 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_083650) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091721) do
+  create_table "invitations", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at", null: false
+    t.integer "invited_by_id", null: false
+    t.string "role", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["invited_by_id"], name: "index_invitations_on_invited_by_id"
+    t.index ["token_digest"], name: "index_invitations_on_token_digest", unique: true
+    t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
+  end
+
   create_table "memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "role", null: false
@@ -63,6 +78,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_083650) do
     t.index ["slug"], name: "index_workspaces_on_slug", unique: true
   end
 
+  add_foreign_key "invitations", "users", column: "invited_by_id"
+  add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "users"
   add_foreign_key "memberships", "workspaces"
   add_foreign_key "projects", "workspaces"
