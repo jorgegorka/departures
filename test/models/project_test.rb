@@ -1,6 +1,10 @@
 require "test_helper"
 
 class ProjectTest < ActiveSupport::TestCase
+  setup do
+    Current.session = sessions(:owner)
+  end
+
   test "deletable? requires archived and no emails" do
     project = projects(:globex_default)
     assert_not project.deletable?

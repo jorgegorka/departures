@@ -137,6 +137,8 @@ curl -i -X POST https://your-departures-host/api/emails \
 
 Send either `subject` + a body (`html` and/or `text`), or a `template_id` — not both. Up to 50 total recipients across `to`/`cc`/`bcc`, up to 25 attachments capped at 30 MB decoded total.
 
+An optional `environment` param selects which of the project's sources (environments) to send through, defaulting to `production`. An unknown environment returns `422`.
+
 A successful request returns `202 Accepted` immediately — the email is queued, not yet delivered:
 
 ```json
@@ -153,7 +155,7 @@ Pass an `Idempotency-Key` header to make retries safe. Replaying the exact same 
 
 ### `GET /api/emails`
 
-Lists the calling key's project's most recent emails (requires the `read:activity` scope):
+Lists the calling key's project's 50 most recent emails (requires the `read:activity` scope):
 
 ```json
 { "data": [ { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6", "status": "queued", "created_at": "2026-07-08T13:04:40.146Z" } ] }

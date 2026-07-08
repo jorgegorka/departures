@@ -25,6 +25,7 @@ class EmailSubmission
     :validate_body_presence,
     :validate_attachments,
     :validate_reserved_headers,
+    :validate_header_and_tag_values,
     :validate_suppressed_recipients,
     :validate_guardrails
 
@@ -151,6 +152,20 @@ class EmailSubmission
       headers.each_key do |name|
         if RESERVED_HEADERS.include?(name.downcase)
           errors.add(:headers, "#{name} is a reserved header")
+        end
+      end
+    end
+
+    def validate_header_and_tag_values
+      { headers: headers, tags: tags }.each do |field, pairs|
+        pairs.each_value do |value|
+          if !value.is_a?(String)
+            errors.add(field, "values must be strings")
+          elsif value.match?(/[[:cntrl:]]/)
+            errors.add(field, "values must not contain control characters")
+          elsif value.length > MAX_ADDRESS_LENGTH
+            errors.add(field, "values cannot exceed #{MAX_ADDRESS_LENGTH} characters")
+          end
         end
       end
     end

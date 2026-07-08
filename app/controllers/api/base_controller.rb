@@ -6,7 +6,7 @@ class Api::BaseController < ActionController::API
   # limiter runs (actionpack registers rate_limit as a before_action in
   # declaration order — risk #5). Fallback if that ever changes:
   # by: -> { request.headers["Authorization"].to_s }
-  rate_limit to: 60, within: 1.minute, by: -> { @api_key.id },
+  rate_limit to: 60, within: 1.minute, by: -> { @api_key.id }, scope: :api,
     with: -> { render json: { error: "Too many requests" }, status: :too_many_requests }
 
   private

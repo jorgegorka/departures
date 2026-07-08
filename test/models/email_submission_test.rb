@@ -120,6 +120,32 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert submission(headers: { "X-Campaign" => "ok" }).valid?
   end
 
+  test "header values with CRLF are rejected" do
+    assert_not submission(headers: { "X-Campaign" => "welcome\r\nBcc: victim@example.com" }).valid?
+  end
+
+  test "non-string header values are rejected" do
+    assert_not submission(headers: { "X-Campaign" => { "nested" => "hash" } }).valid?
+    assert_not submission(headers: { "X-Campaign" => 42 }).valid?
+  end
+
+  test "over-long header values are rejected" do
+    assert_not submission(headers: { "X-Campaign" => "a" * 1001 }).valid?
+  end
+
+  test "tag values with CRLF are rejected" do
+    assert_not submission(tags: { "team" => "growth\r\nBcc: victim@example.com" }).valid?
+  end
+
+  test "non-string tag values are rejected" do
+    assert_not submission(tags: { "team" => { "nested" => "hash" } }).valid?
+    assert_not submission(tags: { "team" => 42 }).valid?
+  end
+
+  test "over-long tag values are rejected" do
+    assert_not submission(tags: { "team" => "a" * 1001 }).valid?
+  end
+
   test "suppressed recipients are rejected with their addresses listed" do
     subject = submission(to: [ "user@example.com", "blocked@example.com" ], bcc: [ "temporary@example.com" ])
 
