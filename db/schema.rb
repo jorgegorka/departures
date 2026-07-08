@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091723) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091726) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -28,6 +28,54 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091723) do
     t.index ["key_hash"], name: "index_api_keys_on_key_hash", unique: true
     t.index ["project_id"], name: "index_api_keys_on_project_id"
     t.index ["workspace_id"], name: "index_api_keys_on_workspace_id"
+  end
+
+  create_table "email_attachments", force: :cascade do |t|
+    t.integer "byte_size", default: 0, null: false
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.integer "email_id", null: false
+    t.string "filename", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_id"], name: "index_email_attachments_on_email_id"
+  end
+
+  create_table "email_recipients", force: :cascade do |t|
+    t.string "address", null: false
+    t.datetime "created_at", null: false
+    t.integer "email_id", null: false
+    t.string "kind", default: "to", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address"], name: "index_email_recipients_on_address"
+    t.index ["email_id"], name: "index_email_recipients_on_email_id"
+  end
+
+  create_table "emails", force: :cascade do |t|
+    t.integer "api_key_id"
+    t.datetime "created_at", null: false
+    t.string "failure_reason"
+    t.string "from", null: false
+    t.json "headers", default: {}, null: false
+    t.text "html_body"
+    t.string "mime_path"
+    t.integer "mime_size"
+    t.integer "project_id", null: false
+    t.string "public_id", null: false
+    t.string "ses_message_id"
+    t.integer "source_id", null: false
+    t.string "status", default: "queued", null: false
+    t.string "subject"
+    t.json "tags", default: {}, null: false
+    t.text "text_body"
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["api_key_id"], name: "index_emails_on_api_key_id"
+    t.index ["project_id", "status", "created_at"], name: "index_emails_on_project_id_and_status_and_created_at"
+    t.index ["project_id"], name: "index_emails_on_project_id"
+    t.index ["public_id"], name: "index_emails_on_public_id", unique: true
+    t.index ["ses_message_id"], name: "index_emails_on_ses_message_id"
+    t.index ["source_id"], name: "index_emails_on_source_id"
+    t.index ["workspace_id"], name: "index_emails_on_workspace_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -121,6 +169,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091723) do
 
   add_foreign_key "api_keys", "projects"
   add_foreign_key "api_keys", "workspaces"
+  add_foreign_key "email_attachments", "emails"
+  add_foreign_key "email_recipients", "emails"
+  add_foreign_key "emails", "api_keys"
+  add_foreign_key "emails", "projects"
+  add_foreign_key "emails", "sources"
+  add_foreign_key "emails", "workspaces"
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "users"

@@ -2,6 +2,7 @@ require "test_helper"
 
 class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   test "first user can register and becomes a workspace owner" do
+    Email.delete_all
     Membership.delete_all
     Source.delete_all
     ApiKey.delete_all
@@ -35,6 +36,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "mismatched password confirmation does not create a user" do
+    Email.delete_all
     Membership.delete_all
     Source.delete_all
     ApiKey.delete_all
@@ -52,6 +54,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new renders a flat-params registration form when registration is open" do
+    Email.delete_all
     Membership.delete_all
     Source.delete_all
     ApiKey.delete_all
