@@ -1,0 +1,206 @@
+class EmailSubmission
+  include ActiveModel::Model
+
+  MAX_ADDRESS_LENGTH = 1000
+  MAX_TOTAL_RECIPIENTS = 50
+  MAX_ATTACHMENT_COUNT = 25
+  MAX_ATTACHMENT_BYTES = 30.megabytes
+
+  RESERVED_HEADERS = %w[
+    from to cc bcc subject date message-id return-path received mime-version
+    content-type content-transfer-encoding dkim-signature x-departures-id
+  ].freeze
+
+  ADDRESS_FORMAT = URI::MailTo::EMAIL_REGEXP
+
+  attr_accessor :project, :source, :api_key, :from, :subject, :template_id, :html, :text
+  attr_reader :to, :cc, :bcc, :headers, :tags, :attachments
+
+  validates :project, :source, presence: true
+
+  validate :validate_from,
+    :validate_recipient_lists,
+    :validate_total_recipients,
+    :validate_subject_xor_template,
+    :validate_body_presence,
+    :validate_attachments,
+    :validate_reserved_headers,
+    :validate_suppressed_recipients,
+    :validate_guardrails
+
+  def initialize(attributes = {})
+    @to, @cc, @bcc = [], [], []
+    @headers, @tags = {}, {}
+    @attachments = []
+    super
+  end
+
+  def to=(addresses)
+    @to = Array(addresses).map(&:to_s)
+  end
+
+  def cc=(addresses)
+    @cc = Array(addresses).map(&:to_s)
+  end
+
+  def bcc=(addresses)
+    @bcc = Array(addresses).map(&:to_s)
+  end
+
+  def headers=(value)
+    @headers = (value || {}).to_h.transform_keys(&:to_s)
+  end
+
+  def tags=(value)
+    @tags = (value || {}).to_h.transform_keys(&:to_s)
+  end
+
+  def attachments=(value)
+    @attachments = Array(value).map { |attachment| attachment.to_h.symbolize_keys }
+  end
+
+  def save
+    if valid?
+      create_email
+    else
+      false
+    end
+  end
+
+  private
+    def create_email
+      Email.transaction do
+        email = Email.create!(project: project, source: source, api_key: api_key,
+          from: from, subject: subject, html_body: html, text_body: text,
+          headers: headers, tags: tags)
+
+        { "to" => to, "cc" => cc, "bcc" => bcc }.each do |kind, addresses|
+          addresses.each do |address|
+            email.recipients.create!(kind: kind, address: address)
+          end
+        end
+
+        attachments.each do |attachment|
+          email.attachments.create!(filename: attachment[:filename],
+            content_type: attachment[:content_type], byte_size: decoded_size(attachment))
+        end
+
+        email
+      end
+    end
+
+    def validate_from
+      if from.blank?
+        errors.add(:from, "is required")
+      elsif !valid_address?(from)
+        errors.add(:from, "is not a valid email address")
+      end
+    end
+
+    def validate_recipient_lists
+      if to.empty?
+        errors.add(:to, "must contain at least one recipient")
+      end
+
+      { to: to, cc: cc, bcc: bcc }.each do |field, addresses|
+        addresses.each do |address|
+          unless valid_address?(address)
+            errors.add(field, "contains an invalid address: #{address.truncate(60)}")
+          end
+        end
+      end
+    end
+
+    def validate_total_recipients
+      if all_recipients.size > MAX_TOTAL_RECIPIENTS
+        errors.add(:base, "cannot exceed #{MAX_TOTAL_RECIPIENTS} total recipients across to, cc, and bcc")
+      end
+    end
+
+    def validate_subject_xor_template
+      if subject.present? && template_id.present?
+        errors.add(:base, "provide either subject or template_id, not both")
+      elsif subject.blank? && template_id.blank?
+        errors.add(:subject, "is required unless template_id is given")
+      end
+    end
+
+    def validate_body_presence
+      if template_id.blank? && html.blank? && text.blank?
+        errors.add(:base, "html or text body is required")
+      end
+    end
+
+    def validate_attachments
+      if attachments.size > MAX_ATTACHMENT_COUNT
+        errors.add(:attachments, "cannot exceed #{MAX_ATTACHMENT_COUNT} files")
+      end
+
+      attachments.each do |attachment|
+        if attachment[:filename].blank?
+          errors.add(:attachments, "must each have a filename")
+        end
+      end
+
+      if attachments.sum { |attachment| decoded_size(attachment) } > MAX_ATTACHMENT_BYTES
+        errors.add(:attachments, "cannot exceed 30 MB in total")
+      end
+    end
+
+    def validate_reserved_headers
+      headers.each_key do |name|
+        if RESERVED_HEADERS.include?(name.downcase)
+          errors.add(:headers, "#{name} is a reserved header")
+        end
+      end
+    end
+
+    def validate_suppressed_recipients
+      if project
+        suppressed = Suppression.covers?(project, all_recipients)
+
+        if suppressed.any?
+          errors.add(:base, "recipients are suppressed: #{suppressed.join(", ")}")
+        end
+      end
+    end
+
+    def validate_guardrails
+      unless from_domain_verified?
+        errors.add(:from, "domain is not verified")
+      end
+
+      unless quota_fresh?
+        errors.add(:base, "sending quota information is stale")
+      end
+
+      if complaint_breaker_tripped?
+        errors.add(:base, "sending is paused due to complaint rate")
+      end
+    end
+
+    def all_recipients
+      to + cc + bcc
+    end
+
+    def valid_address?(address)
+      address.length <= MAX_ADDRESS_LENGTH && address.match?(ADDRESS_FORMAT)
+    end
+
+    def decoded_size(attachment)
+      (attachment[:content].to_s.length * 3) / 4
+    end
+
+    # Guardrail seams — wired up in Phase 5 (Source::Quota, Domain verification, complaint breaker).
+    def from_domain_verified?
+      true
+    end
+
+    def quota_fresh?
+      true
+    end
+
+    def complaint_breaker_tripped?
+      false
+    end
+end
