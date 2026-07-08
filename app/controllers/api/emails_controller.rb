@@ -11,7 +11,7 @@ class Api::EmailsController < Api::BaseController
     @submission = EmailSubmission.new(submission_attributes)
 
     email = IdempotencyKey.replay_or_record(api_key: @api_key,
-      key: request.headers["Idempotency-Key"], fingerprint: request_fingerprint) do
+      key: request.headers["Idempotency-Key"], fingerprint: -> { request_fingerprint }) do
       @submission.save
     end
 

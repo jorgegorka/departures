@@ -13,6 +13,7 @@ class Invitations::AcceptancesController < ApplicationController
       redirect_to root_url, notice: "Welcome to #{@invitation.workspace.name}"
     else
       user = User.new(user_params)
+      user.email_address = @invitation.email
 
       if user.save
         start_new_session_for user
@@ -31,6 +32,6 @@ class Invitations::AcceptancesController < ApplicationController
     end
 
     def user_params
-      params.permit(:email_address, :password, :password_confirmation)
+      params.permit(:password, :password_confirmation)
     end
 end

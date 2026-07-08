@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091728) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091728) do
     t.datetime "updated_at", null: false
     t.integer "workspace_id", null: false
     t.index ["api_key_id"], name: "index_emails_on_api_key_id"
+    t.index ["project_id", "created_at"], name: "index_emails_on_project_id_and_created_at"
     t.index ["project_id", "status", "created_at"], name: "index_emails_on_project_id_and_status_and_created_at"
     t.index ["project_id"], name: "index_emails_on_project_id"
     t.index ["public_id"], name: "index_emails_on_public_id", unique: true

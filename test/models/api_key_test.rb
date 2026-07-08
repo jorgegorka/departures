@@ -67,6 +67,22 @@ class ApiKeyTest < ActiveSupport::TestCase
     assert_not api_keys(:acme_read_only).allows?("send")
   end
 
+  test "destroying an api key nullifies its emails but destroys its idempotency keys" do
+    api_key = api_keys(:acme_full)
+    email = emails(:acme_welcome)
+    assert_equal api_key, email.api_key
+    api_key.idempotency_keys.create!(email: email, key: "req-1",
+      fingerprint: "fp-1", expires_at: IdempotencyKey::EXPIRY.from_now)
+
+    assert_difference -> { IdempotencyKey.count }, -1 do
+      assert_no_difference -> { Email.count } do
+        api_key.destroy!
+      end
+    end
+
+    assert_nil email.reload.api_key_id
+  end
+
   test "touch_usage records telemetry at most once per minute" do
     api_key = api_keys(:acme_full)
 

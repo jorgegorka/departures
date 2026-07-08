@@ -18,6 +18,9 @@ class IdempotencyKey < ApplicationRecord
         return block.call
       end
 
+      # fingerprint is a callable so the (potentially large) request body is only
+      # hashed once a key is present, keeping the keyless hot path cheap.
+      fingerprint = fingerprint.call
       existing = active.find_by(api_key: api_key, key: key)
 
       if existing
@@ -41,11 +44,21 @@ class IdempotencyKey < ApplicationRecord
       end
 
       def record(api_key, key, fingerprint)
-        email = yield
+        email = nil
 
-        if email
-          expired.where(api_key: api_key, key: key).delete_all
-          create!(api_key: api_key, key: key, fingerprint: fingerprint, email: email, expires_at: EXPIRY.from_now)
+        # Email creation and the key insert must be atomic: if a concurrent
+        # request already claimed this key, the unique index makes create! raise
+        # RecordNotUnique and the surrounding transaction rolls back the email we
+        # just built, so no duplicate is persisted. requires_new keeps this a
+        # savepoint when a caller is already inside a transaction. The rescue sits
+        # OUTSIDE the transaction so the rollback has completed before we replay.
+        transaction(requires_new: true) do
+          email = yield
+
+          if email
+            expired.where(api_key: api_key, key: key).delete_all
+            create!(api_key: api_key, key: key, fingerprint: fingerprint, email: email, expires_at: EXPIRY.from_now)
+          end
         end
 
         email

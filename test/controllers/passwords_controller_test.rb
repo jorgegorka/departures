@@ -49,6 +49,22 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "Password has been reset"
   end
 
+  test "update with a blank password does not reset the password or destroy sessions" do
+    user = users(:owner)
+    token = user.password_reset_token
+    assert user.sessions.any?, "expected the user to have an existing session"
+
+    assert_no_changes -> { user.reload.password_digest } do
+      assert_no_changes -> { user.sessions.count } do
+        put password_path(token), params: { password: "", password_confirmation: "" }
+        assert_redirected_to edit_password_path(token)
+      end
+    end
+
+    follow_redirect!
+    assert_notice "Password can't be blank"
+  end
+
   test "update with non matching passwords" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do

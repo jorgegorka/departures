@@ -7,9 +7,14 @@ class Workspaces::InvitationsController < ApplicationController
   end
 
   def create
-    invitation = @workspace.invitations.create!(invitation_params)
-    invitation.deliver_later
-    redirect_to root_url, notice: "Invitation sent to #{invitation.email}"
+    @invitation = @workspace.invitations.new(invitation_params)
+
+    if @invitation.save
+      @invitation.deliver_later
+      redirect_to root_url, notice: "Invitation sent to #{@invitation.email}"
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   private

@@ -35,11 +35,28 @@ class Invitations::AcceptancesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
-  test "a visitor with an already-registered email cannot create a duplicate account" do
+  test "a submitted email_address cannot override the invitation's email" do
+    assert_difference -> { User.count } => +1, -> { Membership.count } => +1 do
+      post invitation_acceptance_url(invitation_token: @token), params: {
+        email_address: "attacker@evil.com", password: "secret123456", password_confirmation: "secret123456" }
+    end
+
+    assert_redirected_to root_url
+
+    user = User.find_by!(email_address: "new@example.com")
+    assert_nil User.find_by(email_address: "attacker@evil.com")
+    assert_equal "member", workspaces(:acme).role_for(user)
+  end
+
+  test "an invitation to an already-registered email cannot create a duplicate account" do
+    Current.session = sessions(:owner)
+    invitation = workspaces(:acme).invitations.create!(email: users(:member).email_address, role: "member")
+    Current.reset
+
     assert_no_difference -> { User.count } do
       assert_no_difference -> { Membership.count } do
-        post invitation_acceptance_url(invitation_token: @token), params: {
-          email_address: users(:member).email_address, password: "secret123456", password_confirmation: "secret123456" }
+        post invitation_acceptance_url(invitation_token: invitation.token), params: {
+          password: "secret123456", password_confirmation: "secret123456" }
       end
     end
 

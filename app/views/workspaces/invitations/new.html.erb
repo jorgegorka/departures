@@ -1,5 +1,13 @@
 <h1>Invite someone to <%= @workspace.name %></h1>
 
+<% if @invitation.errors.any? %>
+  <ul class="txt-negative">
+    <% @invitation.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
 <%= form_with model: @invitation, url: workspace_invitations_path(@workspace), class: "flex flex-column gap" do |form| %>
   <div class="flex flex-column gap-half">
     <%= form.label :email %>

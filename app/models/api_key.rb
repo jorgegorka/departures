@@ -1,6 +1,7 @@
 class ApiKey < ApplicationRecord
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
+  has_many :emails, dependent: :nullify
   has_many :idempotency_keys, dependent: :destroy
 
   scope :active, -> { where(revoked_at: nil).and(where(expires_at: nil).or(where(expires_at: Time.current..))) }

@@ -28,4 +28,14 @@ class EmailTest < ActiveSupport::TestCase
       email.destroy
     end
   end
+
+  test "destroying an email destroys its idempotency keys" do
+    email = emails(:acme_welcome)
+    email.idempotency_keys.create!(api_key: api_keys(:acme_full), key: "req-1",
+      fingerprint: "fp-1", expires_at: IdempotencyKey::EXPIRY.from_now)
+
+    assert_difference -> { IdempotencyKey.count }, -1 do
+      email.destroy!
+    end
+  end
 end

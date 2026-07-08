@@ -21,6 +21,7 @@ class EmailSubmission
   validate :validate_from,
     :validate_recipient_lists,
     :validate_total_recipients,
+    :validate_template_supported,
     :validate_subject_xor_template,
     :validate_body_presence,
     :validate_attachments,
@@ -115,6 +116,16 @@ class EmailSubmission
     def validate_total_recipients
       if all_recipients.size > MAX_TOTAL_RECIPIENTS
         errors.add(:base, "cannot exceed #{MAX_TOTAL_RECIPIENTS} total recipients across to, cc, and bcc")
+      end
+    end
+
+    # Templates are a Phase 5 feature: EmailSubmission will resolve template_id
+    # into subject/bodies. Until then a template_id has nowhere to go — Email has
+    # no template column and create_email drops it — so reject rather than
+    # silently accepting and losing the request.
+    def validate_template_supported
+      if template_id.present?
+        errors.add(:template_id, "templates are not yet supported")
       end
     end
 

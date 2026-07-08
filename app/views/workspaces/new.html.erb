@@ -1,5 +1,13 @@
 <h1>Create a workspace</h1>
 
+<% if @workspace.errors.any? %>
+  <ul class="txt-negative">
+    <% @workspace.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
 <%= form_with model: @workspace, url: workspaces_path, class: "flex flex-column gap" do |form| %>
   <div class="flex flex-column gap-half">
     <%= form.label :name %>

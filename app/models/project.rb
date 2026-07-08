@@ -2,9 +2,12 @@ class Project < ApplicationRecord
   include Archivable
 
   belongs_to :workspace
+  # emails must be destroyed before sources and api_keys: emails.source_id is a
+  # non-null FK (no nullify possible), and destroying an api_key only nullifies
+  # its emails, so any remaining emails would trip the sources FK first.
+  has_many :emails, dependent: :destroy
   has_many :sources, dependent: :destroy
   has_many :api_keys, dependent: :destroy
-  has_many :emails, dependent: :destroy
   has_many :suppressions, dependent: :destroy
 
   validates :name, presence: true
@@ -14,10 +17,6 @@ class Project < ApplicationRecord
 
   def deletable?
     archived? && emails.none?
-  end
-
-  def default_environment
-    "production"
   end
 
   private

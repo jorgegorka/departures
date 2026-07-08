@@ -41,4 +41,26 @@ class Workspaces::InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_url
   end
+
+  test "a blank email re-renders with errors instead of 500" do
+    sign_in_as users(:owner)
+
+    assert_no_difference -> { Invitation.count } do
+      post workspace_invitations_url(workspaces(:acme)), params: { invitation: { email: "", role: "member" } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "ul.txt-negative li"
+  end
+
+  test "an invalid role re-renders with errors instead of 500" do
+    sign_in_as users(:owner)
+
+    assert_no_difference -> { Invitation.count } do
+      post workspace_invitations_url(workspaces(:acme)), params: { invitation: { email: "new@example.com", role: "bogus" } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "ul.txt-negative li"
+  end
 end

@@ -18,7 +18,8 @@ class User < ApplicationRecord
 
       transaction do
         if user.save
-          Workspace.create_with_owner(owner: user, name: default_workspace_name_for(user))
+          workspace = Workspace.create_with_owner(owner: user, name: default_workspace_name_for(user))
+          raise ActiveRecord::Rollback unless workspace.persisted?
         end
       end
 

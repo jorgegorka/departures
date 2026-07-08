@@ -78,7 +78,13 @@ class EmailSubmissionTest < ActiveSupport::TestCase
   test "subject XOR template" do
     assert_not submission(subject: nil, template_id: nil).valid?
     assert_not submission(subject: "Hi", template_id: 42).valid?
-    assert submission(subject: nil, template_id: 42, html: "<p>Hi</p>").valid?
+  end
+
+  test "template_id is rejected until templates are supported (Phase 5)" do
+    subject = submission(subject: nil, template_id: 42, html: "<p>Hi</p>")
+
+    assert_not subject.valid?
+    assert subject.errors[:template_id].any? { |m| m.include?("not yet supported") }
   end
 
   test "html or text body is required without a template" do

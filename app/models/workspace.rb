@@ -15,16 +15,28 @@ class Workspace < ApplicationRecord
 
   class << self
     def create_with_owner(owner:, **attributes)
+      workspace = new(owner: owner, **attributes)
+
       transaction do
-        workspace = create!(owner: owner, **attributes)
-        workspace.memberships.create!(user: owner, role: "owner")
-        workspace
+        workspace.save && workspace.memberships.create!(user: owner, role: "owner")
       end
+
+      workspace
     end
   end
 
   private
     def assign_slug
-      self.slug ||= name&.parameterize
+      return if slug.present?
+
+      base = name&.parameterize
+      return if base.blank?
+
+      self.slug = base
+      suffix = 2
+      while Workspace.exists?(slug:)
+        self.slug = "#{base}-#{suffix}"
+        suffix += 1
+      end
     end
 end

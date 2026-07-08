@@ -12,4 +12,15 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "owner", workspace.role_for(users(:owner))
     assert_redirected_to root_url
   end
+
+  test "creating a workspace with a blank name re-renders with errors instead of 500" do
+    sign_in_as users(:owner)
+
+    assert_no_difference -> { Workspace.count } do
+      post workspaces_url, params: { workspace: { name: "" } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "ul.txt-negative li"
+  end
 end

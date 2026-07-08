@@ -112,6 +112,29 @@ class Api::EmailsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "omitting environment falls back to the project's stored default_environment" do
+    project = projects(:acme_default)
+    project.update!(default_environment: "staging")
+    staging_source = project.sources.create!(
+      workspace: project.workspace, name: "Acme staging", environment: "staging",
+      region: "eu-west-1", aws_access_key_id: "AKIAACMESTAGING", aws_secret_access_key: "acme-staging-secret",
+      webhook_token: "acme-webhook-token-staging-1", retention_days: 30)
+
+    post_email
+
+    assert_response :accepted
+    assert_equal staging_source, Email.order(:id).last.source
+  end
+
+  test "a template_id submission is rejected until templates are supported" do
+    assert_no_difference -> { Email.count } do
+      post_email(payload: valid_payload(subject: nil, template_id: 42))
+    end
+
+    assert_response :unprocessable_entity
+    assert response.parsed_body["errors"].any? { |e| e.include?("not yet supported") }
+  end
+
   # --- Idempotency (replay + 409) ---
 
   test "replaying an idempotency key returns the same email without creating another" do
