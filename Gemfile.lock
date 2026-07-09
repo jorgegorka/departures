@@ -412,7 +412,7 @@ DEPENDENCIES
   bundler-audit
   capybara
   debug
-  image_processing (~> 1.2)
+  image_processing
   importmap-rails
   jbuilder
   kamal
