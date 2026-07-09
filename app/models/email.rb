@@ -1,5 +1,5 @@
 class Email < ApplicationRecord
-  include Statuses, Deliverable, Broadcastable
+  include Statuses, Deliverable, Resendable, Broadcastable
 
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }

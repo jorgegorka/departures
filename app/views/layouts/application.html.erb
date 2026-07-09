@@ -36,6 +36,8 @@
       </header>
     <% end %>
     <main id="main" class="center pad" style="max-inline-size: var(--main-width);">
+      <% if notice.present? %><p class="flash txt-positive pad-block-half"><%= notice %></p><% end %>
+      <% if alert.present? %><p class="flash txt-negative pad-block-half"><%= alert %></p><% end %>
       <%= yield %>
     </main>
   </body>

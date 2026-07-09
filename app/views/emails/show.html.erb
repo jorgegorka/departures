@@ -43,6 +43,9 @@
       <% if @email.mime_path.present? %>
         <%= link_to "Download .eml", raw_email_path(@email), class: "btn btn--plain btn--medium", data: { turbo: false } %>
       <% end %>
+      <% if Current.workspace.capability?(Current.user, :send) %>
+        <%= button_to "Resend", email_resend_path(@email), class: "btn btn--primary btn--medium", data: { turbo_frame: "_top" } %>
+      <% end %>
     </footer>
   </article>
 <% end %>
