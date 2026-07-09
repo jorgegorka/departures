@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_205222) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_205654) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -215,6 +215,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_205222) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "webhook_deliveries", force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "email_id"
+    t.string "event_type", null: false
+    t.integer "http_status"
+    t.datetime "last_attempted_at"
+    t.integer "latency_ms"
+    t.json "payload", default: {}, null: false
+    t.string "response_body"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "webhook_endpoint_id", null: false
+    t.integer "workspace_id", null: false
+    t.index ["email_id"], name: "index_webhook_deliveries_on_email_id"
+    t.index ["webhook_endpoint_id", "created_at"], name: "index_webhook_deliveries_on_webhook_endpoint_id_and_created_at"
+    t.index ["webhook_endpoint_id"], name: "index_webhook_deliveries_on_webhook_endpoint_id"
+    t.index ["workspace_id"], name: "index_webhook_deliveries_on_workspace_id"
+  end
+
   create_table "webhook_endpoints", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -278,6 +298,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_205222) do
   add_foreign_key "sources", "workspaces"
   add_foreign_key "suppressions", "projects"
   add_foreign_key "suppressions", "workspaces"
+  add_foreign_key "webhook_deliveries", "emails", on_delete: :nullify
+  add_foreign_key "webhook_deliveries", "webhook_endpoints"
+  add_foreign_key "webhook_deliveries", "workspaces"
   add_foreign_key "webhook_endpoints", "projects"
   add_foreign_key "webhook_endpoints", "workspaces"
   add_foreign_key "webhook_logs", "sources"

@@ -5,6 +5,8 @@ class WebhookEndpoint < ApplicationRecord
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
 
+  has_many :deliveries, class_name: "WebhookDelivery", dependent: :destroy
+
   encrypts :secret
 
   scope :active, -> { where(active: true) }
