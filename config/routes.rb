@@ -26,6 +26,12 @@ Rails.application.routes.draw do
 
   resources :suppressions, only: %i[ index create destroy ]
 
+  resources :domains, only: %i[ index create destroy ] do
+    scope module: :domains do
+      resource :check, only: :create
+    end
+  end
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create

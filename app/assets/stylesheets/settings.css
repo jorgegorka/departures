@@ -1,0 +1,55 @@
+@layer modules {
+  .settings-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75em;
+    margin-block-end: var(--block-space);
+    padding: var(--block-space) var(--inline-space);
+  }
+
+  .settings-card__header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--inline-space);
+  }
+
+  .settings-card__header h2 {
+    font-size: var(--text-medium);
+    margin-block: 0;
+  }
+
+  .settings-table {
+    border-collapse: collapse;
+    inline-size: 100%;
+    margin-block-start: var(--block-space);
+  }
+
+  .settings-table th,
+  .settings-table td {
+    border-block-end: 1px solid var(--color-border);
+    padding-block: calc(var(--block-space) / 2);
+    padding-inline-end: var(--inline-space);
+    text-align: start;
+  }
+
+  .inline-form {
+    align-items: center;
+    display: flex;
+    gap: var(--inline-space);
+    margin-block-end: var(--block-space);
+  }
+
+  .secret-reveal {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75em;
+    padding: var(--block-space) var(--inline-space);
+  }
+
+  .secret-reveal code {
+    font-size: var(--text-medium);
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+}

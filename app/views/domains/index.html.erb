@@ -1,0 +1,64 @@
+<% content_for :title, "Domains" %>
+
+<% if Current.project %>
+  <header class="page-header">
+    <h1>Domains</h1>
+  </header>
+
+  <% if Current.workspace.capability?(Current.user, :manage_domains) %>
+    <%= form_with model: Domain.new, url: domains_path, class: "inline-form" do |form| %>
+      <%= form.text_field :name, class: "input", placeholder: "mail.example.com", required: true,
+            aria: { label: "Domain name" } %>
+      <%= form.submit "Add domain", class: "btn btn--primary btn--medium" %>
+    <% end %>
+  <% end %>
+
+  <% if @domains.any? %>
+    <% @domains.each do |domain| %>
+      <article class="settings-card">
+        <header class="settings-card__header">
+          <h2><%= domain.name %></h2>
+          <span class="status-pill status-pill--<%= domain.verified? ? "delivered" : "queued" %>">
+            <%= domain.status %>
+          </span>
+
+          <% if Current.workspace.capability?(Current.user, :manage_domains) %>
+            <%= button_to "Re-check DNS", domain_check_path(domain), class: "btn btn--secondary btn--medium" %>
+            <%= button_to domain_path(domain), method: :delete, class: "btn btn--destroy btn--medium",
+                  aria: { label: "Remove #{domain.name}" },
+                  data: { turbo_confirm: "Remove #{domain.name}? Sending from it will stop working." } do %>
+              <%= icon_tag "trash" %>
+            <% end %>
+          <% end %>
+        </header>
+
+        <% if domain.dkim_records.any? && !domain.verified? %>
+          <table class="settings-table">
+            <thead>
+              <tr><th>CNAME name</th><th>CNAME value</th><th></th></tr>
+            </thead>
+            <tbody>
+              <% domain.dkim_records.each do |record| %>
+                <tr>
+                  <td><code><%= record[:name] %></code></td>
+                  <td><code><%= record[:value] %></code></td>
+                  <td>
+                    <button type="button" class="btn btn--plain btn--medium" data-controller="clipboard"
+                      data-clipboard-text-value="<%= record[:value] %>" data-action="clipboard#copy"
+                      aria-label="Copy CNAME value">
+                      <%= icon_tag "copy-paste" %>
+                    </button>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </article>
+    <% end %>
+  <% else %>
+    <p>No domains yet. Add the domain you send from to verify it with SES.</p>
+  <% end %>
+<% else %>
+  <p>No active project yet.</p>
+<% end %>
