@@ -1,5 +1,6 @@
 class ApiKeys::RotationsController < ApplicationController
   include RequiresProject
+  allow_unonboarded_access
 
   before_action -> { authorize_capability! :manage_api_keys }
 

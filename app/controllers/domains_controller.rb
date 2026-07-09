@@ -1,5 +1,6 @@
 class DomainsController < ApplicationController
   include RequiresProject
+  allow_unonboarded_access
 
   skip_before_action :require_project, only: :index
   before_action -> { authorize_capability! :manage_domains }, only: %i[ create destroy ]

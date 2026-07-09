@@ -48,6 +48,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :onboarding, only: :show do
+    scope module: :onboardings do
+      resource :completion, only: :create
+    end
+  end
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create

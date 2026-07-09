@@ -2,7 +2,13 @@ module SetsCurrentWorkspaceAndProject
   extend ActiveSupport::Concern
 
   included do
-    before_action :set_current_workspace, :set_current_project
+    before_action :set_current_workspace, :set_current_project, :require_onboarding
+  end
+
+  class_methods do
+    def allow_unonboarded_access(**options)
+      skip_before_action :require_onboarding, **options
+    end
   end
 
   private
@@ -17,6 +23,12 @@ module SetsCurrentWorkspaceAndProject
       if Current.workspace
         Current.project = Current.workspace.projects.active.find_by(slug: session[:project_slug]) ||
           Current.workspace.projects.active.order(:id).first
+      end
+    end
+
+    def require_onboarding
+      if Current.workspace&.needs_onboarding?
+        redirect_to onboarding_path
       end
     end
 end

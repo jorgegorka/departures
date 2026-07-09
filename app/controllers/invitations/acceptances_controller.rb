@@ -1,4 +1,5 @@
 class Invitations::AcceptancesController < ApplicationController
+  allow_unonboarded_access
   allow_unauthenticated_access
 
   before_action :set_invitation

@@ -1,0 +1,45 @@
+<% content_for :title, "Get started" %>
+
+<h1>Get started with Departures</h1>
+<p>Four steps and your first email is on its way.</p>
+
+<ol class="onboarding-steps">
+  <li class="onboarding-step <%= "onboarding-step--done" if @onboarding.source_added? %>">
+    <%= icon_tag @onboarding.source_added? ? "check" : "add" %>
+    <div>
+      <h2><%= link_to "Add a source", @onboarding.source_added? ? sources_path : new_source_path %></h2>
+      <p>Connect the SES credentials and region Departures sends with.</p>
+    </div>
+  </li>
+
+  <li class="onboarding-step <%= "onboarding-step--done" if @onboarding.domain_verified? %>">
+    <%= icon_tag @onboarding.domain_verified? ? "check" : "add" %>
+    <div>
+      <h2><%= link_to "Verify a domain", domains_path %></h2>
+      <p>Add your sending domain and create its DKIM records. Sends from unverified domains are rejected.</p>
+    </div>
+  </li>
+
+  <li class="onboarding-step <%= "onboarding-step--done" if @onboarding.api_key_issued? %>">
+    <%= icon_tag @onboarding.api_key_issued? ? "check" : "add" %>
+    <div>
+      <h2><%= link_to "Issue an API key", @onboarding.api_key_issued? ? api_keys_path : new_api_key_path %></h2>
+      <p>Your apps authenticate to <code>POST /api/emails</code> with it.</p>
+    </div>
+  </li>
+
+  <li class="onboarding-step <%= "onboarding-step--done" if @onboarding.test_email_sent? %>">
+    <%= icon_tag @onboarding.test_email_sent? ? "check" : "add" %>
+    <div>
+      <h2><%= link_to "Send a test email", new_test_email_path %></h2>
+      <p>Prove the pipeline end to end.</p>
+    </div>
+  </li>
+</ol>
+
+<%= button_to "Finish setup", onboarding_completion_path,
+      class: "btn btn--primary btn--large",
+      disabled: !@onboarding.complete? %>
+<% unless @onboarding.complete? %>
+  <p>You can finish setup once every step is done.</p>
+<% end %>

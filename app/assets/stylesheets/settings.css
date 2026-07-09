@@ -63,4 +63,31 @@
   .settings-card__facts dt {
     color: var(--color-ink-lighter);
   }
+
+  .onboarding-steps {
+    display: grid;
+    gap: var(--block-space);
+    list-style: none;
+    margin-block: var(--block-space);
+    padding-inline-start: 0;
+  }
+
+  .onboarding-step {
+    align-items: start;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75em;
+    display: flex;
+    gap: var(--inline-space);
+    padding: var(--block-space) var(--inline-space);
+  }
+
+  .onboarding-step--done {
+    opacity: 0.7;
+  }
+
+  .onboarding-step h2 {
+    font-size: var(--text-medium);
+    margin-block: 0;
+  }
 }

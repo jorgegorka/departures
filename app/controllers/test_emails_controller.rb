@@ -1,4 +1,5 @@
 class TestEmailsController < ApplicationController
+  allow_unonboarded_access
   before_action -> { authorize_capability! :send }
 
   def new
