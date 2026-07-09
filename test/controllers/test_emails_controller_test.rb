@@ -38,7 +38,7 @@ class TestEmailsControllerTest < ActionDispatch::IntegrationTest
     get new_test_email_url
     assert_response :forbidden
 
-    post test_emails_url, params: { email_submission: { from: "a@b.c", to: "d@e.f", subject: "x", text: "y" } }
+    post test_emails_url, params: { email_submission: { from: "hello@acme.com", to: "d@e.f", subject: "x", text: "y" } }
     assert_response :forbidden
   end
 end

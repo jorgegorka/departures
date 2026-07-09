@@ -210,6 +210,8 @@ class EmailSubmission
     end
 
     def validate_guardrails
+      return if project.nil? || source.nil?
+
       unless from_domain_verified?
         errors.add(:from, "domain is not verified")
       end
@@ -242,16 +244,18 @@ class EmailSubmission
       false
     end
 
-    # Guardrail seams — wired up in Phase 5 (Source::Quota, Domain verification, complaint breaker).
     def from_domain_verified?
-      true
+      Domain.verifies?(project, from)
     end
 
     def quota_fresh?
-      true
+      if source.quota_stale?
+        source.sync_quota
+      end
+      source.quota_fresh?
     end
 
     def complaint_breaker_tripped?
-      false
+      source.complaint_rate_exceeded?
     end
 end
