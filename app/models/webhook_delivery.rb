@@ -1,8 +1,17 @@
 class WebhookDelivery < ApplicationRecord
   class DeliveryError < StandardError; end
+  class BlockedAddressError < StandardError; end
 
   MAX_RESPONSE_BODY = 1_000
   TIMEOUT = 5.seconds
+  BLOCKED_RANGES = [
+    IPAddr.new("0.0.0.0/8").freeze,
+    IPAddr.new("100.64.0.0/10").freeze,
+    IPAddr.new("224.0.0.0/4").freeze,
+    IPAddr.new("240.0.0.0/4").freeze,
+    IPAddr.new("::/128").freeze,
+    IPAddr.new("ff00::/8").freeze
+  ].freeze
 
   belongs_to :webhook_endpoint
   belongs_to :workspace, default: -> { webhook_endpoint.workspace }
@@ -41,7 +50,7 @@ class WebhookDelivery < ApplicationRecord
 
       begin
         response = post_payload
-      rescue SocketError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError, EOFError => error
+      rescue BlockedAddressError, SocketError, SystemCallError, Timeout::Error, OpenSSL::SSL::SSLError, EOFError => error
         record_attempt(http_status: nil, body: error.message, started_at: started_at)
         raise DeliveryError, error.message
       end
@@ -62,6 +71,7 @@ class WebhookDelivery < ApplicationRecord
       uri = URI.parse(webhook_endpoint.url)
 
       http = Net::HTTP.new(uri.host, uri.port)
+      http.ipaddr = validated_address(uri.hostname)
       http.use_ssl = uri.is_a?(URI::HTTPS)
       http.open_timeout = TIMEOUT.to_i
       http.read_timeout = TIMEOUT.to_i
@@ -73,6 +83,26 @@ class WebhookDelivery < ApplicationRecord
       request.body = body
 
       http.request(request)
+    end
+
+    # Resolves once, rejects internal targets, and returns a pinned address so the
+    # connection cannot be rebound to a different host between check and connect.
+    def validated_address(hostname)
+      addresses = Addrinfo.getaddrinfo(hostname, nil, nil, :STREAM).map { |info| IPAddr.new(info.ip_address) }
+
+      if addresses.empty? || addresses.any? { |address| blocked_address?(address) }
+        raise BlockedAddressError, "endpoint host resolves to a blocked address"
+      end
+
+      addresses.first.to_s
+    end
+
+    def blocked_address?(address)
+      if address.loopback? || address.private? || address.link_local?
+        true
+      else
+        BLOCKED_RANGES.any? { |range| range.include?(address) }
+      end
     end
 
     def record_attempt(http_status:, body:, started_at:)

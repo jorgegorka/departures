@@ -79,6 +79,32 @@ class WebhookDeliveryTest < ActiveSupport::TestCase
     assert_operator @delivery.response_body.length, :<=, 1_000
   end
 
+  test "delivery to a loopback host is blocked before any request is made" do
+    delivery = delivery_to("https://localhost/hook")
+
+    assert_raises WebhookDelivery::DeliveryError do
+      delivery.deliver
+    end
+
+    assert delivery.pending?
+    assert_equal 1, delivery.attempts
+    assert_nil delivery.http_status
+    assert_match(/blocked address/, delivery.response_body)
+  end
+
+  test "delivery to a private IP literal is blocked before any request is made" do
+    delivery = delivery_to("https://10.0.0.5/hook")
+
+    assert_raises WebhookDelivery::DeliveryError do
+      delivery.deliver
+    end
+
+    assert delivery.pending?
+    assert_equal 1, delivery.attempts
+    assert_nil delivery.http_status
+    assert_match(/blocked address/, delivery.response_body)
+  end
+
   test "deliver_later enqueues on the webhooks queue" do
     assert_enqueued_with(job: DeliverWebhookJob, args: [ @delivery ], queue: "webhooks") do
       @delivery.deliver_later
@@ -86,6 +112,12 @@ class WebhookDeliveryTest < ActiveSupport::TestCase
   end
 
   private
+    def delivery_to(url)
+      endpoint = WebhookEndpoint.create!(project: webhook_endpoints(:acme_all).project,
+        url: url, events: %w[ bounce ])
+      endpoint.deliveries.create!(event_type: "bounce", payload: { "event" => "bounce" })
+    end
+
     def http_response(klass, code, body)
       response = klass.new("1.1", code, "")
       response.instance_variable_set(:@read, true)
