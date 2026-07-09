@@ -1,0 +1,38 @@
+<h1 class="txt-large margin-block">Send a test email</h1>
+
+<% if @submission.errors.any? %>
+  <div class="txt-negative txt-small margin-block-half">
+    <p class="font-weight-bold margin-none">The test email couldn't be sent:</p>
+    <ul class="margin-none">
+      <% @submission.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @submission, url: test_emails_path, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+  <div class="flex flex-column gap-half">
+    <label for="email_submission_from">From</label>
+    <%= form.email_field :from, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <label for="email_submission_to">To</label>
+    <%= form.email_field :to, value: Array(@submission.to).first, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <label for="email_submission_subject">Subject</label>
+    <%= form.text_field :subject, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <label for="email_submission_text">Text body</label>
+    <%= form.text_area :text, class: "input input--textarea", rows: 4 %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <label for="email_submission_html">HTML body (optional)</label>
+    <%= form.text_area :html, class: "input input--textarea", rows: 4 %>
+  </div>
+  <div>
+    <button type="submit" class="btn btn--secondary btn--large">Send test</button>
+  </div>
+<% end %>

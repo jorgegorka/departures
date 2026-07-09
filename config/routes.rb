@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     resource :retry, only: :create
   end
 
+  resources :test_emails, only: %i[ new create ]
+
   resources :exports, only: :show
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
