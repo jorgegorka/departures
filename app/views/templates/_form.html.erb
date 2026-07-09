@@ -1,0 +1,39 @@
+<%= form_with model: template, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+  <% if template.errors.any? %>
+    <div class="txt-negative txt-small margin-block-half">
+      <p class="font-weight-bold margin-none">This template couldn't be saved:</p>
+      <ul class="margin-none">
+        <% template.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :slug %>
+    <%= form.text_field :slug, class: "input", required: true, placeholder: "welcome-email" %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :subject %>
+    <%= form.text_field :subject, class: "input", placeholder: "Welcome, {{ name }}!" %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :html_body, "HTML body" %>
+    <%= form.textarea :html_body, class: "input input--textarea", rows: 10 %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :text_body, "Text body" %>
+    <%= form.textarea :text_body, class: "input input--textarea", rows: 6 %>
+  </div>
+
+  <p class="txt-small txt-subtle">Use <code>{{ variable }}</code> placeholders; senders pass values via the API's <code>variables</code> object.</p>
+
+  <div>
+    <%= form.submit template.persisted? ? "Update template" : "Create template", class: "btn btn--primary btn--large" %>
+  </div>
+<% end %>

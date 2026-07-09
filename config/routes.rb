@@ -40,6 +40,8 @@ Rails.application.routes.draw do
 
   resources :webhook_endpoints
 
+  resources :templates, except: :show
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create
