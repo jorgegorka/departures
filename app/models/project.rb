@@ -11,6 +11,7 @@ class Project < ApplicationRecord
   has_many :suppressions, dependent: :destroy
   has_many :domains, dependent: :destroy
   has_many :webhook_endpoints, dependent: :destroy
+  has_many :templates, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }

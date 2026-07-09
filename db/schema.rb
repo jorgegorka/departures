@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_205654) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -207,6 +207,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_205654) do
     t.index ["workspace_id"], name: "index_suppressions_on_workspace_id"
   end
 
+  create_table "templates", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "html_body"
+    t.string "name", null: false
+    t.integer "project_id", null: false
+    t.string "slug", null: false
+    t.string "subject"
+    t.text "text_body"
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["project_id", "slug"], name: "index_templates_on_project_id_and_slug", unique: true
+    t.index ["project_id"], name: "index_templates_on_project_id"
+    t.index ["workspace_id"], name: "index_templates_on_workspace_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -298,6 +313,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_205654) do
   add_foreign_key "sources", "workspaces"
   add_foreign_key "suppressions", "projects"
   add_foreign_key "suppressions", "workspaces"
+  add_foreign_key "templates", "projects"
+  add_foreign_key "templates", "workspaces"
   add_foreign_key "webhook_deliveries", "emails", on_delete: :nullify
   add_foreign_key "webhook_deliveries", "webhook_endpoints"
   add_foreign_key "webhook_deliveries", "workspaces"

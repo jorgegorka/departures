@@ -36,6 +36,7 @@ module ActiveSupport
       Domain.delete_all
       WebhookDelivery.delete_all
       WebhookEndpoint.delete_all
+      Template.delete_all
       Project.delete_all
       Workspace.delete_all
       Session.delete_all
