@@ -636,8 +636,10 @@ git commit -m "feat: Email::Deliverable and SendEmailJob with SES retry and fail
 ### Task 4 (roadmap 2.3, wiring): MIME + delivery from EmailSubmission#save
 
 **Files:**
-- Modify: `app/models/email_submission.rb` (`create_email` tail)
+- Modify: `app/models/email_submission.rb` (`create_email` tail + `save` rescue)
 - Test: `test/models/email_submission_test.rb` (append tests), `test/controllers/api/emails_controller_test.rb` (append tests)
+
+This task also clears two Phase 1 final-review carry-overs that become delivery-safety issues once `save` enqueues delivery: **(a)** an idempotency `RecordNotUnique` race must roll back the loser's email AND its deferred `SendEmailJob` enqueue (the savepoint in `IdempotencyKey.record` already rolls back the row — the enqueue-drop is what Steps 6–8 prove); **(b)** a TOCTOU between `valid?` and `create_email` can surface as `ActiveRecord::RecordInvalid` — `save` must rescue it and return false with errors, matching its contract.
 
 **Interfaces:**
 - Consumes: `Email::MimeBuilder.new(email, attachments: attachments).to_eml` (Task 1 — `attachments` here is the submission's in-memory array, the only place the base64 content exists), `Email::MimeStore.write` (Task 2), `email.deliver_later` (Task 3).
@@ -762,10 +764,75 @@ Expected: FAIL — the new tests fail on `assert_enqueued_with` (no job enqueued
     end
 ```
 
-- [ ] **Step 5: Run the full suite, verify pass, commit**
+- [ ] **Step 5: Run the wiring tests, verify pass**
+
+Run: `bin/rails test test/models/email_submission_test.rb test/controllers/api/emails_controller_test.rb`
+Expected: PASS. Pre-existing `EmailSubmission`/controller tests now also write `.eml` files (under `tmp/storage/emails`) and enqueue jobs (test adapter only queues them) — they must keep passing untouched. If `assert_enqueued_with` fails only in the *controller* tests while model tests pass, investigate how `enqueue_after_transaction_commit` interacts with the transactional-fixture wrapper before changing any production code (systematic-debugging skill).
+
+- [ ] **Step 6: Write the failing safety carry-over tests**
+
+Append to `test/models/email_submission_test.rb`:
+
+```ruby
+  # --- Phase 1 carry-overs: delivery-safety races ---
+
+  test "losing an idempotency race returns the winner, rolls back the loser email, and enqueues nothing" do
+    api_key = api_keys(:acme_full)
+    winner = Email.create!(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", subject: "Winner", html_body: "<p>w</p>")
+
+    result = nil
+    assert_no_difference -> { Email.count } do
+      assert_no_enqueued_jobs only: SendEmailJob do
+        result = IdempotencyKey.replay_or_record(api_key: api_key, key: "race-1", fingerprint: -> { "fp-1" }) do
+          # Simulate a concurrent request claiming the key between lookup and insert:
+          # the block runs, but IdempotencyKey.record's create! will hit the unique
+          # index and roll the savepoint back.
+          IdempotencyKey.create!(api_key: api_key, key: "race-1", fingerprint: "fp-1",
+            email: winner, expires_at: 1.hour.from_now)
+          delivery_submission.save
+        end
+      end
+    end
+
+    assert_equal winner, result
+  end
+
+  test "save returns false with errors when a validation race raises RecordInvalid" do
+    submission = delivery_submission
+    invalid_email = Email.new.tap { |email| email.errors.add(:from, "is required") }
+
+    Email.stub :create!, ->(*) { raise ActiveRecord::RecordInvalid.new(invalid_email) } do
+      assert_not submission.save
+    end
+
+    assert_includes submission.errors.full_messages.join(", "), "From is required"
+  end
+```
+
+Run: `bin/rails test test/models/email_submission_test.rb`
+Expected: the TOCTOU test FAILS (`ActiveRecord::RecordInvalid` raised out of `save`). The race test SHOULD already pass (savepoint rollback drops both the row and the transaction-deferred enqueue) — if `assert_no_enqueued_jobs` fails, STOP and report BLOCKED: it means a rolled-back savepoint does not discard deferred enqueues and the double-send fix needs a design decision, not a workaround.
+
+- [ ] **Step 7: Rescue the TOCTOU in save**
+
+```ruby
+# app/models/email_submission.rb — save becomes:
+  def save
+    if valid?
+      create_email
+    else
+      false
+    end
+  rescue ActiveRecord::RecordInvalid => invalid
+    errors.merge!(invalid.record.errors)
+    false
+  end
+```
+
+- [ ] **Step 8: Run the full suite, verify pass, commit**
 
 Run: `bin/rails test`
-Expected: PASS. Pre-existing `EmailSubmission`/controller tests now also write `.eml` files (under `tmp/storage/emails`) and enqueue jobs (test adapter only queues them) — they must keep passing untouched. If `assert_enqueued_with` fails only in the *controller* tests while model tests pass, investigate how `enqueue_after_transaction_commit` interacts with the transactional-fixture wrapper before changing any production code (systematic-debugging skill).
+Expected: PASS
 
 ```bash
 bin/rubocop -a
@@ -857,7 +924,165 @@ git commit -m "docs: bcc SESv2 raw-send spike findings (risk #2)"
 
 ---
 
-### Task 6: Phase wrap-up
+### Task 6 (Phase 1 carry-overs): cleanup chores
+
+**Files:**
+- Modify: `test/test_helper.rb`, `app/models/api_key.rb`, `app/models/email_submission.rb`
+- Test: `test/models/email_submission_test.rb` (append tests); existing tests updated to use the shared wipe helper
+
+**Interfaces:**
+- Produces: closes the remaining "Deferred to Phase 2" items from Phase 1's final review: shared test wipe helper (replaces the ~6 copies of the `delete_all` litany), `ApiKey.digest` made private, header/tag **name** hardening in `EmailSubmission` (values were hardened in Phase 1), and the base64 attachment-content validation decision (decision: strict base64 required — reject with 422 rather than silently mangling on lenient decode).
+- These are independent mechanical chores; none change public API behavior except the two new 422 validations.
+
+- [ ] **Step 1: Shared wipe helper**
+
+Find the duplicated cleanup litany: `rg -n "delete_all" test/ | grep -v fixtures`. Extract the repeated sequence (it wipes emails and their dependents so fixture-independent tests start clean) into one helper in `test/test_helper.rb` inside `class TestCase`:
+
+```ruby
+    # Wipes the send domain so tests that assert on absolute counts or unique
+    # indexes start from a clean slate regardless of fixtures.
+    def wipe_send_domain
+      IdempotencyKey.delete_all
+      EmailRecipient.delete_all
+      EmailAttachment.delete_all
+      Email.delete_all
+    end
+```
+
+Adjust the model list to exactly what the existing copies wipe (add `Suppression`/`ApiKey` etc. only if a current copy does), then replace every copy with a call to the helper.
+
+Run: `bin/rails test`
+Expected: PASS
+
+- [ ] **Step 2: ApiKey.digest → private**
+
+First check for external callers: `rg -n "ApiKey\.digest|digest\(" app/ test/ config/`. If fixtures or tests call it, inline `Digest::SHA256.hexdigest(...)` there (fixtures) or test through `issue`/`authenticate_by_token` instead. Then move `digest` under the existing `private` section of the `class << self` block (create one if absent, indented per §5.1):
+
+```ruby
+  class << self
+    def issue(project:, name: nil, scopes: [], expires_in: nil)
+      # … unchanged …
+    end
+
+    def authenticate_by_token(bearer)
+      if bearer.present?
+        active.find_by(key_hash: digest(bearer))
+      end
+    end
+
+    private
+      def digest(token)
+        Digest::SHA256.hexdigest(token)
+      end
+  end
+```
+
+Run: `bin/rails test`
+Expected: PASS
+
+- [ ] **Step 3: Write failing tests for header/tag names and base64 content**
+
+Append to `test/models/email_submission_test.rb`:
+
+```ruby
+  # --- Phase 1 carry-overs: input hardening ---
+
+  test "header and tag names reject control characters and oversized names" do
+    submission = delivery_submission(headers: { "X-Bad\r\nInjected" => "v" })
+    assert_not submission.save
+    assert submission.errors[:headers].any? { |message| message.include?("control characters") }
+
+    submission = delivery_submission(tags: { "t" * 1001 => "v" })
+    assert_not submission.save
+    assert submission.errors[:tags].any? { |message| message.include?("1000") }
+  end
+
+  test "attachment content must be valid strict base64" do
+    submission = delivery_submission(attachments: [
+      { filename: "bad.bin", content_type: "application/octet-stream", content: "not base64!!" } ])
+
+    assert_not submission.save
+    assert submission.errors[:attachments].any? { |message| message.include?("base64") }
+  end
+
+  test "valid strict base64 attachment content is accepted" do
+    submission = delivery_submission(attachments: [
+      { filename: "ok.bin", content_type: "application/octet-stream", content: Base64.strict_encode64("ok") } ])
+
+    assert submission.save
+  end
+```
+
+Run: `bin/rails test test/models/email_submission_test.rb`
+Expected: the three hardening tests FAIL (validations don't exist yet).
+
+- [ ] **Step 4: Implement the validations**
+
+In `app/models/email_submission.rb`, extend `validate_header_and_tag_values` to also check names, and `validate_attachments` to check content encoding:
+
+```ruby
+    def validate_header_and_tag_values
+      { headers: headers, tags: tags }.each do |field, pairs|
+        pairs.each_key do |name|
+          if name.match?(/[[:cntrl:]]/)
+            errors.add(field, "names must not contain control characters")
+          elsif name.length > MAX_ADDRESS_LENGTH
+            errors.add(field, "names cannot exceed #{MAX_ADDRESS_LENGTH} characters")
+          end
+        end
+
+        pairs.each_value do |value|
+          if !value.is_a?(String)
+            errors.add(field, "values must be strings")
+          elsif value.match?(/[[:cntrl:]]/)
+            errors.add(field, "values must not contain control characters")
+          elsif value.length > MAX_ADDRESS_LENGTH
+            errors.add(field, "values cannot exceed #{MAX_ADDRESS_LENGTH} characters")
+          end
+        end
+      end
+    end
+```
+
+```ruby
+    # add to validate_attachments, after the filename check inside the same loop:
+      attachments.each do |attachment|
+        if attachment[:filename].blank?
+          errors.add(:attachments, "must each have a filename")
+        end
+
+        unless valid_base64?(attachment[:content])
+          errors.add(:attachments, "#{attachment[:filename]} content is not valid base64")
+        end
+      end
+```
+
+```ruby
+    # new private predicate, placed after decoded_size per invocation order:
+    def valid_base64?(content)
+      Base64.strict_decode64(content.to_s)
+      true
+    rescue ArgumentError
+      false
+    end
+```
+
+(Decision recorded: attachment `content` must be RFC 4648 strict base64 — no line breaks, no missing padding. Lenient `decode64` silently drops invalid bytes, which corrupts attachments instead of rejecting them.)
+
+- [ ] **Step 5: Run, verify pass, commit**
+
+Run: `bin/rails test`
+Expected: PASS
+
+```bash
+bin/rubocop -a
+git add -A
+git commit -m "chore: phase 1 carry-overs — wipe helper, private digest, header-name and base64 validation"
+```
+
+---
+
+### Task 7: Phase wrap-up
 
 **Files:**
 - Modify: `docs/plans/departures-execution-plan.md` (Phase 2 status line), `README.md` (delivery pipeline note)
@@ -913,7 +1138,8 @@ git commit -m "chore: phase 2 wrap-up — rubocop, smoke, docs"
 ## Verification (phase-level)
 
 - `bin/rails test` green; `bin/rubocop` clean.
-- Roadmap Phase 2 test list fully covered (Task 6 Step 2 audit).
+- Roadmap Phase 2 test list fully covered (Task 7 Step 2 audit).
+- Phase 1 "Deferred to Phase 2" ledger items all closed (Task 4 safety races, Task 6 chores) or explicitly re-deferred with a reason.
 - The Bcc spike doc exists (or is explicitly deferred with credentials noted as the blocker — it must land before Phase 5 enables real sending).
 - Standards: no business logic in `SendEmailJob` (3 lines + retry policy); Bcc never in MIME; `content.raw.data` never pre-encoded; no bang methods.
 - Before starting Phase 3: author `docs/plans/phase-3-sns-ingestion-plan.md`; note the Phase 2 → Phase 3 seams: `emails.ses_message_id` is now populated and indexed (event matching key), `Email#apply_event` + `Email::Statuses` precedence guard out-of-order events, `sources.webhook_token` identifies the inbound SNS route, and `Email::MimeStore.delete` is the pruning hook Phase 6 will call.
