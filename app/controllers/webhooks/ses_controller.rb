@@ -40,6 +40,7 @@ class Webhooks::SesController < ActionController::API
     # SNS posts JSON with Content-Type text/plain, so Rails never fills params.
     def set_payload
       @payload = JSON.parse(request.body.read)
+      head :bad_request unless @payload.is_a?(Hash)
     rescue JSON::ParserError
       head :bad_request
     end

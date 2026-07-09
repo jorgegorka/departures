@@ -77,7 +77,56 @@ class Sns::MessageVerifierTest < ActiveSupport::TestCase
     assert_not broken.authentic?(signed_notification)
   end
 
+  # --- Default cert fetcher hardening (no injected fetcher → real path runs) ---
+
+  test "the default fetcher caches a valid PEM body from a success response and verifies" do
+    Rails.cache.clear
+    response = http_response(Net::HTTPOK.new("1.1", "200", "OK"), CERT.to_pem)
+
+    Net::HTTP.stub :get_response, ->(_uri) { response } do
+      assert default_fetcher_verifier.authentic?(signed_notification)
+    end
+
+    assert_equal CERT.to_pem, Rails.cache.read([ "sns-signing-cert", CERT_URL ])
+  end
+
+  test "the default fetcher raises and caches nothing on a non-success response" do
+    Rails.cache.clear
+    response = http_response(Net::HTTPBadGateway.new("1.1", "502", "Bad Gateway"), "<html>error</html>")
+
+    Net::HTTP.stub :get_response, ->(_uri) { response } do
+      assert_raises Sns::MessageVerifier::CertificateFetchError do
+        default_fetcher_verifier.authentic?(signed_notification)
+      end
+    end
+
+    assert_nil Rails.cache.read([ "sns-signing-cert", CERT_URL ])
+  end
+
+  test "the default fetcher raises and caches nothing when a success response body is not a PEM" do
+    Rails.cache.clear
+    response = http_response(Net::HTTPOK.new("1.1", "200", "OK"), "not a certificate")
+
+    Net::HTTP.stub :get_response, ->(_uri) { response } do
+      assert_raises Sns::MessageVerifier::CertificateFetchError do
+        default_fetcher_verifier.authentic?(signed_notification)
+      end
+    end
+
+    assert_nil Rails.cache.read([ "sns-signing-cert", CERT_URL ])
+  end
+
   private
+    def default_fetcher_verifier
+      Sns::MessageVerifier.new(region: "eu-west-1")
+    end
+
+    def http_response(response, body)
+      response.instance_variable_set(:@read, true)
+      response.define_singleton_method(:body) { body }
+      response
+    end
+
     def verifier
       Sns::MessageVerifier.new(region: "eu-west-1", cert_fetcher: ->(url) {
         raise "unexpected cert fetch: #{url}" unless url == CERT_URL

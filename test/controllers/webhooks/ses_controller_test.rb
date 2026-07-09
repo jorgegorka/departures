@@ -76,6 +76,16 @@ class Webhooks::SesControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  test "a valid-JSON non-object body is a bad request and creates no log" do
+    [ "123", "[1]" ].each do |body|
+      assert_no_difference -> { WebhookLog.count } do
+        post_webhook(body: body)
+      end
+
+      assert_response :bad_request, body
+    end
+  end
+
   test "requests beyond 120 per minute per token are rejected" do
     Sns::MessageVerifier.stub :new, FakeVerifier.new(true) do
       120.times do

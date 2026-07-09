@@ -84,5 +84,8 @@ class WebhookLog < ApplicationRecord
 
     def relay_to_endpoints(email, event)
       # Outbound webhook fan-out fills this seam in Phase 5 (WebhookEndpoint).
+      # This runs inside the ingestion transaction, so Phase 5 fan-out must
+      # ENQUEUE jobs only — never inline HTTP — or a slow/hanging endpoint would
+      # hold the transaction open (and any rollback would strand sent requests).
     end
 end

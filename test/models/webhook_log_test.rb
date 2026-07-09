@@ -1,7 +1,9 @@
 require "test_helper"
+require "turbo/broadcastable/test_helper"
 
 class WebhookLogTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include Turbo::Broadcastable::TestHelper
 
   setup do
     Current.session = sessions(:owner)
@@ -212,6 +214,33 @@ class WebhookLogTest < ActiveSupport::TestCase
     assert_equal 0, EmailEvent.count
     assert log.reload.received?
     assert_nil log.processed_at
+  end
+
+  test "a successfully processed delivery broadcasts exactly one activity refresh" do
+    email = matched_email
+
+    streams = capture_turbo_stream_broadcasts([ email.project, :activity ]) do
+      process_fixture("delivery")
+    end
+
+    assert_equal "refresh", streams.sole["action"]
+  end
+
+  test "a rolled-back ingestion broadcasts nothing" do
+    email = matched_email
+    message = JSON.parse(file_fixture("sns/bounce_permanent.json").read)
+    log = sources(:acme_production).webhook_logs.create!(message_type: "Notification",
+      payload: { "Type" => "Notification", "Message" => message.to_json })
+
+    streams = capture_turbo_stream_broadcasts([ email.project, :activity ]) do
+      Suppression.stub :record, ->(*) { raise "boom" } do
+        assert_raises RuntimeError do
+          log.process
+        end
+      end
+    end
+
+    assert_empty streams
   end
 
   test "process_later enqueues the job" do
