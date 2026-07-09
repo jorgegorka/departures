@@ -771,10 +771,35 @@ Expected: PASS. Pre-existing `EmailSubmission`/controller tests now also write `
 
 - [ ] **Step 6: Write the failing safety carry-over tests**
 
-Append to `test/models/email_submission_test.rb`:
+*(Design decision, recorded after the first BLOCKED attempt: the original in-transaction winner simulation was doubly flawed — (i) the model-level uniqueness validation sees a committed winner and raises `RecordInvalid`, not `RecordNotUnique`, a real production race window that would 500 instead of replaying, and (ii) under transactional fixtures the deferred enqueue attaches outside the savepoint, so enqueue-drop is only observable without the fixture transaction. Resolution: `IdempotencyKey.record` gains a narrow `RecordInvalid` rescue for the key-taken case, and the race test lives in a dedicated non-transactional test class with the winner committed from a second connection — production-faithful semantics.)*
+
+Create `test/models/email_submission_race_test.rb`:
 
 ```ruby
-  # --- Phase 1 carry-overs: delivery-safety races ---
+require "test_helper"
+
+# The idempotency race must be observed with production transaction semantics:
+# under transactional fixtures the fixture transaction is outermost, so the
+# deferred SendEmailJob enqueue attaches outside IdempotencyKey.record's
+# savepoint and its rollback cannot drop it — which is exactly what this test
+# must prove happens for real. Hence use_transactional_tests = false and a
+# concurrent winner committed from a second connection.
+class EmailSubmissionRaceTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
+  self.use_transactional_tests = false
+
+  setup do
+    Current.session = sessions(:owner)
+  end
+
+  teardown do
+    IdempotencyKey.delete_all
+    EmailRecipient.delete_all
+    EmailAttachment.delete_all
+    Email.delete_all
+    Current.reset
+  end
 
   test "losing an idempotency race returns the winner, rolls back the loser email, and enqueues nothing" do
     api_key = api_keys(:acme_full)
@@ -785,11 +810,13 @@ Append to `test/models/email_submission_test.rb`:
     assert_no_difference -> { Email.count } do
       assert_no_enqueued_jobs only: SendEmailJob do
         result = IdempotencyKey.replay_or_record(api_key: api_key, key: "race-1", fingerprint: -> { "fp-1" }) do
-          # Simulate a concurrent request claiming the key between lookup and insert:
-          # the block runs, but IdempotencyKey.record's create! will hit the unique
-          # index and roll the savepoint back.
-          IdempotencyKey.create!(api_key: api_key, key: "race-1", fingerprint: "fp-1",
-            email: winner, expires_at: 1.hour.from_now)
+          # A concurrent request claims the key on its own connection and
+          # commits, landing between our lookup and our insert.
+          Thread.new do
+            IdempotencyKey.create!(api_key: api_key, key: "race-1", fingerprint: "fp-1",
+              email: winner, expires_at: 1.hour.from_now)
+          end.join
+
           delivery_submission.save
         end
       end
@@ -797,6 +824,19 @@ Append to `test/models/email_submission_test.rb`:
 
     assert_equal winner, result
   end
+
+  private
+    def delivery_submission(**overrides)
+      EmailSubmission.new({ project: projects(:acme_default), source: sources(:acme_production),
+        from: "hello@acme.com", to: [ "user@example.com" ], subject: "Hi", html: "<p>Hi</p>" }.merge(overrides))
+    end
+end
+```
+
+Append the TOCTOU test to `test/models/email_submission_test.rb`:
+
+```ruby
+  # --- Phase 1 carry-overs: delivery-safety races ---
 
   test "save returns false with errors when a validation race raises RecordInvalid" do
     submission = delivery_submission
@@ -810,8 +850,27 @@ Append to `test/models/email_submission_test.rb`:
   end
 ```
 
-Run: `bin/rails test test/models/email_submission_test.rb`
-Expected: the TOCTOU test FAILS (`ActiveRecord::RecordInvalid` raised out of `save`). The race test SHOULD already pass (savepoint rollback drops both the row and the transaction-deferred enqueue) — if `assert_no_enqueued_jobs` fails, STOP and report BLOCKED: it means a rolled-back savepoint does not discard deferred enqueues and the double-send fix needs a design decision, not a workaround.
+Run: `bin/rails test test/models/email_submission_race_test.rb test/models/email_submission_test.rb`
+Expected: the race test FAILS (`ActiveRecord::RecordInvalid: Key has already been taken` propagates out of `replay_or_record` — the unhandled committed-winner window); the TOCTOU test FAILS (`ActiveRecord::RecordInvalid` raised out of `save`).
+
+- [ ] **Step 6b: Rescue the committed-winner race in IdempotencyKey.record**
+
+In `app/models/idempotency_key.rb`, the private `record` method's rescue section becomes:
+
+```ruby
+      rescue ActiveRecord::RecordNotUnique
+        replay(active.find_by!(api_key: api_key, key: key), fingerprint)
+      rescue ActiveRecord::RecordInvalid => invalid
+        # A winner that committed between our lookup and our insert surfaces as
+        # a uniqueness-validation failure rather than RecordNotUnique. Anything
+        # else is a genuine bug and must propagate.
+        if invalid.record.is_a?(IdempotencyKey) && invalid.record.errors.of_kind?(:key, :taken)
+          replay(active.find_by!(api_key: api_key, key: key), fingerprint)
+        else
+          raise
+        end
+      end
+```
 
 - [ ] **Step 7: Rescue the TOCTOU in save**
 
