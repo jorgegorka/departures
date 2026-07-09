@@ -17,6 +17,8 @@ Rails.application.routes.draw do
     resources :emails, only: %i[ index create ]
   end
 
+  post "api/webhooks/ses/:webhook_token", to: "webhooks/ses#create", as: :ses_webhooks
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
