@@ -128,13 +128,13 @@ class Api::EmailsControllerTest < ActionDispatch::IntegrationTest
     assert_equal staging_source, Email.order(:id).last.source
   end
 
-  test "a template_id submission is rejected until templates are supported" do
-    assert_no_difference -> { Email.count } do
-      post_email(payload: valid_payload(subject: nil, template_id: 42))
-    end
+  test "sends with a template and variables" do
+    post_email(token: ACME_SEND_ONLY_TOKEN,
+      payload: { from: "hello@acme.com", to: [ "user@example.com" ],
+                 template_id: "welcome", variables: { name: "Ada", company: "Acme" } })
 
-    assert_response :unprocessable_entity
-    assert response.parsed_body["errors"].any? { |e| e.include?("not yet supported") }
+    assert_response :accepted
+    assert_equal "Welcome, Ada!", Email.order(:id).last.subject
   end
 
   # --- Idempotency (replay + 409) ---

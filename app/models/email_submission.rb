@@ -14,14 +14,14 @@ class EmailSubmission
   ADDRESS_FORMAT = URI::MailTo::EMAIL_REGEXP
 
   attr_accessor :project, :source, :api_key, :from, :subject, :template_id, :html, :text
-  attr_reader :to, :cc, :bcc, :headers, :tags, :attachments
+  attr_reader :to, :cc, :bcc, :headers, :tags, :attachments, :variables
 
   validates :project, :source, presence: true
 
   validate :validate_from,
     :validate_recipient_lists,
     :validate_total_recipients,
-    :validate_template_supported,
+    :validate_template,
     :validate_subject_xor_template,
     :validate_body_presence,
     :validate_attachments,
@@ -34,6 +34,7 @@ class EmailSubmission
     @to, @cc, @bcc = [], [], []
     @headers, @tags = {}, {}
     @attachments = []
+    @variables = {}
     super
   end
 
@@ -61,6 +62,10 @@ class EmailSubmission
     @attachments = Array(value).map { |attachment| attachment.to_h.symbolize_keys }
   end
 
+  def variables=(value)
+    @variables = (value || {}).to_h.transform_keys(&:to_s)
+  end
+
   def save
     if valid?
       create_email
@@ -76,7 +81,7 @@ class EmailSubmission
     def create_email
       Email.transaction do
         email = Email.create!(project: project, source: source, api_key: api_key,
-          from: from, subject: subject, html_body: html, text_body: text,
+          from: from, subject: effective_subject, html_body: effective_html, text_body: effective_text,
           headers: headers, tags: tags)
 
         { "to" => to, "cc" => cc, "bcc" => bcc }.each do |kind, addresses|
@@ -125,13 +130,9 @@ class EmailSubmission
       end
     end
 
-    # Templates are a Phase 5 feature: EmailSubmission will resolve template_id
-    # into subject/bodies. Until then a template_id has nowhere to go — Email has
-    # no template column and create_email drops it — so reject rather than
-    # silently accepting and losing the request.
-    def validate_template_supported
-      if template_id.present?
-        errors.add(:template_id, "templates are not yet supported")
+    def validate_template
+      if template_id.present? && template.nil?
+        errors.add(:template_id, "does not match any template")
       end
     end
 
@@ -223,6 +224,29 @@ class EmailSubmission
       if complaint_breaker_tripped?
         errors.add(:base, "sending is paused due to complaint rate")
       end
+    end
+
+    def template
+      if project && template_id.present?
+        @template ||= project.templates.find_by(slug: template_id.to_s.downcase) ||
+          project.templates.find_by(id: template_id)
+      end
+    end
+
+    def rendered_template
+      @rendered_template ||= template&.render(variables)
+    end
+
+    def effective_subject
+      template ? rendered_template.subject : subject
+    end
+
+    def effective_html
+      template ? rendered_template.html : html
+    end
+
+    def effective_text
+      template ? rendered_template.text : text
     end
 
     def all_recipients

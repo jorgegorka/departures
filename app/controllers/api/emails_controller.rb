@@ -35,7 +35,7 @@ class Api::EmailsController < Api::BaseController
 
     def submission_attributes
       params.permit(:from, :subject, :html, :text, :template_id,
-        to: [], cc: [], bcc: [], headers: {}, tags: {},
+        to: [], cc: [], bcc: [], headers: {}, tags: {}, variables: {},
         attachments: [ %i[ filename content_type content ] ])
         .to_h.merge(project: Current.project, source: @source, api_key: @api_key)
     end
