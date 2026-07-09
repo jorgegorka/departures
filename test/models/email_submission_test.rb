@@ -249,6 +249,18 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_includes subject.errors.full_messages.join, "quota information is stale"
   end
 
+  test "guardrail: stale quota with unreachable SES rejects with the stale message" do
+    source = sources(:acme_production)
+    source.update!(last_quota_checked_at: 7.hours.ago)
+    source.ses_client = Aws::SESV2::Client.new(stub_responses: true)
+    source.ses_client.stub_responses(:get_account, Seahorse::Client::NetworkingError.new(Errno::ECONNRESET.new))
+
+    subject = submission(source: source)
+
+    assert_not subject.valid?
+    assert_includes subject.errors.full_messages.join, "quota information is stale"
+  end
+
   test "guardrail: rejects while the complaint breaker is tripped" do
     source = sources(:acme_production)
 

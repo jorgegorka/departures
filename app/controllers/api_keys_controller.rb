@@ -32,6 +32,10 @@ class ApiKeysController < ApplicationController
     end
 
     def expires_in
-      api_key_params[:expires_in].presence&.to_i&.days
+      days = api_key_params[:expires_in].to_i
+
+      if days.positive?
+        days.days
+      end
     end
 end

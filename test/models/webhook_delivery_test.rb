@@ -105,6 +105,19 @@ class WebhookDeliveryTest < ActiveSupport::TestCase
     assert_match(/blocked address/, delivery.response_body)
   end
 
+  test "delivery to a benchmark-range IP literal is blocked before any request is made" do
+    delivery = delivery_to("https://198.18.0.1/hook")
+
+    assert_raises WebhookDelivery::DeliveryError do
+      delivery.deliver
+    end
+
+    assert delivery.pending?
+    assert_equal 1, delivery.attempts
+    assert_nil delivery.http_status
+    assert_match(/blocked address/, delivery.response_body)
+  end
+
   test "deliver_later enqueues on the webhooks queue" do
     assert_enqueued_with(job: DeliverWebhookJob, args: [ @delivery ], queue: "webhooks") do
       @delivery.deliver_later

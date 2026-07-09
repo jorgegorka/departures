@@ -28,6 +28,23 @@ class Source::QuotaTest < ActiveSupport::TestCase
     assert_nil @source.reload.last_quota_checked_at
   end
 
+  test "sync_quota returns false when SES is unreachable" do
+    @source.ses_client.stub_responses(:get_account, Seahorse::Client::NetworkingError.new(Errno::ECONNRESET.new))
+    @source.update!(last_quota_checked_at: nil)
+
+    assert_not @source.sync_quota
+    assert_nil @source.reload.last_quota_checked_at
+  end
+
+  test "sync_quota backs off after a failure and does not re-hit SES within the window" do
+    @source.ses_client.stub_responses(:get_account, Seahorse::Client::NetworkingError.new(Errno::ECONNRESET.new))
+
+    assert_not @source.sync_quota
+    assert_not @source.sync_quota
+
+    assert_equal 1, @source.ses_client.api_requests.count { |request| request[:operation_name] == :get_account }
+  end
+
   test "quota_stale? uses the six hour TTL" do
     @source.update!(last_quota_checked_at: nil)
     assert @source.quota_stale?
@@ -62,6 +79,22 @@ class Source::QuotaTest < ActiveSupport::TestCase
     record_complaint(@source.emails.first)
 
     assert @source.complaint_rate_exceeded?
+  end
+
+  test "complaint breaker trips at exactly 0.1 percent" do
+    wipe_send_domain
+    insert_emails(@source, count: 1000)
+    record_complaint(@source.emails.first)
+
+    assert @source.complaint_rate_exceeded?
+  end
+
+  test "complaint breaker stays open just below 0.1 percent" do
+    wipe_send_domain
+    insert_emails(@source, count: 2000)
+    record_complaint(@source.emails.first)
+
+    assert_not @source.complaint_rate_exceeded?
   end
 
   test "complaint breaker ignores complaints outside the 30 day window" do

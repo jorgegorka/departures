@@ -13,6 +13,8 @@ module Source::Quota
   end
 
   def sync_quota
+    return false if Rails.cache.exist?(quota_sync_failed_key)
+
     response = ses_client.get_account
     update!(last_quota_checked_at: Time.current, last_quota: {
       "max_24_hour_send" => response.send_quota&.max_24_hour_send,
@@ -22,7 +24,8 @@ module Source::Quota
       "production_access" => response.production_access_enabled
     })
     true
-  rescue Aws::SESV2::Errors::ServiceError
+  rescue Aws::SESV2::Errors::ServiceError, Seahorse::Client::NetworkingError
+    Rails.cache.write(quota_sync_failed_key, true, expires_in: 1.minute)
     false
   end
 
@@ -45,4 +48,9 @@ module Source::Quota
       complaints * 100.0 / sends >= COMPLAINT_BREAKER_RATE
     end
   end
+
+  private
+    def quota_sync_failed_key
+      "sources/#{id}/quota_sync_failed"
+    end
 end

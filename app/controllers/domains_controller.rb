@@ -18,8 +18,11 @@ class DomainsController < ApplicationController
       @domain = Current.project.domains.new(domain_params)
 
       if @domain.save
-        @domain.provision
-        redirect_to domains_path, notice: "Domain added. Create the DNS records below, then re-check."
+        if @domain.provision
+          redirect_to domains_path, notice: "Domain added. Create the DNS records below, then re-check."
+        else
+          redirect_to domains_path, alert: "#{@domain.name} was added but SES provisioning failed — re-check DNS later."
+        end
       else
         redirect_to domains_path, alert: @domain.errors.full_messages.to_sentence
       end

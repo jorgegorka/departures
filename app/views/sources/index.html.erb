@@ -31,7 +31,7 @@
             </button>
           </dd>
 
-          <% if source.last_quota.present? %>
+          <% if source.last_quota.present? && source.last_quota_checked_at %>
             <dt>Quota</dt>
             <dd>
               <%= source.last_quota["sent_last_24_hours"].to_i %> / <%= source.last_quota["max_24_hour_send"].to_i %>

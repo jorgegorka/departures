@@ -85,6 +85,15 @@ class DomainTest < ActiveSupport::TestCase
     assert domain.failed?
   end
 
+  test "check returns false when SES is unreachable" do
+    domain = domain_with_client
+    domain.ses_client.stub_responses(:get_email_identity,
+      Seahorse::Client::NetworkingError.new(Errno::ECONNRESET.new))
+
+    assert_not domain.check
+    assert domain.pending?
+  end
+
   test "dkim_records builds the CNAME pairs" do
     records = domains(:acme_com).dkim_records
 

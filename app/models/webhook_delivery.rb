@@ -9,8 +9,10 @@ class WebhookDelivery < ApplicationRecord
     IPAddr.new("100.64.0.0/10").freeze,
     IPAddr.new("224.0.0.0/4").freeze,
     IPAddr.new("240.0.0.0/4").freeze,
+    IPAddr.new("198.18.0.0/15").freeze,
     IPAddr.new("::/128").freeze,
-    IPAddr.new("ff00::/8").freeze
+    IPAddr.new("ff00::/8").freeze,
+    IPAddr.new("64:ff9b::/96").freeze
   ].freeze
 
   belongs_to :webhook_endpoint

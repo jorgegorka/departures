@@ -68,6 +68,16 @@ class OnboardingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "a signed-in user with no workspace is redirected to workspace creation" do
+    users(:owner).memberships.destroy_all
+
+    get onboarding_url
+    assert_redirected_to new_workspace_url
+
+    post onboarding_completion_url
+    assert_redirected_to new_workspace_url
+  end
+
   test "an onboarded workspace is never gated" do
     get root_url
     assert_response :success

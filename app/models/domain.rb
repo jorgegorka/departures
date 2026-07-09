@@ -28,7 +28,7 @@ class Domain < ApplicationRecord
     true
   rescue Aws::SESV2::Errors::AlreadyExistsException
     check
-  rescue Aws::SESV2::Errors::ServiceError
+  rescue Aws::SESV2::Errors::ServiceError, Seahorse::Client::NetworkingError
     update!(status: "failed")
     false
   end
@@ -42,14 +42,14 @@ class Domain < ApplicationRecord
   rescue Aws::SESV2::Errors::NotFoundException
     update!(status: "failed", last_checked_at: Time.current)
     false
-  rescue Aws::SESV2::Errors::ServiceError
+  rescue Aws::SESV2::Errors::ServiceError, Seahorse::Client::NetworkingError
     false
   end
 
   def decommission
     ses_client.delete_email_identity(email_identity: name)
     destroy
-  rescue Aws::SESV2::Errors::ServiceError
+  rescue Aws::SESV2::Errors::ServiceError, Seahorse::Client::NetworkingError
     destroy
   end
 
