@@ -63,6 +63,10 @@ group :development do
 end
 
 group :test do
+  # Pin minitest to the 5.x line: 6.0 dropped minitest/mock (Object#stub), which
+  # the job tests rely on to stub Aws::SESV2::Client.new across GlobalID reloads.
+  gem "minitest", "~> 5.25"
+
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
