@@ -139,7 +139,7 @@ Tests: MIME structure assertions (parts, headers, attachment encoding); store ro
 
 ### Phase 3 — SNS ingestion, events, suppressions, live activity
 
-Detailed plan: **docs/plans/phase-3-sns-ingestion-plan.md** (ready to execute).
+Detailed plan: **docs/plans/phase-3-sns-ingestion-plan.md** (complete).
 
 | Task | Files | Directives |
 |---|---|---|

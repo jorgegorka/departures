@@ -165,6 +165,16 @@ Lists the calling key's project's 50 most recent emails (requires the `read:acti
 { "data": [ { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6", "status": "queued", "created_at": "2026-07-08T13:04:40.146Z" } ] }
 ```
 
+### SES event webhook (inbound)
+
+Each source has a secret webhook token; subscribe its SNS topic (the SES configuration set's event destination) to:
+
+```
+POST /api/webhooks/ses/:webhook_token
+```
+
+Subscription confirmations are handled automatically. Every notification is SNS-signature-verified (signing-cert host pinned to `sns.<region>.amazonaws.com`) and logged, then processed in the background: events are matched to emails by SES message id, recorded per recipient, and the email's status advances monotonically (`sent → delivered → opened → clicked`, or `bounced`/`complained`) — out-of-order events never regress status. Complaints and permanent bounces suppress the recipient automatically (soft bounces never do; expired suppressions are reactivated). Unknown tokens 404, bad signatures 403, and the endpoint is throttled to 120 requests/minute per token.
+
 ### Rate limiting
 
 Each API key is limited to 60 requests per minute. Exceeding it returns `429 Too Many Requests`:
