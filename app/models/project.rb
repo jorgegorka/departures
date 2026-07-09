@@ -19,6 +19,10 @@ class Project < ApplicationRecord
     archived? && emails.none?
   end
 
+  def metrics_for(range)
+    Project::Metrics.new(self, range: range.to_s)
+  end
+
   private
     def assign_slug
       self.slug ||= name&.parameterize

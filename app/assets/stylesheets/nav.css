@@ -1,0 +1,23 @@
+@layer modules {
+  .nav {
+    display: flex;
+    gap: var(--inline-space);
+  }
+
+  .nav__link {
+    border-radius: 0.5em;
+    color: var(--color-ink-light);
+    padding: 0.35em 0.8em;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-ink);
+    }
+
+    &[aria-current="page"] {
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      font-weight: 700;
+    }
+  }
+}

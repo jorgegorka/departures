@@ -26,7 +26,10 @@
   <body>
     <% if authenticated? %>
       <header class="flex align-center justify-space-between pad">
-        <%= link_to "Departures", root_path, class: "font-weight-bold txt-medium" %>
+        <div class="flex align-center gap">
+          <%= link_to "Departures", root_path, class: "font-weight-bold txt-medium" %>
+          <%= render "layouts/nav" %>
+        </div>
         <%= render "workspaces/switcher" %>
         <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain btn--medium" %>
       </header>
