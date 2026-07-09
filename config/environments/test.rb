@@ -53,4 +53,7 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Keep MimeStore .eml files out of storage/ (sqlite lives there) and inside tmp/.
+  config.x.mime_store_root = Rails.root.join("tmp", "storage", "emails")
 end
