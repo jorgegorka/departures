@@ -1,0 +1,17 @@
+<% content_for :title, "API key created" %>
+
+<h1>API key created</h1>
+
+<div class="secret-reveal">
+  <p>This key is shown <strong>only once</strong>. Store it now.</p>
+  <p>
+    <code><%= @api_key.token %></code>
+    <button type="button" class="btn btn--secondary btn--medium" data-controller="clipboard"
+      data-clipboard-text-value="<%= @api_key.token %>" data-action="clipboard#copy">
+      Copy key
+    </button>
+  </p>
+  <p>Send it as <code>Authorization: Bearer <%= @api_key.prefix %>…</code></p>
+</div>
+
+<p><%= link_to "Back to API keys", api_keys_path, class: "btn btn--plain btn--medium" %></p>

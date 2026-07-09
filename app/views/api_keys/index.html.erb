@@ -1,0 +1,41 @@
+<% content_for :title, "API keys" %>
+
+<% if Current.project %>
+  <header class="page-header">
+    <h1>API keys</h1>
+    <% if Current.workspace.capability?(Current.user, :manage_api_keys) %>
+      <%= link_to "New API key", new_api_key_path, class: "btn btn--primary btn--medium" %>
+    <% end %>
+  </header>
+
+  <% if @api_keys.any? %>
+    <table class="settings-table">
+      <thead>
+        <tr><th>Name</th><th>Prefix</th><th>Scopes</th><th>Last used</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @api_keys.each do |api_key| %>
+          <tr>
+            <td><%= api_key.name %></td>
+            <td><code><%= api_key.prefix %>…</code></td>
+            <td><%= api_key.scopes.join(", ") %></td>
+            <td><%= api_key.last_used_at ? "#{time_ago_in_words(api_key.last_used_at)} ago" : "never" %></td>
+            <td><%= api_key.active? ? "active" : (api_key.revoked? ? "revoked" : "expired") %></td>
+            <td>
+              <% if Current.workspace.capability?(Current.user, :manage_api_keys) && api_key.active? %>
+                <%= button_to "Rotate", api_key_rotation_path(api_key), class: "btn btn--secondary btn--medium",
+                      data: { turbo_confirm: "Rotate this key? The current key stops working immediately." } %>
+                <%= button_to "Revoke", api_key_path(api_key), method: :delete, class: "btn btn--destroy btn--medium",
+                      data: { turbo_confirm: "Revoke this key? Apps using it will stop sending." } %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No API keys yet. Issue one to start sending through <code>POST /api/emails</code>.</p>
+  <% end %>
+<% else %>
+  <p>No active project yet.</p>
+<% end %>

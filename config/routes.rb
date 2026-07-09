@@ -42,6 +42,12 @@ Rails.application.routes.draw do
 
   resources :templates, except: :show
 
+  resources :api_keys, only: %i[ index new create destroy ] do
+    scope module: :api_keys do
+      resource :rotation, only: :create
+    end
+  end
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create

@@ -8,5 +8,6 @@
   <%= link_to "Sources", sources_path, class: "nav__link", aria: { current: current_page?(sources_path) ? "page" : nil } %>
   <%= link_to "Webhooks", webhook_endpoints_path, class: "nav__link", aria: { current: current_page?(webhook_endpoints_path) ? "page" : nil } %>
   <%= link_to "Templates", templates_path, class: "nav__link", aria: { current: current_page?(templates_path) ? "page" : nil } %>
+  <%= link_to "API keys", api_keys_path, class: "nav__link", aria: { current: current_page?(api_keys_path) ? "page" : nil } %>
   <%= link_to "Send test", new_test_email_path, class: "nav__link", aria: { current: current_page?(new_test_email_path) ? "page" : nil } %>
 </nav>
