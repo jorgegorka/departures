@@ -22,6 +22,22 @@ class WebhookEndpointTest < ActiveSupport::TestCase
     assert endpoint.errors[:url].any?
   end
 
+  test "url without a host is invalid" do
+    endpoint = projects(:acme_default).webhook_endpoints.build(url: "https://",
+      events: %w[ bounce ])
+
+    assert_not endpoint.valid?
+    assert endpoint.errors[:url].any?
+  end
+
+  test "unparseable url is invalid" do
+    endpoint = projects(:acme_default).webhook_endpoints.build(url: "https://exa mple.com/hook",
+      events: %w[ bounce ])
+
+    assert_not endpoint.valid?
+    assert endpoint.errors[:url].any?
+  end
+
   test "events must be a non-empty subset of the known types" do
     endpoint = projects(:acme_default).webhook_endpoints.build(url: "https://example.com/hook", events: [])
     assert_not endpoint.valid?

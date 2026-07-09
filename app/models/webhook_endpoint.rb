@@ -11,7 +11,8 @@ class WebhookEndpoint < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
-  validates :url, presence: true, format: { with: %r{\Ahttps://}, message: "must be an https URL" }
+  validates :url, presence: true
+  validate :validate_url
   validate :validate_events
 
   before_create :assign_secret
@@ -35,6 +36,16 @@ class WebhookEndpoint < ApplicationRecord
   end
 
   private
+    def validate_url
+      return if url.blank?
+      parsed = URI.parse(url)
+      unless parsed.is_a?(URI::HTTPS) && parsed.host.present?
+        errors.add(:url, "must be an https URL")
+      end
+    rescue URI::InvalidURIError
+      errors.add(:url, "must be an https URL")
+    end
+
     def validate_events
       if events.blank?
         errors.add(:events, "must include at least one event type")
