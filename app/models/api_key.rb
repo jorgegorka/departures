@@ -27,9 +27,10 @@ class ApiKey < ApplicationRecord
       end
     end
 
-    def digest(token)
-      Digest::SHA256.hexdigest(token)
-    end
+    private
+      def digest(token)
+        Digest::SHA256.hexdigest(token)
+      end
   end
 
   def revoked?

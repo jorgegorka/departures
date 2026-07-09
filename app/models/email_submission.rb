@@ -158,6 +158,10 @@ class EmailSubmission
         if attachment[:filename].blank?
           errors.add(:attachments, "must each have a filename")
         end
+
+        unless valid_base64?(attachment[:content])
+          errors.add(:attachments, "#{attachment[:filename]} content is not valid base64")
+        end
       end
 
       if attachments.sum { |attachment| decoded_size(attachment) } > MAX_ATTACHMENT_BYTES
@@ -175,6 +179,14 @@ class EmailSubmission
 
     def validate_header_and_tag_values
       { headers: headers, tags: tags }.each do |field, pairs|
+        pairs.each_key do |name|
+          if name.match?(/[[:cntrl:]]/)
+            errors.add(field, "names must not contain control characters")
+          elsif name.length > MAX_ADDRESS_LENGTH
+            errors.add(field, "names cannot exceed #{MAX_ADDRESS_LENGTH} characters")
+          end
+        end
+
         pairs.each_value do |value|
           if !value.is_a?(String)
             errors.add(field, "values must be strings")
@@ -221,6 +233,13 @@ class EmailSubmission
 
     def decoded_size(attachment)
       (attachment[:content].to_s.length * 3) / 4
+    end
+
+    def valid_base64?(content)
+      Base64.strict_decode64(content.to_s)
+      true
+    rescue ArgumentError
+      false
     end
 
     # Guardrail seams — wired up in Phase 5 (Source::Quota, Domain verification, complaint breaker).

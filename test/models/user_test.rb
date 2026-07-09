@@ -7,15 +7,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "registration_open? is true when there are no users" do
-    Email.delete_all
-    Membership.delete_all
-    Source.delete_all
-    ApiKey.delete_all
-    Suppression.delete_all
-    Project.delete_all
-    Workspace.delete_all
-    Session.delete_all
-    User.delete_all
+    wipe_workspace_records
 
     assert User.registration_open?
   end

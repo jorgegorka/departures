@@ -16,10 +16,7 @@ class EmailSubmissionRaceTest < ActiveSupport::TestCase
   end
 
   teardown do
-    IdempotencyKey.delete_all
-    EmailRecipient.delete_all
-    EmailAttachment.delete_all
-    Email.delete_all
+    wipe_send_domain
     Current.reset
   end
 

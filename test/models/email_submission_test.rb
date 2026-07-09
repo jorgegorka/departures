@@ -223,6 +223,33 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_includes submission.errors.full_messages.join(", "), "From is required"
   end
 
+  # --- Phase 1 carry-overs: input hardening ---
+
+  test "header and tag names reject control characters and oversized names" do
+    submission = delivery_submission(headers: { "X-Bad\r\nInjected" => "v" })
+    assert_not submission.save
+    assert submission.errors[:headers].any? { |message| message.include?("control characters") }
+
+    submission = delivery_submission(tags: { "t" * 1001 => "v" })
+    assert_not submission.save
+    assert submission.errors[:tags].any? { |message| message.include?("1000") }
+  end
+
+  test "attachment content must be valid strict base64" do
+    submission = delivery_submission(attachments: [
+      { filename: "bad.bin", content_type: "application/octet-stream", content: "not base64!!" } ])
+
+    assert_not submission.save
+    assert submission.errors[:attachments].any? { |message| message.include?("base64") }
+  end
+
+  test "valid strict base64 attachment content is accepted" do
+    submission = delivery_submission(attachments: [
+      { filename: "ok.bin", content_type: "application/octet-stream", content: Base64.strict_encode64("ok") } ])
+
+    assert submission.save
+  end
+
   private
     def delivery_submission(**overrides)
       EmailSubmission.new({ project: projects(:acme_default), source: sources(:acme_production),

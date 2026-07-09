@@ -2,15 +2,7 @@ require "test_helper"
 
 class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   test "first user can register and becomes a workspace owner" do
-    Email.delete_all
-    Membership.delete_all
-    Source.delete_all
-    ApiKey.delete_all
-    Suppression.delete_all
-    Project.delete_all
-    Workspace.delete_all
-    Session.delete_all
-    User.delete_all
+    wipe_workspace_records
 
     assert_difference -> { User.count } => +1, -> { Workspace.count } => +1 do
       post registration_url, params: { email_address: "first@example.com",
@@ -37,15 +29,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "mismatched password confirmation does not create a user" do
-    Email.delete_all
-    Membership.delete_all
-    Source.delete_all
-    ApiKey.delete_all
-    Suppression.delete_all
-    Project.delete_all
-    Workspace.delete_all
-    Session.delete_all
-    User.delete_all
+    wipe_workspace_records
 
     assert_no_difference -> { User.count } do
       post registration_url, params: { email_address: "first@example.com",
@@ -56,15 +40,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "two users with colliding email localparts both register with distinct workspace slugs" do
-    Email.delete_all
-    Membership.delete_all
-    Source.delete_all
-    ApiKey.delete_all
-    Suppression.delete_all
-    Project.delete_all
-    Workspace.delete_all
-    Session.delete_all
-    User.delete_all
+    wipe_workspace_records
 
     ENV["OPEN_REGISTRATION"] = "1"
 
@@ -85,15 +61,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new renders a flat-params registration form when registration is open" do
-    Email.delete_all
-    Membership.delete_all
-    Source.delete_all
-    ApiKey.delete_all
-    Suppression.delete_all
-    Project.delete_all
-    Workspace.delete_all
-    Session.delete_all
-    User.delete_all
+    wipe_workspace_records
 
     get new_registration_url
 
