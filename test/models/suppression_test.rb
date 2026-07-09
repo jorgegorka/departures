@@ -38,4 +38,27 @@ class SuppressionTest < ActiveSupport::TestCase
       projects(:acme_default).suppressions.create!(email: "blocked@example.com", reason: "manual")
     end
   end
+
+  # --- Phase 3: create-or-reactivate (SNS ingestion) ---
+
+  test "record creates an active suppression with a normalized address" do
+    suppression = Suppression.record(projects(:acme_default), "  NEW@Example.COM ", reason: "bounce")
+
+    assert suppression.persisted?
+    assert_equal "new@example.com", suppression.email
+    assert_equal "bounce", suppression.reason
+    assert_nil suppression.expires_at
+  end
+
+  test "record reactivates an expired suppression instead of violating the unique index" do
+    lapsed = suppressions(:acme_lapsed)
+
+    assert_no_difference -> { Suppression.count } do
+      Suppression.record(lapsed.project, lapsed.email, reason: "complaint")
+    end
+
+    lapsed.reload
+    assert_nil lapsed.expires_at
+    assert_equal "complaint", lapsed.reason
+  end
 end
