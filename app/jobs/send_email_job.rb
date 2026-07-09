@@ -5,6 +5,12 @@ class SendEmailJob < ApplicationJob
     job.arguments.first.mark_failed(error.message)
   end
 
+  # Networking failures (connection reset, DNS, timeouts) descend from StandardError,
+  # not ServiceError, so they need their own retry — otherwise they strand the email.
+  retry_on Seahorse::Client::NetworkingError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    job.arguments.first.mark_failed(error.message)
+  end
+
   def perform(email)
     email.deliver
   end

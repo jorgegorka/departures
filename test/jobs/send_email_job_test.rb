@@ -47,6 +47,23 @@ class SendEmailJobTest < ActiveJob::TestCase
     assert_equal 3, stubbed.api_requests.size, "all three attempts must reach SES (retry-guard regression)"
   end
 
+  test "exhausted networking retries mark the email failed with the reason" do
+    stubbed = Aws::SESV2::Client.new(stub_responses: true)
+    stubbed.stub_responses(:send_email,
+      Seahorse::Client::NetworkingError.new(Net::OpenTimeout.new("open timeout")))
+
+    Aws::SESV2::Client.stub :new, stubbed do
+      perform_enqueued_jobs do
+        SendEmailJob.perform_later(@email)
+      end
+    end
+
+    @email.reload
+    assert_equal "failed", @email.status
+    assert @email.failure_reason.present?, "a networking failure must record a reason"
+    assert_equal 3, stubbed.api_requests.size, "all three attempts must reach SES (retry-guard regression)"
+  end
+
   test "the job carries the workspace context from enqueue time" do
     stubbed = Aws::SESV2::Client.new(stub_responses: true)
     stubbed.stub_responses(:send_email, message_id: "ses-job-2")
