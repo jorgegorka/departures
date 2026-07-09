@@ -2,6 +2,7 @@
   <div class="flex align-center justify-space-between margin-block">
     <h1 class="margin-none txt-large">Emails</h1>
     <div class="flex align-center gap-half">
+      <%= link_to "Export CSV", export_path("emails"), class: "btn btn--plain btn--medium", data: { turbo: false } %>
       <%= form_with url: emails_path, method: :get, data: { controller: "auto-submit" }, class: "flex align-center gap-half" do |form| %>
         <label class="flex align-center gap-half input input--actor">
           <%= icon_tag "search" %>

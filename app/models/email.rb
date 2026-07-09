@@ -69,6 +69,16 @@ class Email < ApplicationRecord
 
   before_create :assign_public_id
 
+  def self.to_csv
+    CSV.generate(headers: true) do |csv|
+      csv << %w[ public_id status from subject bounce_type recipients created_at ]
+      preloaded.find_each do |email|
+        csv << [ email.public_id, email.status, email.from, email.subject, email.bounce_type,
+          email.recipients.map(&:address).join(" "), email.created_at.iso8601 ]
+      end
+    end
+  end
+
   def to_param
     public_id
   end

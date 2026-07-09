@@ -26,5 +26,15 @@ class Suppression < ApplicationRecord
       # now exists, so the retry takes the update path.
       retry
     end
+
+    def to_csv
+      CSV.generate(headers: true) do |csv|
+        csv << %w[ email reason expires_at created_at ]
+        find_each do |suppression|
+          csv << [ suppression.email, suppression.reason, suppression.expires_at&.iso8601,
+            suppression.created_at.iso8601 ]
+        end
+      end
+    end
   end
 end

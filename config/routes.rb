@@ -23,6 +23,15 @@ Rails.application.routes.draw do
       resource :resend, only: :create
     end
   end
+
+  resources :suppressions, only: %i[ index create destroy ]
+
+  resources :bounces, only: :index
+  scope module: :bounces, path: :bounces, as: :bounces do
+    resource :retry, only: :create
+  end
+
+  resources :exports, only: :show
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do
