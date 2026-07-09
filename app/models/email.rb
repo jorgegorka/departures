@@ -69,6 +69,10 @@ class Email < ApplicationRecord
 
   before_create :assign_public_id
 
+  def to_param
+    public_id
+  end
+
   private
     def assign_public_id
       self.public_id ||= "em_#{SecureRandom.alphanumeric(24)}"

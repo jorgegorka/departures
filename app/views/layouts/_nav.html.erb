@@ -1,4 +1,5 @@
 <nav class="nav" aria-label="Primary">
   <%= link_to "Dashboard", root_path, class: "nav__link", aria: { current: current_page?(root_path) ? "page" : nil } %>
   <%= link_to "Activity", activity_path, class: "nav__link", aria: { current: current_page?(activity_path) ? "page" : nil } %>
+  <%= link_to "Emails", emails_path, class: "nav__link", aria: { current: current_page?(emails_path) ? "page" : nil } %>
 </nav>

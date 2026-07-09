@@ -13,6 +13,16 @@ Rails.application.routes.draw do
     as: :invitation_acceptance, controller: "invitations/acceptances"
 
   resource :activity, only: :show, controller: "activity"
+
+  resources :emails, only: %i[ index show ] do
+    member do
+      get :preview
+      get :raw
+    end
+    scope module: :emails do
+      resource :resend, only: :create
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do

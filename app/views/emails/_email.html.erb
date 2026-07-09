@@ -1,0 +1,8 @@
+<div class="emails-table__row">
+  <%= render "emails/status_pill", email: email %>
+  <%= link_to email_path(email), data: { turbo_frame: "email_inspector" }, class: "emails-table__subject" do %>
+    <span class="font-weight-bold"><%= email.subject %></span>
+    <span class="txt-small txt-subtle"><%= email.from %> → <%= email.recipients.filter { |recipient| recipient.kind_to? }.map(&:address).join(", ") %></span>
+  <% end %>
+  <span class="txt-x-small txt-subtle"><%= l email.created_at, format: :short %></span>
+</div>
