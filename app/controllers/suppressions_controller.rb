@@ -1,10 +1,10 @@
 class SuppressionsController < ApplicationController
+  include RequiresProject
+
   before_action -> { authorize_capability! :send }, only: %i[ create destroy ]
 
   def index
-    if Current.project
-      @suppressions = Current.project.suppressions.order(created_at: :desc)
-    end
+    @suppressions = Current.project.suppressions.order(created_at: :desc)
   end
 
   def create

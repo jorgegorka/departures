@@ -44,4 +44,12 @@ class ExportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "export 404s when the workspace has no active project" do
+    projects(:acme_default).update_columns(archived_at: Time.current)
+
+    get export_url("emails")
+
+    assert_response :not_found
+  end
 end

@@ -1,5 +1,5 @@
 class EmailsController < ApplicationController
-  PREVIEW_CSP = "default-src 'none'; img-src * data:; style-src 'unsafe-inline'".freeze
+  PREVIEW_CSP = "default-src 'none'; img-src * data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'".freeze
 
   include EmailScoped
   skip_before_action :set_email, only: :index

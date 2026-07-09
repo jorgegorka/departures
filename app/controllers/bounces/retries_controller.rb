@@ -1,4 +1,6 @@
 class Bounces::RetriesController < ApplicationController
+  include RequiresProject
+
   before_action -> { authorize_capability! :send }
 
   def create

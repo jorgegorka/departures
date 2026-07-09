@@ -41,6 +41,17 @@ class SuppressionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "actions 404 when the workspace has no active project" do
+    sign_in_as users(:owner)
+    projects(:acme_default).update_columns(archived_at: Time.current)
+
+    get suppressions_url
+    assert_response :not_found
+
+    delete suppression_url(suppressions(:acme_blocked))
+    assert_response :not_found
+  end
+
   test "mutations require the send capability" do
     sign_in_as users(:read_only)
 

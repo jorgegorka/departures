@@ -37,7 +37,7 @@ class EmailsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "<p>Hi!</p>"
-    assert_equal "default-src 'none'; img-src * data:; style-src 'unsafe-inline'",
+    assert_equal "default-src 'none'; img-src * data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'",
       response.headers["Content-Security-Policy"]
     assert_equal "SAMEORIGIN", response.headers["X-Frame-Options"]
   end

@@ -10,7 +10,7 @@
     <% end %>
   </div>
 
-  <% cache @metrics.cache_key do %>
+  <% cache @metrics.cache_key, expires_in: 60.seconds do %>
     <div class="metrics">
       <%= render "tile", label: "Sent", value: @metrics.sent_count, delta: @metrics.sent_delta, suffix: "", up_is_good: true %>
       <%= render "tile", label: "Delivery rate", value: @metrics.delivery_rate, delta: @metrics.delivery_rate_delta, suffix: "%", up_is_good: true %>

@@ -77,6 +77,46 @@ class Email::ResendableTest < ActiveSupport::TestCase
     assert_equal "soft1@example.com", Email.order(:id).last.recipients.kind_to.first.address
   end
 
+  test "retry_soft_bounces is idempotent — repeated clicks re-queue each original once" do
+    wipe_send_domain
+    soft = submit_email(to: [ "soft@example.com" ])
+    soft.update_columns(status: "bounced", bounce_type: "transient")
+
+    first = assert_difference -> { Email.count }, +1 do
+      @project.emails.retry_soft_bounces(limit: 100)
+    end
+    assert_equal 1, first
+
+    second = assert_no_difference -> { Email.count } do
+      @project.emails.retry_soft_bounces(limit: 100)
+    end
+    assert_equal 0, second
+  end
+
+  test "retry_soft_bounces honours the limit newest-first" do
+    wipe_send_domain
+    older = submit_email(to: [ "older@example.com" ])
+    newer = submit_email(to: [ "newer@example.com" ])
+    [ older, newer ].each { |email| email.update_columns(status: "bounced", bounce_type: "transient") }
+
+    assert_difference -> { Email.count }, +1 do
+      @project.emails.retry_soft_bounces(limit: 1)
+    end
+
+    assert_equal "newer@example.com", Email.order(:id).last.recipients.kind_to.first.address
+    assert_nil older.reload.resent_at
+    assert_not_nil newer.reload.resent_at
+  end
+
+  test "resend stamps resent_at on the original" do
+    original = submit_email(to: [ "again@example.com" ])
+
+    assert_nil original.resent_at
+    original.resend
+
+    assert_not_nil original.reload.resent_at
+  end
+
   private
     def submit_email(to:, attachments: [])
       EmailSubmission.new(project: @project, source: sources(:acme_production), from: "hello@acme.com",

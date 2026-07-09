@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_090100) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -78,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_090000) do
     t.integer "mime_size"
     t.integer "project_id", null: false
     t.string "public_id", null: false
+    t.datetime "resent_at"
     t.string "ses_message_id"
     t.integer "source_id", null: false
     t.string "status", default: "queued", null: false

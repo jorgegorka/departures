@@ -1,4 +1,6 @@
 class ExportsController < ApplicationController
+  include RequiresProject
+
   def show
     if csv = csv_for(params[:id])
       send_data csv, filename: "#{params[:id]}-#{Date.current.iso8601}.csv", type: "text/csv"

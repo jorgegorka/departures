@@ -22,4 +22,13 @@ class Bounces::RetriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
   end
+
+  test "404s when the workspace has no active project" do
+    sign_in_as users(:owner)
+    projects(:acme_default).update_columns(archived_at: Time.current)
+
+    post bounces_retry_url
+
+    assert_response :not_found
+  end
 end
