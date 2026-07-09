@@ -34,6 +34,7 @@ module ActiveSupport
       ApiKey.delete_all
       Suppression.delete_all
       Domain.delete_all
+      WebhookEndpoint.delete_all
       Project.delete_all
       Workspace.delete_all
       Session.delete_all

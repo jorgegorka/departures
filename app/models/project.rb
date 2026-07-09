@@ -10,6 +10,7 @@ class Project < ApplicationRecord
   has_many :api_keys, dependent: :destroy
   has_many :suppressions, dependent: :destroy
   has_many :domains, dependent: :destroy
+  has_many :webhook_endpoints, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_203028) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_205222) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -215,6 +215,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_203028) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "webhook_endpoints", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.json "events", default: [], null: false
+    t.integer "project_id", null: false
+    t.string "secret"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.integer "workspace_id", null: false
+    t.index ["project_id"], name: "index_webhook_endpoints_on_project_id"
+    t.index ["workspace_id"], name: "index_webhook_endpoints_on_workspace_id"
+  end
+
   create_table "webhook_logs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "error"
@@ -265,6 +278,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_203028) do
   add_foreign_key "sources", "workspaces"
   add_foreign_key "suppressions", "projects"
   add_foreign_key "suppressions", "workspaces"
+  add_foreign_key "webhook_endpoints", "projects"
+  add_foreign_key "webhook_endpoints", "workspaces"
   add_foreign_key "webhook_logs", "sources"
   add_foreign_key "webhook_logs", "workspaces"
   add_foreign_key "workspaces", "users", column: "owner_id"
