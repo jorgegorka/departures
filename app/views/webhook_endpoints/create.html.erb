@@ -1,0 +1,19 @@
+<% content_for :title, "Webhook endpoint created" %>
+
+<h1>Endpoint created</h1>
+
+<div class="secret-reveal">
+  <p>
+    This signing secret is shown <strong>only once</strong>. Store it now — deliveries are signed with
+    <code>Departures-Signature: t={timestamp},v1=HMAC-SHA256(secret, "{timestamp}.{body}")</code>.
+  </p>
+  <p>
+    <code><%= @webhook_endpoint.secret %></code>
+    <button type="button" class="btn btn--secondary btn--medium" data-controller="clipboard"
+      data-clipboard-text-value="<%= @webhook_endpoint.secret %>" data-action="clipboard#copy">
+      Copy secret
+    </button>
+  </p>
+</div>
+
+<p><%= link_to "Back to webhooks", webhook_endpoints_path, class: "btn btn--plain btn--medium" %></p>

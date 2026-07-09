@@ -1,0 +1,28 @@
+<% content_for :title, @webhook_endpoint.url %>
+
+<header class="page-header">
+  <h1><%= @webhook_endpoint.url %></h1>
+  <span><%= @webhook_endpoint.success_rate ? "#{@webhook_endpoint.success_rate}% delivered" : "No deliveries yet" %></span>
+</header>
+
+<% if @deliveries.any? %>
+  <table class="settings-table">
+    <thead>
+      <tr><th>Event</th><th>Status</th><th>HTTP</th><th>Latency</th><th>Attempts</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <% @deliveries.each do |delivery| %>
+        <tr>
+          <td><%= delivery.event_type %></td>
+          <td><%= delivery.status %></td>
+          <td><%= delivery.http_status || "—" %></td>
+          <td><%= delivery.latency_ms ? "#{delivery.latency_ms} ms" : "—" %></td>
+          <td><%= delivery.attempts %></td>
+          <td><%= delivery.created_at.to_fs(:short) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No deliveries yet.</p>
+<% end %>
