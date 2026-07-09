@@ -167,6 +167,8 @@ Detailed plan: **docs/plans/phase-4-dashboard-plan.md** (complete).
 
 ### Phase 5 — Platform: domains, guardrails, outbound webhooks, templates, onboarding
 
+Detailed plan: **docs/plans/phase-5-platform-plan.md** (complete). Scope addition (user-approved): Sources and API keys management dashboards.
+
 | Task | Files | Directives |
 |---|---|---|
 | 5.1 `Domain` + controllers | model, migration, `domains_controller.rb`, `domains/checks_controller.rb` | `create` → `domain.provision` (SESv2 `create_email_identity`, store DKIM CNAMEs, status `pending`); re-check = `Domains::ChecksController#create` → `domain.check` (`get_email_identity` → `verified`). `verified?`/`pending?` booleans; capability `manage_domains`. |
