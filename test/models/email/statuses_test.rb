@@ -57,4 +57,36 @@ class Email::StatusesTest < ActiveSupport::TestCase
   test "precedence map covers every enum status" do
     assert_equal Email.statuses.keys.sort, Email::Statuses::STATUS_PRECEDENCE.keys.sort
   end
+
+  # --- Phase 3 prerequisite: row-guarded advance (risk #4) ---
+
+  test "a stale in-memory copy cannot regress a concurrently advanced status" do
+    email = fresh_email
+    concurrent_copy = Email.find(email.id)
+    concurrent_copy.apply_event("delivery")
+
+    assert_not email.mark_sent, "the guarded write must match zero rows"
+    assert_equal "delivered", email.status, "advance_to must reload so memory matches the row"
+  end
+
+  test "mark_sent persists the ses message id in the same guarded write" do
+    email = fresh_email
+
+    assert email.mark_sent(ses_message_id: "ses-fold-1")
+    assert_equal "ses-fold-1", email.reload.ses_message_id
+  end
+
+  test "a rejected advance writes none of the extra attributes" do
+    email = fresh_email
+    email.apply_event("delivery")
+
+    assert_not email.mark_sent(ses_message_id: "too-late")
+    assert_nil email.reload.ses_message_id
+  end
+
+  private
+    def fresh_email
+      Email.create!(project: projects(:acme_default), source: sources(:acme_production),
+        from: "hello@acme.com", subject: "Race", html_body: "<p>race</p>")
+    end
 end

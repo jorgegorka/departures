@@ -7,11 +7,13 @@ module Email::Deliverable
   def deliver
     return false unless deliverable? # guard at the start of a non-trivial body — §5.1 OK
 
+    # Resolve the client before mark_sending: advance_to reloads, which resets the
+    # source association cache (and its memoized ses_client) — grab it first.
+    client = source.ses_client
     mark_sending
-    response = source.ses_client.send_email(destination: destination,
+    response = client.send_email(destination: destination,
       content: { raw: { data: Email::MimeStore.read(self) } })
-    update!(ses_message_id: response.message_id)
-    mark_sent
+    mark_sent(ses_message_id: response.message_id)
   end
 
   def deliver_later

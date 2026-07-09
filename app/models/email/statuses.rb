@@ -29,8 +29,8 @@ module Email::Statuses
     advance_to("sending")
   end
 
-  def mark_sent
-    advance_to("sent")
+  def mark_sent(**attributes)
+    advance_to("sent", **attributes)
   end
 
   def mark_failed(reason)
@@ -38,12 +38,29 @@ module Email::Statuses
   end
 
   private
+    # Compare-and-set in the WHERE clause: SQLite has no SELECT ... FOR UPDATE,
+    # so the precedence check must live inside the single UPDATE statement.
+    # update_all skips validations/callbacks — fine here, new_status only ever
+    # comes from the internal maps above. On success we know exactly what the row
+    # now holds, so we mirror it in memory; on a rejected write a concurrent
+    # writer owns the row, so we reload to learn its real state. Never reloading
+    # on success keeps the association cache (and any memoized client) intact.
     def advance_to(new_status, **attributes)
-      if STATUS_PRECEDENCE.fetch(new_status) > STATUS_PRECEDENCE.fetch(status)
-        update!(status: new_status, **attributes)
-        true
+      advanced = self.class.where(id: id, status: lower_precedence_statuses(new_status))
+        .update_all(status: new_status, updated_at: Time.current, **attributes) == 1
+
+      if advanced
+        assign_attributes(status: new_status, **attributes)
+        changes_applied # update_all already persisted these — keep the record clean
       else
-        false
+        reload
       end
+
+      advanced
+    end
+
+    def lower_precedence_statuses(new_status)
+      new_rank = STATUS_PRECEDENCE.fetch(new_status)
+      STATUS_PRECEDENCE.filter_map { |name, rank| name if rank < new_rank }
     end
 end
