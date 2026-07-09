@@ -96,6 +96,8 @@ Run the test suite:
 bin/rails test
 ```
 
+The `minitest` gem is pinned to `~> 5.25` because minitest 6 removed `minitest/mock`, which the delivery-job tests rely on.
+
 Detailed setup (AWS credentials, SNS topic wiring, deployment) will be documented as the corresponding features land.
 
 ## API
@@ -144,6 +146,8 @@ A successful request returns `202 Accepted` immediately — the email is queued,
 ```json
 { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6" }
 ```
+
+Delivery then happens asynchronously through SES: the email's status advances `queued → sending → sent`. If SES rejects the send, delivery is retried with backoff up to 3 attempts; on final failure the email is marked `failed` and the reason is recorded in `failure_reason`.
 
 ### Idempotency
 

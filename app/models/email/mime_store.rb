@@ -18,7 +18,10 @@ class Email::MimeStore
     end
 
     def root
-      Pathname(Rails.application.config.x.mime_store_root || Rails.root.join("storage", "emails"))
+      # config.x.<unset> returns a truthy empty OrderedOptions (not nil), so guard
+      # with presence — otherwise the || fallback never fires outside the test env.
+      configured = Rails.application.config.x.mime_store_root
+      Pathname(configured.presence || Rails.root.join("storage", "emails"))
     end
 
     private

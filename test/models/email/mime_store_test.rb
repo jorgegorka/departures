@@ -17,6 +17,16 @@ class Email::MimeStoreTest < ActiveSupport::TestCase
     assert_equal Rails.root.join("tmp", "storage", "emails"), Email::MimeStore.root
   end
 
+  test "root falls back to storage/emails when unconfigured" do
+    # config.x.<unset> yields a truthy empty OrderedOptions (not nil), so the
+    # fallback must guard with presence rather than a bare ||.
+    original = Rails.application.config.x.mime_store_root
+    Rails.application.config.x.mime_store_root = ActiveSupport::OrderedOptions.new
+    assert_equal Rails.root.join("storage", "emails"), Email::MimeStore.root
+  ensure
+    Rails.application.config.x.mime_store_root = original
+  end
+
   test "write stores the file and records the relative path and byte size" do
     eml = "Subject: héllo\r\n\r\nBody"
 
