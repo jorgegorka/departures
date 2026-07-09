@@ -7,7 +7,11 @@ class WebhookLog < ApplicationRecord
   enum :status, %w[ received processed unmatched failed ].index_by(&:itself),
     default: "received", validate: true
 
+  # Solid Queue delivers at least once, so a retried or redelivered job may
+  # call this again — only a received log processes; anything else is a no-op.
   def process
+    return false unless received?
+
     case message_type
     when "SubscriptionConfirmation"
       confirm_subscription
@@ -44,11 +48,16 @@ class WebhookLog < ApplicationRecord
       email = source.emails.find_by(ses_message_id: event.ses_message_id)
 
       if email
-        record_events(email, event)
-        email.apply_event(event.event_type)
-        suppress_recipients(email, event)
-        relay_to_endpoints(email, event)
-        update!(status: "processed", processed_at: Time.current)
+        # One transaction so a mid-flight crash rolls back the event rows and
+        # leaves the log received — a retry then reprocesses from scratch
+        # instead of duplicating events.
+        transaction do
+          record_events(email, event)
+          email.apply_event(event.event_type)
+          suppress_recipients(email, event)
+          relay_to_endpoints(email, event)
+          update!(status: "processed", processed_at: Time.current)
+        end
       else
         update!(status: "unmatched", processed_at: Time.current)
       end

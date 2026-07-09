@@ -184,6 +184,36 @@ class WebhookLogTest < ActiveSupport::TestCase
     assert_includes log.error, "SubscribeURL"
   end
 
+  test "processing a log twice is a no-op" do
+    matched_email
+    log = process_fixture("delivery")
+    events_before = EmailEvent.count
+    processed_at_before = log.processed_at
+
+    result = log.process
+
+    assert_equal false, result
+    assert_equal events_before, EmailEvent.count
+    assert_equal processed_at_before, log.reload.processed_at
+  end
+
+  test "a failure mid-ingestion rolls back event rows and leaves the log received" do
+    matched_email
+    message = JSON.parse(file_fixture("sns/bounce_permanent.json").read)
+    log = sources(:acme_production).webhook_logs.create!(message_type: "Notification",
+      payload: { "Type" => "Notification", "Message" => message.to_json })
+
+    Suppression.stub :record, ->(*) { raise "boom" } do
+      assert_raises RuntimeError do
+        log.process
+      end
+    end
+
+    assert_equal 0, EmailEvent.count
+    assert log.reload.received?
+    assert_nil log.processed_at
+  end
+
   test "process_later enqueues the job" do
     log = sources(:acme_production).webhook_logs.create!(message_type: "Notification",
       payload: { "Type" => "Notification" })
