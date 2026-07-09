@@ -154,6 +154,8 @@ Tests from fixture SNS payloads (every event type): bad signature 403, soft boun
 
 ### Phase 4 — Dashboard (Hotwire; conventional controllers per section)
 
+Detailed plan: **docs/plans/phase-4-dashboard-plan.md** (complete).
+
 | Task | Files | Directives |
 |---|---|---|
 | 4.1 Email filter scopes | `app/models/email.rb` | `indexed_by(param)` (sent/bounces/complaints…), `sorted_by`, `in_time_range("1h"/"24h"/"7d"/"30d")`, `search(q)` LIKE scope, `preloaded`. Keeps ALL filtering out of controllers (§2.4). |

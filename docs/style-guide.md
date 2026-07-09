@@ -583,12 +583,12 @@ Auto-resizing textarea using `field-sizing: content`:
 
 ```css
 .input--textarea {
-  min-block-size: calc(3lh + (2 * var(--input-padding)));
+  min-block-size: 6lh;
 
   @supports (field-sizing: content) {
     field-sizing: content;
-    max-block-size: calc(3lh + (2 * var(--input-padding)));
-    min-block-size: calc(1lh + (2 * var(--input-padding)));
+    max-block-size: 12lh;
+    min-block-size: 3lh;
   }
 }
 ```

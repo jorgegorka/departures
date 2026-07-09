@@ -71,6 +71,7 @@
   }
 
   .inspector__preview {
+    /* Deliberate: rendered emails assume a white canvas, so the preview iframe is always white regardless of theme. */
     background-color: white;
     border: 1px solid var(--color-border);
     border-radius: 0.5em;
