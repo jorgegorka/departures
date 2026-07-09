@@ -29,6 +29,16 @@ class ExportsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "complaint"
   end
 
+  test "exports neutralize spreadsheet formula prefixes" do
+    emails(:acme_delivered).update_columns(subject: "=HYPERLINK(\"https://evil.example\",\"x\")")
+    get export_url("emails")
+    assert_includes response.body, "'=HYPERLINK"
+
+    Suppression.record(projects(:acme_default), "safe@example.com", reason: "=cmd")
+    get export_url("suppressions")
+    assert_includes response.body, "'=cmd"
+  end
+
   test "unknown exports 404" do
     get export_url("users")
 
