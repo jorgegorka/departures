@@ -2,6 +2,9 @@ class Source < ApplicationRecord
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
 
+  has_many :emails
+  has_many :webhook_logs, dependent: :destroy
+
   has_secure_token :webhook_token
 
   encrypts :aws_access_key_id, :aws_secret_access_key

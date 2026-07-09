@@ -15,6 +15,7 @@ module ActiveSupport
     # absolute counts or unique indexes start from a clean slate regardless of
     # fixtures. Children are deleted before parents to respect foreign keys.
     def wipe_send_domain
+      EmailEvent.delete_all
       IdempotencyKey.delete_all
       EmailRecipient.delete_all
       EmailAttachment.delete_all
@@ -28,6 +29,7 @@ module ActiveSupport
     def wipe_workspace_records
       wipe_send_domain
       Membership.delete_all
+      WebhookLog.delete_all
       Source.delete_all
       ApiKey.delete_all
       Suppression.delete_all

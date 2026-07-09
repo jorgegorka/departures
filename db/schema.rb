@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_085010) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -38,6 +38,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
     t.string "filename", null: false
     t.datetime "updated_at", null: false
     t.index ["email_id"], name: "index_email_attachments_on_email_id"
+  end
+
+  create_table "email_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "email_id", null: false
+    t.string "event_type", null: false
+    t.string "ip"
+    t.datetime "occurred_at", null: false
+    t.json "payload", default: {}, null: false
+    t.string "recipient"
+    t.string "ses_message_id"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.string "user_agent"
+    t.index ["email_id", "occurred_at"], name: "index_email_events_on_email_id_and_occurred_at"
+    t.index ["email_id"], name: "index_email_events_on_email_id"
   end
 
   create_table "email_recipients", force: :cascade do |t|
@@ -182,6 +198,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "webhook_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "error"
+    t.string "message_type"
+    t.json "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.integer "source_id", null: false
+    t.string "status", default: "received", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["source_id", "created_at"], name: "index_webhook_logs_on_source_id_and_created_at"
+    t.index ["source_id"], name: "index_webhook_logs_on_source_id"
+    t.index ["workspace_id"], name: "index_webhook_logs_on_workspace_id"
+  end
+
   create_table "workspaces", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -197,6 +228,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
   add_foreign_key "api_keys", "projects"
   add_foreign_key "api_keys", "workspaces"
   add_foreign_key "email_attachments", "emails"
+  add_foreign_key "email_events", "emails"
   add_foreign_key "email_recipients", "emails"
   add_foreign_key "emails", "api_keys"
   add_foreign_key "emails", "projects"
@@ -214,5 +246,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_091729) do
   add_foreign_key "sources", "workspaces"
   add_foreign_key "suppressions", "projects"
   add_foreign_key "suppressions", "workspaces"
+  add_foreign_key "webhook_logs", "sources"
+  add_foreign_key "webhook_logs", "workspaces"
   add_foreign_key "workspaces", "users", column: "owner_id"
 end

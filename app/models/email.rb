@@ -9,6 +9,7 @@ class Email < ApplicationRecord
   has_many :recipients, class_name: "EmailRecipient", dependent: :destroy
   has_many :attachments, class_name: "EmailAttachment", dependent: :destroy
   has_many :idempotency_keys, dependent: :destroy
+  has_many :events, class_name: "EmailEvent", dependent: :destroy
 
   validates :from, presence: true
 
