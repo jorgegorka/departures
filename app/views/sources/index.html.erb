@@ -1,0 +1,49 @@
+<% content_for :title, "Sources" %>
+
+<% if Current.project %>
+  <header class="page-header">
+    <h1>Sources</h1>
+    <% if Current.workspace.capability?(Current.user, :manage_domains) %>
+      <%= link_to "New source", new_source_path, class: "btn btn--primary btn--medium" %>
+    <% end %>
+  </header>
+
+  <% if @sources.any? %>
+    <% @sources.each do |source| %>
+      <article class="settings-card">
+        <header class="settings-card__header">
+          <h2><%= source.name.presence || source.environment %></h2>
+          <span><%= source.environment %> · <%= source.region %></span>
+          <% if Current.workspace.capability?(Current.user, :manage_domains) %>
+            <%= link_to "Edit", edit_source_path(source), class: "btn btn--secondary btn--medium" %>
+            <%= button_to "Sync quota", source_quota_sync_path(source), class: "btn btn--secondary btn--medium" %>
+          <% end %>
+        </header>
+
+        <dl class="settings-card__facts">
+          <dt>SNS webhook URL</dt>
+          <dd>
+            <code><%= ses_webhooks_url(webhook_token: source.webhook_token) %></code>
+            <button type="button" class="btn btn--plain btn--medium" data-controller="clipboard"
+              data-clipboard-text-value="<%= ses_webhooks_url(webhook_token: source.webhook_token) %>"
+              data-action="clipboard#copy" aria-label="Copy webhook URL">
+              <%= icon_tag "copy-paste" %>
+            </button>
+          </dd>
+
+          <% if source.last_quota.present? && source.last_quota_checked_at %>
+            <dt>Quota</dt>
+            <dd>
+              <%= source.last_quota["sent_last_24_hours"].to_i %> / <%= source.last_quota["max_24_hour_send"].to_i %>
+              sent in 24h · checked <%= time_ago_in_words(source.last_quota_checked_at) %> ago
+            </dd>
+          <% end %>
+        </dl>
+      </article>
+    <% end %>
+  <% else %>
+    <p>No sources yet. A source holds the SES credentials Departures sends with.</p>
+  <% end %>
+<% else %>
+  <p>No active project yet.</p>
+<% end %>

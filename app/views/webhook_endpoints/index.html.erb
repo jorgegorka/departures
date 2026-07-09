@@ -1,0 +1,37 @@
+<% content_for :title, "Webhooks" %>
+
+<% if Current.project %>
+  <header class="page-header">
+    <h1>Webhooks</h1>
+    <% if Current.workspace.capability?(Current.user, :manage_webhooks) %>
+      <%= link_to "New endpoint", new_webhook_endpoint_path, class: "btn btn--primary btn--medium" %>
+    <% end %>
+  </header>
+
+  <% if @webhook_endpoints.any? %>
+    <table class="settings-table">
+      <thead>
+        <tr><th>URL</th><th>Events</th><th>Status</th><th>Success rate</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @webhook_endpoints.each do |endpoint| %>
+          <tr>
+            <td><%= link_to endpoint.url, webhook_endpoint_path(endpoint) %></td>
+            <td><%= endpoint.events.join(", ") %></td>
+            <td><%= endpoint.active? ? "active" : "paused" %></td>
+            <td><%= endpoint.success_rate ? "#{endpoint.success_rate}%" : "—" %></td>
+            <td>
+              <% if Current.workspace.capability?(Current.user, :manage_webhooks) %>
+                <%= link_to "Edit", edit_webhook_endpoint_path(endpoint), class: "btn btn--plain btn--medium" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No webhook endpoints yet. Relay delivery events to your own systems.</p>
+  <% end %>
+<% else %>
+  <p>No active project yet.</p>
+<% end %>

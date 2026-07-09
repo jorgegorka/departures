@@ -11,7 +11,7 @@ class Suppression < ApplicationRecord
 
   class << self
     def covers?(project, addresses)
-      normalized = Array(addresses).map { |address| address.to_s.strip.downcase }
+      normalized = Array(addresses).map { |address| normalize_value_for(:email, address.to_s) }
       active.where(project: project, email: normalized).pluck(:email)
     end
 
@@ -26,5 +26,25 @@ class Suppression < ApplicationRecord
       # now exists, so the retry takes the update path.
       retry
     end
+
+    def to_csv
+      CSV.generate(headers: true) do |csv|
+        csv << %w[ email reason expires_at created_at ]
+        find_each do |suppression|
+          csv << [ csv_safe(suppression.email), csv_safe(suppression.reason), suppression.expires_at&.iso8601,
+            suppression.created_at.iso8601 ]
+        end
+      end
+    end
+
+    private
+      def csv_safe(value)
+        text = value.to_s
+        if text.match?(/\A[=+\-@\t\r]/)
+          "'#{text}"
+        else
+          text
+        end
+      end
   end
 end

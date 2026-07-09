@@ -1,0 +1,13 @@
+<nav class="nav" aria-label="Primary">
+  <%= link_to "Dashboard", root_path, class: "nav__link", aria: { current: current_page?(root_path) ? "page" : nil } %>
+  <%= link_to "Activity", activity_path, class: "nav__link", aria: { current: current_page?(activity_path) ? "page" : nil } %>
+  <%= link_to "Emails", emails_path, class: "nav__link", aria: { current: current_page?(emails_path) ? "page" : nil } %>
+  <%= link_to "Bounces", bounces_path, class: "nav__link", aria: { current: current_page?(bounces_path) ? "page" : nil } %>
+  <%= link_to "Suppressions", suppressions_path, class: "nav__link", aria: { current: current_page?(suppressions_path) ? "page" : nil } %>
+  <%= link_to "Domains", domains_path, class: "nav__link", aria: { current: current_page?(domains_path) ? "page" : nil } %>
+  <%= link_to "Sources", sources_path, class: "nav__link", aria: { current: current_page?(sources_path) ? "page" : nil } %>
+  <%= link_to "Webhooks", webhook_endpoints_path, class: "nav__link", aria: { current: current_page?(webhook_endpoints_path) ? "page" : nil } %>
+  <%= link_to "Templates", templates_path, class: "nav__link", aria: { current: current_page?(templates_path) ? "page" : nil } %>
+  <%= link_to "API keys", api_keys_path, class: "nav__link", aria: { current: current_page?(api_keys_path) ? "page" : nil } %>
+  <%= link_to "Send test", new_test_email_path, class: "nav__link", aria: { current: current_page?(new_test_email_path) ? "page" : nil } %>
+</nav>

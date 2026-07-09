@@ -30,4 +30,32 @@
     background-size: 1em;
     padding-inline-end: 1.8em;
   }
+
+  .input--actor {
+    &:focus-within {
+      --input-border-color: var(--color-link);
+      outline: var(--focus-ring-size) solid var(--focus-ring-color);
+      outline-offset: -1px;
+    }
+
+    .input {
+      --input-padding: 0;
+      --input-background: transparent;
+      border: 0;
+    }
+
+    .input:focus {
+      outline: none;
+    }
+  }
+
+  .input--textarea {
+    min-block-size: 6lh;
+
+    @supports (field-sizing: content) {
+      field-sizing: content;
+      max-block-size: 12lh;
+      min-block-size: 3lh;
+    }
+  }
 }

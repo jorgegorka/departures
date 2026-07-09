@@ -1,0 +1,41 @@
+<%= form_with model: webhook_endpoint, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+  <% if webhook_endpoint.errors.any? %>
+    <div class="txt-negative txt-small margin-block-half">
+      <p class="font-weight-bold margin-none">This endpoint couldn't be saved:</p>
+      <ul class="margin-none">
+        <% webhook_endpoint.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :url, "Endpoint URL" %>
+    <%= form.url_field :url, class: "input", required: true, placeholder: "https://example.com/webhooks/departures" %>
+  </div>
+
+  <fieldset class="flex flex-column gap-half">
+    <legend>Events</legend>
+    <div class="flex flex-wrap gap">
+      <%= form.collection_check_boxes :events, WebhookEndpoint::EVENT_TYPES.map { |type| [ type, type.humanize ] },
+            :first, :last do |builder| %>
+        <label class="flex align-center gap-half">
+          <%= builder.check_box %>
+          <%= builder.text %>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <% if webhook_endpoint.persisted? %>
+    <div class="flex align-center gap-half">
+      <%= form.check_box :active %>
+      <%= form.label :active %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit webhook_endpoint.persisted? ? "Update endpoint" : "Add endpoint", class: "btn btn--primary btn--large" %>
+  </div>
+<% end %>

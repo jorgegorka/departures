@@ -53,7 +53,7 @@ class WebhookLog < ApplicationRecord
         # instead of duplicating events.
         transaction do
           record_events(email, event)
-          email.apply_event(event.event_type)
+          email.apply_event(event.event_type, **bounce_attributes(event))
           suppress_recipients(email, event)
           relay_to_endpoints(email, event)
           update!(status: "processed", processed_at: Time.current)
@@ -74,6 +74,14 @@ class WebhookLog < ApplicationRecord
       end
     end
 
+    def bounce_attributes(event)
+      if event.bounce?
+        { bounce_type: event.bounce_type }
+      else
+        {}
+      end
+    end
+
     def suppress_recipients(email, event)
       if event.suppresses?
         event.recipients.each do |address|
@@ -82,10 +90,20 @@ class WebhookLog < ApplicationRecord
       end
     end
 
+    # Runs inside the ingestion transaction, so this only ENQUEUES — the
+    # HTTP happens in DeliverWebhookJob after commit (enqueue_after_transaction_commit).
     def relay_to_endpoints(email, event)
-      # Outbound webhook fan-out fills this seam in Phase 5 (WebhookEndpoint).
-      # This runs inside the ingestion transaction, so Phase 5 fan-out must
-      # ENQUEUE jobs only — never inline HTTP — or a slow/hanging endpoint would
-      # hold the transaction open (and any rollback would strand sent requests).
+      email.project.webhook_endpoints.active.each do |endpoint|
+        if endpoint.subscribed_to?(event.event_type)
+          endpoint.deliveries.create!(email: email, event_type: event.event_type,
+            payload: delivery_payload(email, event)).deliver_later
+        end
+      end
+    end
+
+    def delivery_payload(email, event)
+      { "event" => event.event_type, "email_id" => email.public_id,
+        "recipients" => event.recipients, "occurred_at" => event.occurred_at,
+        "payload" => event.payload }
     end
 end

@@ -120,4 +120,20 @@ class Webhooks::SesControllerTest < ActionDispatch::IntegrationTest
     assert log.failed?
     assert_includes log.error, "getaddrinfo"
   end
+
+  test "a cert-fetch failure raised before the log exists still returns 503" do
+    source = sources(:acme_production)
+    failing_logs = Object.new
+    def failing_logs.create!(**) = raise IOError, "disk full"
+
+    source.stub :webhook_logs, failing_logs do
+      Source.stub :find_by, source do
+        post ses_webhooks_path(webhook_token: source.webhook_token),
+          params: { "Type" => "Notification", "Message" => "{}" }.to_json,
+          headers: { "CONTENT_TYPE" => "text/plain" }
+      end
+    end
+
+    assert_response :service_unavailable
+  end
 end

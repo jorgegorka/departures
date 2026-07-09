@@ -1,5 +1,6 @@
 class Workspace < ApplicationRecord
   include Roles
+  include Onboardable
 
   belongs_to :owner, class_name: "User", default: -> { Current.user }
 

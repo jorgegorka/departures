@@ -1,0 +1,51 @@
+<%= turbo_frame_tag "email_inspector" do %>
+  <article class="inspector">
+    <header class="flex align-center gap margin-block-half">
+      <%= render "emails/status_pill", email: @email %>
+      <h2 class="margin-none txt-medium"><%= @email.subject %></h2>
+    </header>
+
+    <dl class="inspector__meta txt-small">
+      <dt>From</dt><dd><%= @email.from %></dd>
+      <dt>To</dt><dd><%= @email.recipients.kind_to.pluck(:address).join(", ") %></dd>
+      <% if @email.recipients.kind_cc.any? %><dt>Cc</dt><dd><%= @email.recipients.kind_cc.pluck(:address).join(", ") %></dd><% end %>
+      <dt>Id</dt>
+      <dd class="flex align-center gap-half">
+        <code><%= @email.public_id %></code>
+        <button class="btn btn--plain btn--medium" data-controller="clipboard" data-clipboard-text-value="<%= @email.public_id %>" data-action="click->clipboard#copy" aria-label="Copy id">
+          <%= icon_tag "copy-paste" %>
+        </button>
+      </dd>
+      <% if @email.ses_message_id.present? %><dt>SES id</dt><dd><code><%= @email.ses_message_id %></code></dd><% end %>
+      <% if @email.failure_reason.present? %><dt>Failure</dt><dd class="txt-negative"><%= @email.failure_reason %></dd><% end %>
+      <% if @email.tags.any? %><dt>Tags</dt><dd><%= @email.tags.map { |name, value| "#{name}=#{value}" }.join(" · ") %></dd><% end %>
+    </dl>
+
+    <h3 class="txt-small txt-subtle">Timeline</h3>
+    <ol class="inspector__timeline txt-small">
+      <% @email.events.reverse_chronologically.each do |event| %>
+        <li>
+          <span class="font-weight-bold"><%= event.event_type %></span>
+          <span class="txt-subtle"><%= l event.occurred_at, format: :short %></span>
+          <% if event.recipient.present? %><span class="txt-subtle"><%= event.recipient %></span><% end %>
+          <% if event.url.present? %><span class="txt-subtle"><%= event.url %></span><% end %>
+        </li>
+      <% end %>
+    </ol>
+
+    <% if @email.html_body.present? %>
+      <h3 class="txt-small txt-subtle">Preview</h3>
+      <iframe class="inspector__preview" src="<%= preview_email_path(@email) %>"
+        sandbox="allow-same-origin" referrerpolicy="no-referrer" loading="lazy" title="Email preview"></iframe>
+    <% end %>
+
+    <footer class="flex align-center gap margin-block">
+      <% if @email.mime_path.present? %>
+        <%= link_to "Download .eml", raw_email_path(@email), class: "btn btn--plain btn--medium", data: { turbo: false } %>
+      <% end %>
+      <% if Current.workspace.capability?(Current.user, :send) %>
+        <%= button_to "Resend", email_resend_path(@email), class: "btn btn--primary btn--medium", data: { turbo_frame: "_top" } %>
+      <% end %>
+    </footer>
+  </article>
+<% end %>

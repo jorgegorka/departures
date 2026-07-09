@@ -1,0 +1,28 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "5863f66fb0fb97dca79c274595a4f528bf541d336716dfbf640094ac49011b04",
+      "check_name": "SendFile",
+      "message": "Model attribute used in file name",
+      "file": "app/controllers/emails_controller.rb",
+      "line": 33,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(Email::MimeStore.root.join(Current.project.emails.find_by!(:public_id => ((params[:email_id] or params[:id]))).mime_path), :type => \"message/rfc822\", :filename => (\"#{Current.project.emails.find_by!(:public_id => ((params[:email_id] or params[:id]))).public_id}.eml\"), :disposition => \"attachment\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "EmailsController",
+        "method": "raw"
+      },
+      "user_input": "params[:email_id]",
+      "confidence": "Medium",
+      "cwe_id": [
+        22
+      ],
+      "note": "Intentional: mime_path is a server-generated attribute (project_id + public_id, both assigned by Departures), fetched via a tenant-scoped find_by! on Current.project.emails, and joined under the app-configured MimeStore.root. No user-controlled path segment reaches the filesystem, so no path traversal is possible."
+    }
+  ],
+  "brakeman_version": "8.0.5"
+}

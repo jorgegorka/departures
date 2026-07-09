@@ -2,8 +2,12 @@ acme:
   name: Acme
   slug: acme
   owner: owner
+  setup_started_at: <%= 3.weeks.ago %>
+  onboarded_at: <%= 2.weeks.ago %>
 
 globex:
   name: Globex
   slug: globex
   owner: outsider
+  setup_started_at: <%= 3.weeks.ago %>
+  onboarded_at: <%= 2.weeks.ago %>

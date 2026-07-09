@@ -9,6 +9,9 @@ class Project < ApplicationRecord
   has_many :sources, dependent: :destroy
   has_many :api_keys, dependent: :destroy
   has_many :suppressions, dependent: :destroy
+  has_many :domains, dependent: :destroy
+  has_many :webhook_endpoints, dependent: :destroy
+  has_many :templates, dependent: :destroy
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :workspace_id }
@@ -17,6 +20,10 @@ class Project < ApplicationRecord
 
   def deletable?
     archived? && emails.none?
+  end
+
+  def metrics_for(range)
+    Project::Metrics.new(self, range: range.to_s)
   end
 
   private

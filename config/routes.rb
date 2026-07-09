@@ -11,6 +11,57 @@ Rails.application.routes.draw do
 
   resource :invitation_acceptance, only: %i[ new create ], path: "invitations/:invitation_token/acceptance",
     as: :invitation_acceptance, controller: "invitations/acceptances"
+
+  resource :activity, only: :show, controller: "activity"
+
+  resources :emails, only: %i[ index show ] do
+    member do
+      get :preview
+      get :raw
+    end
+    scope module: :emails do
+      resource :resend, only: :create
+    end
+  end
+
+  resources :suppressions, only: %i[ index create destroy ]
+
+  resources :domains, only: %i[ index create destroy ] do
+    scope module: :domains do
+      resource :check, only: :create
+    end
+  end
+
+  resources :sources, only: %i[ index new create edit update ] do
+    scope module: :sources do
+      resource :quota_sync, only: :create
+    end
+  end
+
+  resources :webhook_endpoints
+
+  resources :templates, except: :show
+
+  resources :api_keys, only: %i[ index new create destroy ] do
+    scope module: :api_keys do
+      resource :rotation, only: :create
+    end
+  end
+
+  resource :onboarding, only: :show do
+    scope module: :onboardings do
+      resource :completion, only: :create
+    end
+  end
+
+  resources :bounces, only: :index
+  scope module: :bounces, path: :bounces, as: :bounces do
+    resource :retry, only: :create
+  end
+
+  resources :test_emails, only: %i[ new create ]
+
+  resources :exports, only: :show
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do

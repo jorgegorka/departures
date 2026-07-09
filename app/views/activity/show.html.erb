@@ -1,0 +1,33 @@
+<% if Current.project %>
+  <%= turbo_stream_from Current.project, :activity %>
+
+  <div class="flex align-center justify-space-between margin-block">
+    <h1 class="margin-none txt-large">Activity</h1>
+    <%= form_with url: activity_path, method: :get, data: { controller: "auto-submit" }, class: "flex align-center gap-half" do |form| %>
+      <label class="flex align-center gap-half input input--actor">
+        <%= icon_tag "search" %>
+        <%= form.search_field :q, value: params[:q], placeholder: "Search subject, address, id…", class: "input" %>
+      </label>
+      <%= form.select :filter,
+            options_for_select({ "All statuses" => "", "Queued" => "queued", "Sent" => "sent", "Delivered" => "delivered",
+              "Opened" => "opened", "Clicked" => "clicked", "Bounced" => "bounced", "Complained" => "complained",
+              "Failed" => "failed" }, params[:filter]),
+            {}, class: "input input--select", aria: { label: "Status filter" }, data: { action: "change->auto-submit#submit" } %>
+      <%= form.select :range,
+            options_for_select({ "All time" => "", "Last hour" => "1h", "Last 24 hours" => "24h",
+              "Last 7 days" => "7d", "Last 30 days" => "30d" }, params[:range]),
+            {}, class: "input input--select", aria: { label: "Time range" }, data: { action: "change->auto-submit#submit" } %>
+      <button type="submit" class="btn btn--secondary btn--medium">Search</button>
+    <% end %>
+  </div>
+
+  <div class="activity" id="activity_feed">
+    <% if @emails.any? %>
+      <%= render partial: "activity/email", collection: @emails %>
+    <% else %>
+      <p class="txt-subtle pad-block">Nothing here yet — matching emails will appear live as they move.</p>
+    <% end %>
+  </div>
+<% else %>
+  <p class="txt-subtle margin-block">No active project yet.</p>
+<% end %>

@@ -1,0 +1,16 @@
+acme_welcome:
+  project: acme_default
+  workspace: acme
+  name: Welcome
+  slug: welcome
+  subject: "Welcome, {{ name }}!"
+  html_body: "<h1>Hi {{ name }}</h1><p>Thanks for joining {{ company }}.</p>"
+  text_body: "Hi {{ name }} — thanks for joining {{ company }}."
+
+globex_receipt:
+  project: globex_default
+  workspace: globex
+  name: Receipt
+  slug: receipt
+  subject: "Your receipt"
+  text_body: "Total: {{ total }}"

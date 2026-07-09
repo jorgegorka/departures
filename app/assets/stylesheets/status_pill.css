@@ -1,0 +1,22 @@
+@layer components {
+  .status-pill {
+    background-color: color-mix(in oklch, var(--pill-color, var(--color-ink-lighter)) 15%, var(--color-surface));
+    border-radius: 2em;
+    color: var(--pill-color, var(--color-ink-light));
+    display: inline-block;
+    font-size: var(--text-x-small);
+    font-weight: 700;
+    padding: 0.15em 0.9em;
+    text-transform: capitalize;
+
+    &.status-pill--sent,
+    &.status-pill--delivered { --pill-color: var(--color-positive); }
+
+    &.status-pill--opened,
+    &.status-pill--clicked { --pill-color: var(--color-link); }
+
+    &.status-pill--bounced,
+    &.status-pill--failed,
+    &.status-pill--complained { --pill-color: var(--color-negative); }
+  }
+}

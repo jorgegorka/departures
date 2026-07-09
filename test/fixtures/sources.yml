@@ -8,6 +8,13 @@ acme_production:
   aws_secret_access_key: acme-secret
   webhook_token: acme-webhook-token-1234567890
   retention_days: 30
+  last_quota_checked_at: <%= 1.hour.ago %>
+  last_quota:
+    max_24_hour_send: 50000.0
+    max_send_rate: 14.0
+    sent_last_24_hours: 120.0
+    sending_enabled: true
+    production_access: true
 
 globex_production:
   project: globex_default
@@ -19,3 +26,10 @@ globex_production:
   aws_secret_access_key: globex-secret
   webhook_token: globex-webhook-token-1234567890
   retention_days: 30
+  last_quota_checked_at: <%= 1.hour.ago %>
+  last_quota:
+    max_24_hour_send: 50000.0
+    max_send_rate: 14.0
+    sent_last_24_hours: 120.0
+    sending_enabled: true
+    production_access: true

@@ -1,0 +1,12 @@
+<div class="activity__row" id="<%= dom_id(email) %>">
+  <%= render "emails/status_pill", email: email %>
+  <div class="activity__summary">
+    <p class="margin-none font-weight-bold"><%= email.subject %></p>
+    <p class="margin-none txt-small txt-subtle">
+      <%= email.from %> → <%= email.recipients.filter { |recipient| recipient.kind_to? }.map(&:address).join(", ") %>
+    </p>
+  </div>
+  <p class="margin-none txt-x-small txt-subtle activity__time">
+    <%= time_ago_in_words(email.created_at) %> ago
+  </p>
+</div>

@@ -1,0 +1,36 @@
+<% content_for :title, "Templates" %>
+
+<% if Current.project %>
+  <header class="page-header">
+    <h1>Templates</h1>
+    <% if Current.workspace.capability?(Current.user, :manage_templates) %>
+      <%= link_to "New template", new_template_path, class: "btn btn--primary btn--medium" %>
+    <% end %>
+  </header>
+
+  <% if @templates.any? %>
+    <table class="settings-table">
+      <thead>
+        <tr><th>Name</th><th>Slug</th><th>Subject</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @templates.each do |template| %>
+          <tr>
+            <td><%= template.name %></td>
+            <td><code><%= template.slug %></code></td>
+            <td><%= template.subject %></td>
+            <td>
+              <% if Current.workspace.capability?(Current.user, :manage_templates) %>
+                <%= link_to "Edit", edit_template_path(template), class: "btn btn--plain btn--medium" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No templates yet. Templates let API callers send by slug with <code>{{ var }}</code> substitution.</p>
+  <% end %>
+<% else %>
+  <p>No active project yet.</p>
+<% end %>

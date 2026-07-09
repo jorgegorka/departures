@@ -541,14 +541,19 @@ Wraps inputs in a label that acts as the visual input container, providing large
 ```css
 .input--actor {
   &:focus-within {
-    --input-border-color: var(--color-selected-dark);
+    --input-border-color: var(--color-link);
     outline: var(--focus-ring-size) solid var(--focus-ring-color);
+    outline-offset: -1px;
   }
 
   .input {
     --input-padding: 0;
-    --input-border-size: 0;
     --input-background: transparent;
+    border: 0;
+  }
+
+  .input:focus {
+    outline: none;
   }
 }
 ```
@@ -583,12 +588,12 @@ Auto-resizing textarea using `field-sizing: content`:
 
 ```css
 .input--textarea {
-  min-block-size: calc(3lh + (2 * var(--input-padding)));
+  min-block-size: 6lh;
 
   @supports (field-sizing: content) {
     field-sizing: content;
-    max-block-size: calc(3lh + (2 * var(--input-padding)));
-    min-block-size: calc(1lh + (2 * var(--input-padding)));
+    max-block-size: 12lh;
+    min-block-size: 3lh;
   }
 }
 ```

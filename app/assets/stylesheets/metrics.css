@@ -1,0 +1,49 @@
+@layer modules {
+  .metrics {
+    display: grid;
+    gap: var(--block-space);
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  }
+
+  .metric-tile {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75em;
+    padding: var(--block-space) var(--inline-space-double, 2ch);
+  }
+
+  .metric-tile__label {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-x-small);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .metric-tile__value {
+    font-size: var(--text-large);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    margin-block: var(--block-space-half) 0;
+  }
+
+  .metric-tile__delta {
+    font-size: var(--text-x-small);
+    margin-block: var(--block-space-half) 0;
+
+    &.metric-tile__delta--good { color: var(--color-positive); }
+    &.metric-tile__delta--bad  { color: var(--color-negative); }
+    &.metric-tile__delta--flat { color: var(--color-ink-lighter); }
+  }
+
+  .sparkline {
+    color: var(--color-link);
+    margin-inline: 0;
+
+    svg {
+      block-size: 4rem;
+      display: block;
+      inline-size: 100%;
+    }
+  }
+}

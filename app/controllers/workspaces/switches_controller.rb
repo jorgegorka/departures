@@ -1,4 +1,6 @@
 class Workspaces::SwitchesController < ApplicationController
+  allow_unonboarded_access
+
   def create
     workspace = Current.user.workspaces.find(params[:workspace_id])
     session[:workspace_id] = workspace.id

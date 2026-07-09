@@ -82,11 +82,46 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_not submission(subject: "Hi", template_id: 42).valid?
   end
 
-  test "template_id is rejected until templates are supported (Phase 5)" do
-    subject = submission(subject: nil, template_id: 42, html: "<p>Hi</p>")
+  test "template: resolves by slug and renders subject and bodies into the email" do
+    submission = EmailSubmission.new(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", to: [ "user@example.com" ],
+      template_id: "welcome", variables: { "name" => "Ada", "company" => "Acme" })
 
-    assert_not subject.valid?
-    assert subject.errors[:template_id].any? { |m| m.include?("not yet supported") }
+    email = submission.save
+    assert email
+    assert_equal "Welcome, Ada!", email.subject
+    assert_includes email.html_body, "<h1>Hi Ada</h1>"
+    assert_includes email.text_body, "thanks for joining Acme"
+  end
+
+  test "template: resolves by numeric id" do
+    submission = EmailSubmission.new(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", to: [ "user@example.com" ],
+      template_id: templates(:acme_welcome).id.to_s, variables: { "name" => "Ada" })
+
+    assert submission.valid?
+  end
+
+  test "template: unknown template is rejected" do
+    submission = EmailSubmission.new(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", to: [ "user@example.com" ], template_id: "nope")
+
+    assert_not submission.valid?
+    assert submission.errors[:template_id].any?
+  end
+
+  test "template: another project's template is not visible" do
+    submission = EmailSubmission.new(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", to: [ "user@example.com" ], template_id: "receipt")
+
+    assert_not submission.valid?
+  end
+
+  test "template: subject and template together are still rejected" do
+    submission = EmailSubmission.new(project: projects(:acme_default), source: sources(:acme_production),
+      from: "hello@acme.com", to: [ "user@example.com" ], subject: "Hi", template_id: "welcome")
+
+    assert_not submission.valid?
   end
 
   test "html or text body is required without a template" do
@@ -174,6 +209,67 @@ class EmailSubmissionTest < ActiveSupport::TestCase
 
   test "scalar recipients are normalized to arrays for internal callers" do
     assert submission(to: "user@example.com").valid?
+  end
+
+  # --- Phase 5: guardrails (verified domain, quota freshness, complaint breaker) ---
+
+  test "guardrail: rejects a from address on an unverified domain" do
+    subject = submission(from: "hello@unverified.io")
+
+    assert_not subject.valid?
+    assert_includes subject.errors.full_messages.join, "domain is not verified"
+  end
+
+  test "guardrail: accepts a from address on a subdomain of a verified domain" do
+    assert submission(from: "no-reply@mail.acme.com").valid?
+  end
+
+  test "guardrail: a stale quota is refreshed best-effort before rejecting" do
+    source = sources(:acme_production)
+    source.update!(last_quota_checked_at: 7.hours.ago)
+    source.ses_client = Aws::SESV2::Client.new(stub_responses: true)
+    source.ses_client.stub_responses(:get_account,
+      send_quota: { max_24_hour_send: 200.0, max_send_rate: 1.0, sent_last_24_hours: 7.0 })
+
+    subject = submission(source: source)
+
+    assert subject.valid?
+    assert source.quota_fresh?
+  end
+
+  test "guardrail: rejects when the quota is stale and the refresh fails" do
+    source = sources(:acme_production)
+    source.update!(last_quota_checked_at: 7.hours.ago)
+    source.ses_client = Aws::SESV2::Client.new(stub_responses: true)
+    source.ses_client.stub_responses(:get_account, "TooManyRequestsException")
+
+    subject = submission(source: source)
+
+    assert_not subject.valid?
+    assert_includes subject.errors.full_messages.join, "quota information is stale"
+  end
+
+  test "guardrail: stale quota with unreachable SES rejects with the stale message" do
+    source = sources(:acme_production)
+    source.update!(last_quota_checked_at: 7.hours.ago)
+    source.ses_client = Aws::SESV2::Client.new(stub_responses: true)
+    source.ses_client.stub_responses(:get_account, Seahorse::Client::NetworkingError.new(Errno::ECONNRESET.new))
+
+    subject = submission(source: source)
+
+    assert_not subject.valid?
+    assert_includes subject.errors.full_messages.join, "quota information is stale"
+  end
+
+  test "guardrail: rejects while the complaint breaker is tripped" do
+    source = sources(:acme_production)
+
+    source.stub(:complaint_rate_exceeded?, true) do
+      subject = submission(source: source)
+
+      assert_not subject.valid?
+      assert_includes subject.errors.full_messages.join, "paused due to complaint rate"
+    end
   end
 
   # --- Phase 2: MIME + delivery wiring ---

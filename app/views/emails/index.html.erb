@@ -1,0 +1,43 @@
+<% if Current.project %>
+  <div class="flex align-center justify-space-between margin-block">
+    <h1 class="margin-none txt-large">Emails</h1>
+    <div class="flex align-center gap-half">
+      <%= link_to "Export CSV", export_path("emails"), class: "btn btn--plain btn--medium", data: { turbo: false } %>
+      <%= form_with url: emails_path, method: :get, data: { controller: "auto-submit" }, class: "flex align-center gap-half" do |form| %>
+        <label class="flex align-center gap-half input input--actor">
+          <%= icon_tag "search" %>
+          <%= form.search_field :q, value: params[:q], placeholder: "Search…", class: "input" %>
+        </label>
+        <%= form.select :filter,
+              options_for_select({ "All statuses" => "", "Queued" => "queued", "Sent" => "sent", "Delivered" => "delivered",
+                "Opened" => "opened", "Clicked" => "clicked", "Bounced" => "bounced", "Complained" => "complained",
+                "Failed" => "failed" }, params[:filter]),
+              {}, class: "input input--select", aria: { label: "Status filter" }, data: { action: "change->auto-submit#submit" } %>
+        <%= form.select :range,
+              options_for_select({ "All time" => "", "Last hour" => "1h", "Last 24 hours" => "24h",
+                "Last 7 days" => "7d", "Last 30 days" => "30d" }, params[:range]),
+              {}, class: "input input--select", aria: { label: "Time range" }, data: { action: "change->auto-submit#submit" } %>
+        <button type="submit" class="btn btn--secondary btn--medium">Search</button>
+      <% end %>
+    </div>
+  </div>
+
+  <div data-controller="drawer">
+    <div class="emails-table">
+      <% if @emails.any? %>
+        <%= render partial: "emails/email", collection: @emails %>
+      <% else %>
+        <p class="txt-subtle pad">No emails match.</p>
+      <% end %>
+    </div>
+
+    <dialog class="drawer" data-drawer-target="dialog">
+      <button class="btn btn--plain btn--medium drawer__close" data-action="click->drawer#close" aria-label="Close inspector">
+        <%= icon_tag "close" %>
+      </button>
+      <%= turbo_frame_tag "email_inspector", data: { drawer_target: "frame", action: "turbo:frame-load->drawer#open" } %>
+    </dialog>
+  </div>
+<% else %>
+  <p class="txt-subtle margin-block">No active project yet.</p>
+<% end %>

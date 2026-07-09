@@ -1,0 +1,23 @@
+acme_all:
+  project: acme_default
+  workspace: acme
+  url: https://hooks.acme.com/departures
+  secret: whsec_acmeTestSecret000000000000000
+  events: [ "delivery", "bounce", "complaint", "open", "click" ]
+  active: true
+
+acme_inactive:
+  project: acme_default
+  workspace: acme
+  url: https://old-hooks.acme.com/departures
+  secret: whsec_acmeOldSecret0000000000000000
+  events: [ "bounce" ]
+  active: false
+
+globex_bounces:
+  project: globex_default
+  workspace: globex
+  url: https://hooks.globex.com/departures
+  secret: whsec_globexSecret000000000000000
+  events: [ "bounce", "complaint" ]
+  active: true

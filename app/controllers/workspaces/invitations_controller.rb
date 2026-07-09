@@ -1,4 +1,5 @@
 class Workspaces::InvitationsController < ApplicationController
+  allow_unonboarded_access
   before_action :set_workspace
   before_action -> { authorize_capability! :manage_members, workspace: @workspace }
 

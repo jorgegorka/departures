@@ -1,0 +1,32 @@
+<% content_for :title, "New API key" %>
+
+<h1>New API key</h1>
+
+<%= form_with model: @api_key, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+  <div class="flex flex-column gap-half">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "input", placeholder: "Production app" %>
+  </div>
+
+  <fieldset class="flex flex-column gap-half">
+    <legend>Scopes</legend>
+    <label class="flex align-center gap-half">
+      <%= form.checkbox :scopes, { multiple: true, checked: true }, "send", nil %>
+      send — POST /api/emails
+    </label>
+    <label class="flex align-center gap-half">
+      <%= form.checkbox :scopes, { multiple: true }, "read:activity", nil %>
+      read:activity — GET /api/emails
+    </label>
+  </fieldset>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :expires_in, "Expires" %>
+    <%= form.select :expires_in, [ [ "Never", "" ], [ "30 days", "30" ], [ "90 days", "90" ], [ "1 year", "365" ] ],
+          {}, class: "input input--select" %>
+  </div>
+
+  <div>
+    <%= form.submit "Create API key", class: "btn btn--primary btn--large" %>
+  </div>
+<% end %>

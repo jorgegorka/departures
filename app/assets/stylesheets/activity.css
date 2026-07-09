@@ -1,0 +1,27 @@
+@layer modules {
+  .activity {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75em;
+  }
+
+  .activity__row {
+    align-items: center;
+    display: flex;
+    gap: var(--inline-space);
+    padding: var(--block-space-half) var(--inline-space);
+
+    & + .activity__row {
+      border-block-start: 1px solid var(--color-border);
+    }
+  }
+
+  .activity__summary {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .activity__time {
+    white-space: nowrap;
+  }
+}

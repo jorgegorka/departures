@@ -1,4 +1,6 @@
 class WorkspacesController < ApplicationController
+  allow_unonboarded_access
+
   def new
     @workspace = Workspace.new
   end

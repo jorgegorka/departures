@@ -1,0 +1,27 @@
+<% if Current.project %>
+  <div class="flex align-center justify-space-between margin-block">
+    <h1 class="margin-none txt-large">Bounces</h1>
+    <div class="flex align-center gap-half">
+      <%= link_to "Export CSV", export_path("bounces"), class: "btn btn--plain btn--medium", data: { turbo: false } %>
+      <% if Current.workspace.capability?(Current.user, :send) %>
+        <%= button_to "Retry soft bounces", bounces_retry_path, class: "btn btn--primary btn--medium" %>
+      <% end %>
+    </div>
+  </div>
+
+  <nav class="flex gap-half margin-block" aria-label="Bounce type">
+    <%= link_to "All", bounces_path, class: "btn btn--plain btn--medium #{"btn--current" if params[:filter].blank?}" %>
+    <%= link_to "Hard", bounces_path(filter: "hard_bounces"), class: "btn btn--plain btn--medium #{"btn--current" if params[:filter] == "hard_bounces"}" %>
+    <%= link_to "Soft", bounces_path(filter: "soft_bounces"), class: "btn btn--plain btn--medium #{"btn--current" if params[:filter] == "soft_bounces"}" %>
+  </nav>
+
+  <div class="emails-table">
+    <% if @emails.any? %>
+      <%= render partial: "emails/email", collection: @emails %>
+    <% else %>
+      <p class="txt-subtle pad">No bounces in this queue.</p>
+    <% end %>
+  </div>
+<% else %>
+  <p class="txt-subtle margin-block">No active project yet.</p>
+<% end %>

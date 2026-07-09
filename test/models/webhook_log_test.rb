@@ -132,6 +132,7 @@ class WebhookLogTest < ActiveSupport::TestCase
   end
 
   test "an event with no matching email marks the log unmatched and keeps the payload" do
+    wipe_send_domain
     log = process_fixture("delivery")
 
     assert log.unmatched?
@@ -140,6 +141,7 @@ class WebhookLogTest < ActiveSupport::TestCase
   end
 
   test "an email on another source with the same ses message id is never matched" do
+    wipe_send_domain
     Email.create!(project: projects(:globex_default), source: sources(:globex_production),
       from: "hello@globex.com", subject: "Other tenant", html_body: "<p>x</p>",
       status: "sent", ses_message_id: FIXTURE_MESSAGE_ID)
@@ -200,6 +202,7 @@ class WebhookLogTest < ActiveSupport::TestCase
   end
 
   test "a failure mid-ingestion rolls back event rows and leaves the log received" do
+    wipe_send_domain
     matched_email
     message = JSON.parse(file_fixture("sns/bounce_permanent.json").read)
     log = sources(:acme_production).webhook_logs.create!(message_type: "Notification",
@@ -243,6 +246,27 @@ class WebhookLogTest < ActiveSupport::TestCase
     assert_empty streams
   end
 
+  test "ingesting a permanent bounce records bounce_type on the email" do
+    email = matched_email
+    process_fixture("bounce_permanent")
+
+    assert_equal "permanent", email.reload.bounce_type
+  end
+
+  test "ingesting a transient bounce records bounce_type on the email" do
+    email = matched_email
+    process_fixture("bounce_transient")
+
+    assert_equal "transient", email.reload.bounce_type
+  end
+
+  test "non-bounce events leave bounce_type nil" do
+    email = matched_email
+    process_fixture("delivery")
+
+    assert_nil email.reload.bounce_type
+  end
+
   test "process_later enqueues the job" do
     log = sources(:acme_production).webhook_logs.create!(message_type: "Notification",
       payload: { "Type" => "Notification" })
@@ -250,6 +274,40 @@ class WebhookLogTest < ActiveSupport::TestCase
     assert_enqueued_with(job: ProcessSesEventJob, args: [ log ], queue: "default") do
       log.process_later
     end
+  end
+
+  test "an ingested event fans out to active subscribed endpoints" do
+    email = matched_email
+
+    assert_difference -> { WebhookDelivery.count }, +1 do
+      assert_enqueued_with(job: DeliverWebhookJob) do
+        process_fixture("bounce_permanent")
+      end
+    end
+
+    delivery = WebhookDelivery.last
+    assert_equal webhook_endpoints(:acme_all), delivery.webhook_endpoint
+    assert_equal email, delivery.email
+    assert_equal "bounce", delivery.event_type
+    assert_equal "bounce", delivery.payload["event"]
+    assert_equal email.public_id, delivery.payload["email_id"]
+    assert delivery.payload["payload"].present?, "carries the raw SES message"
+  end
+
+  test "fan-out skips inactive and unsubscribed endpoints" do
+    matched_email
+
+    # acme_inactive subscribes to bounce but is inactive; acme_all does not subscribe to send.
+    assert_no_difference -> { WebhookDelivery.count } do
+      process_fixture("send")
+    end
+  end
+
+  test "fan-out never reaches endpoints of other projects" do
+    matched_email
+    process_fixture("bounce_permanent")
+
+    assert_empty webhook_endpoints(:globex_bounces).deliveries
   end
 
   private

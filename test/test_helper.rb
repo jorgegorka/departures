@@ -11,6 +11,13 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Rate-limit counters (sessions sign-in, API throttles) live in Rails.cache,
+    # which is shared across tests within a worker process — clear it so one
+    # test's sign-ins can never trip the limiter for later tests.
+    setup do
+      Rails.cache.clear
+    end
+
     # Wipes an email and everything that hangs off it, so tests that assert on
     # absolute counts or unique indexes start from a clean slate regardless of
     # fixtures. Children are deleted before parents to respect foreign keys.
@@ -33,6 +40,10 @@ module ActiveSupport
       Source.delete_all
       ApiKey.delete_all
       Suppression.delete_all
+      Domain.delete_all
+      WebhookDelivery.delete_all
+      WebhookEndpoint.delete_all
+      Template.delete_all
       Project.delete_all
       Workspace.delete_all
       Session.delete_all
