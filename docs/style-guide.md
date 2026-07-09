@@ -541,14 +541,19 @@ Wraps inputs in a label that acts as the visual input container, providing large
 ```css
 .input--actor {
   &:focus-within {
-    --input-border-color: var(--color-selected-dark);
+    --input-border-color: var(--color-link);
     outline: var(--focus-ring-size) solid var(--focus-ring-color);
+    outline-offset: -1px;
   }
 
   .input {
     --input-padding: 0;
-    --input-border-size: 0;
     --input-background: transparent;
+    border: 0;
+  }
+
+  .input:focus {
+    outline: none;
   }
 }
 ```

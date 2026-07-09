@@ -13,11 +13,13 @@ module Email::Resendable
   # Stamps resent_at on success so a bulk retry never re-sends the same original.
   def resend
     if resendable?
-      resent = EmailSubmission.new(resubmission_attributes).save
-      if resent
-        update!(resent_at: Time.current)
+      transaction do
+        resent = EmailSubmission.new(resubmission_attributes).save
+        if resent
+          update!(resent_at: Time.current)
+        end
+        resent
       end
-      resent
     else
       false
     end

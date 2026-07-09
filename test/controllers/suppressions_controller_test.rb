@@ -41,11 +41,21 @@ class SuppressionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "actions 404 when the workspace has no active project" do
+  test "index shows an empty state when the workspace has no active project" do
     sign_in_as users(:owner)
     projects(:acme_default).update_columns(archived_at: Time.current)
 
     get suppressions_url
+
+    assert_response :success
+    assert_select "body", text: /No active project yet/
+  end
+
+  test "mutations 404 when the workspace has no active project" do
+    sign_in_as users(:owner)
+    projects(:acme_default).update_columns(archived_at: Time.current)
+
+    post suppressions_url, params: { suppression: { email: "x@example.com" } }
     assert_response :not_found
 
     delete suppression_url(suppressions(:acme_blocked))

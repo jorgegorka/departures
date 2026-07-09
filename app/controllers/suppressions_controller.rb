@@ -1,10 +1,13 @@
 class SuppressionsController < ApplicationController
   include RequiresProject
 
+  skip_before_action :require_project, only: :index
   before_action -> { authorize_capability! :send }, only: %i[ create destroy ]
 
   def index
-    @suppressions = Current.project.suppressions.order(created_at: :desc)
+    if Current.project
+      @suppressions = Current.project.suppressions.order(created_at: :desc)
+    end
   end
 
   def create
