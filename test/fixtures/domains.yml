@@ -1,0 +1,20 @@
+acme_com:
+  project: acme_default
+  workspace: acme
+  name: acme.com
+  status: verified
+  dkim_tokens: [ "acmetok1", "acmetok2", "acmetok3" ]
+
+acme_pending:
+  project: acme_default
+  workspace: acme
+  name: staging-acme.io
+  status: pending
+  dkim_tokens: [ "stagetok1", "stagetok2", "stagetok3" ]
+
+globex_com:
+  project: globex_default
+  workspace: globex
+  name: globex.com
+  status: verified
+  dkim_tokens: [ "globextok1", "globextok2", "globextok3" ]

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_090100) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_203028) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -28,6 +28,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_090100) do
     t.index ["key_hash"], name: "index_api_keys_on_key_hash", unique: true
     t.index ["project_id"], name: "index_api_keys_on_project_id"
     t.index ["workspace_id"], name: "index_api_keys_on_workspace_id"
+  end
+
+  create_table "domains", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.json "dkim_tokens", default: [], null: false
+    t.datetime "last_checked_at"
+    t.string "name", null: false
+    t.integer "project_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "workspace_id", null: false
+    t.index ["project_id", "name"], name: "index_domains_on_project_id_and_name", unique: true
+    t.index ["project_id"], name: "index_domains_on_project_id"
+    t.index ["workspace_id"], name: "index_domains_on_workspace_id"
   end
 
   create_table "email_attachments", force: :cascade do |t|
@@ -230,6 +244,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_090100) do
 
   add_foreign_key "api_keys", "projects"
   add_foreign_key "api_keys", "workspaces"
+  add_foreign_key "domains", "projects"
+  add_foreign_key "domains", "workspaces"
   add_foreign_key "email_attachments", "emails"
   add_foreign_key "email_events", "emails"
   add_foreign_key "email_recipients", "emails"

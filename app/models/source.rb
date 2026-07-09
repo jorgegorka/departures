@@ -17,6 +17,7 @@ class Source < ApplicationRecord
 
   def ses_client
     @ses_client ||= Aws::SESV2::Client.new(region: region,
-      credentials: Aws::Credentials.new(aws_access_key_id, aws_secret_access_key))
+      credentials: Aws::Credentials.new(aws_access_key_id, aws_secret_access_key),
+      stub_responses: Rails.env.test?)
   end
 end
