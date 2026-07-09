@@ -6,6 +6,7 @@ class ProjectTest < ActiveSupport::TestCase
   end
 
   test "deletable? requires archived and no emails" do
+    wipe_send_domain
     project = projects(:globex_default)
     assert_not project.deletable?
 

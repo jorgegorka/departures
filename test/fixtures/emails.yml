@@ -8,3 +8,125 @@ acme_welcome:
   from: hello@acme.com
   subject: Welcome
   html_body: "<p>Welcome</p>"
+
+acme_sent:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturesent0000000001
+  status: sent
+  from: hello@acme.com
+  subject: April invoice
+  text_body: "Invoice attached"
+  ses_message_id: fixture-sent-0001
+  created_at: <%= 30.minutes.ago %>
+
+acme_delivered:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturedelivered000001
+  status: delivered
+  from: hello@acme.com
+  subject: Welcome aboard
+  html_body: "<p>Hi!</p>"
+  ses_message_id: fixture-delivered-0001
+  created_at: <%= 3.hours.ago %>
+
+acme_opened:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixtureopened00000001
+  status: opened
+  from: hello@acme.com
+  subject: Weekly digest
+  html_body: "<p>News</p>"
+  ses_message_id: fixture-opened-0001
+  created_at: <%= 2.days.ago %>
+
+acme_clicked:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixtureclicked0000001
+  status: clicked
+  from: hello@acme.com
+  subject: Sale starts now
+  html_body: "<p><a href='https://acme.com'>Shop</a></p>"
+  ses_message_id: fixture-clicked-0001
+  created_at: <%= 2.days.ago %>
+
+acme_hard_bounce:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturehardbounce00001
+  status: bounced
+  bounce_type: permanent
+  from: hello@acme.com
+  subject: Password reset
+  text_body: "Reset link"
+  ses_message_id: fixture-hard-bounce-0001
+  created_at: <%= 4.days.ago %>
+
+acme_soft_bounce:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturesoftbounce00001
+  status: bounced
+  bounce_type: transient
+  from: hello@acme.com
+  subject: Mailbox full retry
+  text_body: "Please read"
+  ses_message_id: fixture-soft-bounce-0001
+  created_at: <%= 5.hours.ago %>
+
+acme_complained:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturecomplained00001
+  status: complained
+  from: hello@acme.com
+  subject: Promo blast
+  html_body: "<p>Deals</p>"
+  ses_message_id: fixture-complained-0001
+  created_at: <%= 10.days.ago %>
+
+acme_failed:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixturefailed00000001
+  status: failed
+  failure_reason: SES rejected the message
+  from: hello@acme.com
+  subject: Never left
+  text_body: "Oops"
+  created_at: <%= 6.days.ago %>
+
+acme_ancient:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  public_id: em_fixtureancient0000001
+  status: delivered
+  from: hello@acme.com
+  subject: Old news
+  text_body: "Ancient"
+  ses_message_id: fixture-ancient-0001
+  created_at: <%= 40.days.ago %>
+
+globex_delivered:
+  project: globex_default
+  workspace: globex
+  source: globex_production
+  public_id: em_fixtureglobex00000001
+  status: delivered
+  from: hi@globex.com
+  subject: Globex says hi
+  text_body: "Hi"
+  ses_message_id: fixture-globex-0001
+  created_at: <%= 1.hour.ago %>

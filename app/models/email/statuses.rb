@@ -15,11 +15,11 @@ module Email::Statuses
     enum :status, STATUS_PRECEDENCE.keys.index_by(&:itself), default: "queued", validate: true
   end
 
-  def apply_event(event_type)
+  def apply_event(event_type, **attributes)
     status_for_event = EVENT_STATUSES[event_type.to_s]
 
     if status_for_event
-      advance_to(status_for_event)
+      advance_to(status_for_event, **attributes)
     else
       false
     end

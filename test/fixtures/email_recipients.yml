@@ -1,0 +1,29 @@
+acme_welcome_to:
+  email: acme_welcome
+  kind: to
+  address: newuser@example.com
+
+acme_sent_to:
+  email: acme_sent
+  kind: to
+  address: billing@customer.example
+
+acme_delivered_to:
+  email: acme_delivered
+  kind: to
+  address: searchme@customer.example
+
+acme_hard_bounce_to:
+  email: acme_hard_bounce
+  kind: to
+  address: hard@customer.example
+
+acme_soft_bounce_to:
+  email: acme_soft_bounce
+  kind: to
+  address: soft@customer.example
+
+globex_delivered_to:
+  email: globex_delivered
+  kind: to
+  address: someone@globex.example

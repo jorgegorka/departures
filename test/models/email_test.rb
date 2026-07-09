@@ -20,7 +20,9 @@ class EmailTest < ActiveSupport::TestCase
   end
 
   test "recipients and attachments are destroyed with the email" do
-    email = emails(:acme_welcome)
+    wipe_send_domain
+    email = projects(:acme_default).emails.create!(source: sources(:acme_production),
+      from: "hello@acme.com", subject: "Hi")
     email.recipients.create!(kind: "to", address: "user@example.com")
     email.attachments.create!(filename: "a.pdf", byte_size: 10)
 

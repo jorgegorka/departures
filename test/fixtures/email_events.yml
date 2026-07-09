@@ -1,0 +1,47 @@
+acme_delivered_delivery:
+  email: acme_delivered
+  event_type: delivery
+  recipient: searchme@customer.example
+  ses_message_id: fixture-delivered-0001
+  occurred_at: <%= 3.hours.ago %>
+
+acme_opened_delivery:
+  email: acme_opened
+  event_type: delivery
+  ses_message_id: fixture-opened-0001
+  occurred_at: <%= 2.days.ago %>
+
+acme_opened_open:
+  email: acme_opened
+  event_type: open
+  user_agent: Mozilla/5.0
+  ip: 192.0.2.1
+  ses_message_id: fixture-opened-0001
+  occurred_at: <%= 47.hours.ago %>
+
+acme_clicked_click:
+  email: acme_clicked
+  event_type: click
+  url: https://acme.com
+  ses_message_id: fixture-clicked-0001
+  occurred_at: <%= 2.days.ago %>
+
+acme_hard_bounce_bounce:
+  email: acme_hard_bounce
+  event_type: bounce
+  recipient: hard@customer.example
+  ses_message_id: fixture-hard-bounce-0001
+  payload: { bounce: { bounceType: Permanent } }
+  occurred_at: <%= 4.days.ago %>
+
+acme_complained_complaint:
+  email: acme_complained
+  event_type: complaint
+  ses_message_id: fixture-complained-0001
+  occurred_at: <%= 10.days.ago %>
+
+globex_delivered_delivery:
+  email: globex_delivered
+  event_type: delivery
+  ses_message_id: fixture-globex-0001
+  occurred_at: <%= 1.hour.ago %>

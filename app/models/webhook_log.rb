@@ -53,7 +53,7 @@ class WebhookLog < ApplicationRecord
         # instead of duplicating events.
         transaction do
           record_events(email, event)
-          email.apply_event(event.event_type)
+          email.apply_event(event.event_type, **bounce_attributes(event))
           suppress_recipients(email, event)
           relay_to_endpoints(email, event)
           update!(status: "processed", processed_at: Time.current)
@@ -71,6 +71,14 @@ class WebhookLog < ApplicationRecord
         email.events.create!(event_type: event.event_type, ses_message_id: event.ses_message_id,
           recipient: address, url: event.url, user_agent: event.user_agent, ip: event.ip,
           payload: event.payload, occurred_at: event.occurred_at)
+      end
+    end
+
+    def bounce_attributes(event)
+      if event.bounce?
+        { bounce_type: event.bounce_type }
+      else
+        {}
       end
     end
 

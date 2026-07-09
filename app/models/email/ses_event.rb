@@ -52,6 +52,12 @@ class Email::SesEvent
     bounce? && payload.dig("bounce", "bounceType") == "Permanent"
   end
 
+  def bounce_type
+    if bounce?
+      permanent_bounce? ? "permanent" : "transient"
+    end
+  end
+
   def suppresses?
     complaint? || permanent_bounce?
   end
