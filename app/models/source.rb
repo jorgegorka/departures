@@ -1,4 +1,6 @@
 class Source < ApplicationRecord
+  include Quota
+
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
 
