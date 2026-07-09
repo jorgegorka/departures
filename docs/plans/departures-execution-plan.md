@@ -139,6 +139,8 @@ Tests: MIME structure assertions (parts, headers, attachment encoding); store ro
 
 ### Phase 3 — SNS ingestion, events, suppressions, live activity
 
+Detailed plan: **docs/plans/phase-3-sns-ingestion-plan.md** (ready to execute).
+
 | Task | Files | Directives |
 |---|---|---|
 | 3.1 Migrations + models | `email_events`, `webhook_logs` migrations; `app/models/email_event.rb`, `webhook_log.rb` | EmailEvent: `event_type`, `ses_message_id`, `recipient`, `url`/`user_agent`/`ip`, `payload` json, `occurred_at`. WebhookLog: raw inbound payload + processing status. |
