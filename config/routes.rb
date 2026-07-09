@@ -11,6 +11,8 @@ Rails.application.routes.draw do
 
   resource :invitation_acceptance, only: %i[ new create ], path: "invitations/:invitation_token/acceptance",
     as: :invitation_acceptance, controller: "invitations/acceptances"
+
+  resource :activity, only: :show, controller: "activity"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do
