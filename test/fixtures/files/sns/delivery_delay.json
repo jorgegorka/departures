@@ -1,0 +1,18 @@
+{
+  "eventType": "DeliveryDelay",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["user@example.com"]
+  },
+  "deliveryDelay": {
+    "delayType": "MailboxFull",
+    "timestamp": "2026-07-01T10:30:00.000Z",
+    "expirationTime": "2026-07-02T09:59:58.000Z",
+    "delayedRecipients": [
+      { "emailAddress": "user@example.com", "status": "4.2.2", "diagnosticCode": "smtp; 452 4.2.2 mailbox full" }
+    ]
+  }
+}
