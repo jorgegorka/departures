@@ -590,6 +590,14 @@ class SendEmailJob < ApplicationJob
     job.arguments.first.mark_failed(error.message)
   end
 
+  # Final-review addition: transient transport failures (connection reset, DNS,
+  # open timeout) raise Seahorse::Client::NetworkingError, which is NOT a
+  # ServiceError subclass — without this line they'd strand the email in
+  # `sending` with no retry and no failure_reason.
+  retry_on Seahorse::Client::NetworkingError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    job.arguments.first.mark_failed(error.message)
+  end
+
   def perform(email)
     email.deliver
   end
@@ -1201,4 +1209,7 @@ git commit -m "chore: phase 2 wrap-up — rubocop, smoke, docs"
 - Phase 1 "Deferred to Phase 2" ledger items all closed (Task 4 safety races, Task 6 chores) or explicitly re-deferred with a reason.
 - The Bcc spike doc exists (or is explicitly deferred with credentials noted as the blocker — it must land before Phase 5 enables real sending).
 - Standards: no business logic in `SendEmailJob` (3 lines + retry policy); Bcc never in MIME; `content.raw.data` never pre-encoded; no bang methods.
-- Before starting Phase 3: author `docs/plans/phase-3-sns-ingestion-plan.md`; note the Phase 2 → Phase 3 seams: `emails.ses_message_id` is now populated and indexed (event matching key), `Email#apply_event` + `Email::Statuses` precedence guard out-of-order events, `sources.webhook_token` identifies the inbound SNS route, and `Email::MimeStore.delete` is the pruning hook Phase 6 will call.
+- Before starting Phase 3: author `docs/plans/phase-3-sns-ingestion-plan.md`; note the Phase 2 → Phase 3 seams: `emails.ses_message_id` is now populated and indexed (event matching key), `sources.webhook_token` identifies the inbound SNS route, and `Email::MimeStore.delete` is the pruning hook Phase 6 will call.
+- **Phase 3 PREREQUISITE (final-review finding):** `Email::Statuses#advance_to` is compare-then-write on in-memory state, so a concurrent `apply_event` (SNS worker) racing `deliver`'s `mark_sent` can regress status (`delivered → sent`). Before Phase 3 wires `apply_event`, make the advance a row-guarded write (e.g. `where(id: id, status: lower_precedence_statuses).update_all(...)` + reload, or `with_lock`), and fold `ses_message_id` into `advance_to("sent", ses_message_id: ...)` to halve the writes.
+- Deferred minors (final-review triage): MimeBuilder memoize `addresses_for` / empty-`to` guard for internal callers / reserved-header defense-in-depth (revisit at Phase 4 resend, which is the first internal MimeBuilder caller); multibyte-subject MIME pin test; "stuck in `sending`" reconciliation sweep → Phase 6 backlog; orphan `.eml` sweeps → Phase 6; minitest 5.x pin unpinning via hand-rolled constructor-swap helper.
+- Delivery is **at-least-once** by design (crash between SES accept and `mark_sent` commit → re-send on retry); duplicate `ses_message_id`s in that window are expected, not a bug (documented in `Email::Deliverable`).
