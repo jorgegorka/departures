@@ -52,6 +52,7 @@ module Email::Statuses
       if advanced
         assign_attributes(status: new_status, **attributes)
         changes_applied # update_all already persisted these — keep the record clean
+        broadcast_activity
       else
         reload
       end
