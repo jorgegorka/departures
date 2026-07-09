@@ -22,7 +22,7 @@ class Webhooks::SesController < ActionController::API
       head :forbidden
     end
   rescue *CERT_FETCH_ERRORS => error
-    webhook_log.update!(status: "failed", error: error.message)
+    webhook_log&.update!(status: "failed", error: error.message)
     head :service_unavailable
   end
 

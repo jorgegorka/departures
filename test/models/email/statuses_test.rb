@@ -84,6 +84,15 @@ class Email::StatusesTest < ActiveSupport::TestCase
     assert_nil email.reload.ses_message_id
   end
 
+  test "a successful advance keeps the in-memory updated_at in sync with the row" do
+    email = emails(:acme_welcome)
+
+    email.mark_sending
+    in_memory = email.updated_at
+
+    assert_equal email.reload.updated_at.to_f, in_memory.to_f
+  end
+
   private
     def fresh_email
       Email.create!(project: projects(:acme_default), source: sources(:acme_production),

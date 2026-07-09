@@ -7,7 +7,8 @@ module Email::Deliverable
   def deliver
     return false unless deliverable? # guard at the start of a non-trivial body — §5.1 OK
 
-    # Resolve the client before mark_sending: advance_to reloads, which resets the
+    # Resolve the client before mark_sending: advance_to reloads on a rejected
+    # write (e.g. a concurrent retry already advanced the row), which resets the
     # source association cache (and its memoized ses_client) — grab it first.
     client = source.ses_client
     mark_sending

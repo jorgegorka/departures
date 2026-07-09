@@ -11,7 +11,7 @@ class Suppression < ApplicationRecord
 
   class << self
     def covers?(project, addresses)
-      normalized = Array(addresses).map { |address| address.to_s.strip.downcase }
+      normalized = Array(addresses).map { |address| normalize_value_for(:email, address.to_s) }
       active.where(project: project, email: normalized).pluck(:email)
     end
 

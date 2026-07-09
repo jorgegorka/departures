@@ -61,4 +61,10 @@ class SuppressionTest < ActiveSupport::TestCase
     assert_nil lapsed.expires_at
     assert_equal "complaint", lapsed.reason
   end
+
+  test "covers? matches addresses through the model normalizer" do
+    covered = Suppression.covers?(projects(:acme_default), [ "  BLOCKED@Example.COM " ])
+
+    assert_equal [ "blocked@example.com" ], covered
+  end
 end

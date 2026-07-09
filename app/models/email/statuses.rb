@@ -46,11 +46,12 @@ module Email::Statuses
     # writer owns the row, so we reload to learn its real state. Never reloading
     # on success keeps the association cache (and any memoized client) intact.
     def advance_to(new_status, **attributes)
+      now = Time.current
       advanced = self.class.where(id: id, status: lower_precedence_statuses(new_status))
-        .update_all(status: new_status, updated_at: Time.current, **attributes) == 1
+        .update_all(status: new_status, updated_at: now, **attributes) == 1
 
       if advanced
-        assign_attributes(status: new_status, **attributes)
+        assign_attributes(status: new_status, updated_at: now, **attributes)
         changes_applied # update_all already persisted these — keep the record clean
         broadcast_activity
       else

@@ -70,6 +70,14 @@ class Email::SesEventTest < ActiveSupport::TestCase
     assert_equal "192.0.2.1", click_event.ip
   end
 
+  test "recipients drops nil and blank addresses" do
+    event = Email::SesEvent.new(
+      "eventType" => "Bounce",
+      "bounce" => { "bouncedRecipients" => [ { "emailAddress" => "real@example.com" }, {}, { "emailAddress" => "" } ] })
+
+    assert_equal [ "real@example.com" ], event.recipients
+  end
+
   private
     def fixture_payload(name)
       JSON.parse(file_fixture("sns/#{name}.json").read)

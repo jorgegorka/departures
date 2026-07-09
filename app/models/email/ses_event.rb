@@ -19,16 +19,19 @@ class Email::SesEvent
   end
 
   def recipients
-    case event_type
-    when "bounce"
-      Array(payload.dig("bounce", "bouncedRecipients")).map { |recipient| recipient["emailAddress"] }
-    when "complaint"
-      Array(payload.dig("complaint", "complainedRecipients")).map { |recipient| recipient["emailAddress"] }
-    when "delivery"
-      Array(payload.dig("delivery", "recipients"))
-    else
-      Array(payload.dig("mail", "destination"))
-    end
+    addresses =
+      case event_type
+      when "bounce"
+        Array(payload.dig("bounce", "bouncedRecipients")).map { |recipient| recipient["emailAddress"] }
+      when "complaint"
+        Array(payload.dig("complaint", "complainedRecipients")).map { |recipient| recipient["emailAddress"] }
+      when "delivery"
+        Array(payload.dig("delivery", "recipients"))
+      else
+        Array(payload.dig("mail", "destination"))
+      end
+
+    addresses.filter_map { |address| address.presence }
   end
 
   def occurred_at
