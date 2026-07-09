@@ -5,5 +5,6 @@
   <%= link_to "Bounces", bounces_path, class: "nav__link", aria: { current: current_page?(bounces_path) ? "page" : nil } %>
   <%= link_to "Suppressions", suppressions_path, class: "nav__link", aria: { current: current_page?(suppressions_path) ? "page" : nil } %>
   <%= link_to "Domains", domains_path, class: "nav__link", aria: { current: current_page?(domains_path) ? "page" : nil } %>
+  <%= link_to "Sources", sources_path, class: "nav__link", aria: { current: current_page?(sources_path) ? "page" : nil } %>
   <%= link_to "Send test", new_test_email_path, class: "nav__link", aria: { current: current_page?(new_test_email_path) ? "page" : nil } %>
 </nav>

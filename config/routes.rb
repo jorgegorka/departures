@@ -32,6 +32,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :sources, only: %i[ index new create edit update ] do
+    scope module: :sources do
+      resource :quota_sync, only: :create
+    end
+  end
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create

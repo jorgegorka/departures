@@ -1,0 +1,51 @@
+<%= form_with model: source, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+  <% if source.errors.any? %>
+    <div class="txt-negative txt-small margin-block-half">
+      <p class="font-weight-bold margin-none">This source couldn't be saved:</p>
+      <ul class="margin-none">
+        <% source.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "input" %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :environment %>
+    <%= form.text_field :environment, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :region %>
+    <%= form.text_field :region, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :default_from, "Default from address" %>
+    <%= form.email_field :default_from, class: "input" %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :configuration_set, "SES configuration set" %>
+    <%= form.text_field :configuration_set, class: "input" %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :retention_days %>
+    <%= form.number_field :retention_days, class: "input", min: 1 %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :aws_access_key_id, "AWS access key ID" %>
+    <%= form.text_field :aws_access_key_id, class: "input", value: "",
+          placeholder: source.persisted? ? "Unchanged unless filled in" : nil %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :aws_secret_access_key, "AWS secret access key" %>
+    <%= form.password_field :aws_secret_access_key, class: "input", value: "",
+          placeholder: source.persisted? ? "Unchanged unless filled in" : nil %>
+  </div>
+
+  <div>
+    <%= form.submit source.persisted? ? "Update source" : "Add source", class: "btn btn--primary btn--large" %>
+  </div>
+<% end %>

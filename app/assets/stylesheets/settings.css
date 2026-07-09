@@ -52,4 +52,15 @@
     overflow-wrap: anywhere;
     user-select: all;
   }
+
+  .settings-card__facts {
+    display: grid;
+    gap: calc(var(--block-space) / 2) var(--inline-space);
+    grid-template-columns: max-content 1fr;
+    margin-block: var(--block-space) 0;
+  }
+
+  .settings-card__facts dt {
+    color: var(--color-ink-lighter);
+  }
 }
