@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Api::EmailsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   ACME_FULL_TOKEN = "dp_#{"acme" * 12}".freeze
   ACME_READ_ONLY_TOKEN = "dp_#{"read" * 12}".freeze
   ACME_SEND_ONLY_TOKEN = "dp_#{"mail" * 12}".freeze
@@ -199,5 +201,37 @@ class Api::EmailsControllerTest < ActionDispatch::IntegrationTest
     data = response.parsed_body["data"]
     assert data.any? { |row| row["id"] == emails(:acme_welcome).public_id }
     assert(data.all? { |row| row.key?("status") && row.key?("created_at") })
+  end
+
+  # --- Delivery wiring (Phase 2) ---
+
+  test "an accepted submission stores the MIME and enqueues delivery" do
+    assert_enqueued_with(job: SendEmailJob) do
+      post_email
+    end
+
+    assert_response :accepted
+    email = Email.order(:id).last
+    assert_equal "queued", email.status
+    assert Email::MimeStore.root.join(email.mime_path).exist?
+  end
+
+  test "an idempotent replay does not enqueue a second delivery" do
+    post_email(headers: { "Idempotency-Key" => "req-90" })
+    assert_response :accepted
+
+    assert_no_enqueued_jobs only: SendEmailJob do
+      post_email(headers: { "Idempotency-Key" => "req-90" })
+    end
+
+    assert_response :accepted
+  end
+
+  test "a rejected submission enqueues nothing" do
+    assert_no_enqueued_jobs only: SendEmailJob do
+      post_email(payload: valid_payload(to: []))
+    end
+
+    assert_response :unprocessable_entity
   end
 end

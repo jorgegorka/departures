@@ -67,6 +67,9 @@ class EmailSubmission
     else
       false
     end
+  rescue ActiveRecord::RecordInvalid => invalid
+    errors.merge!(invalid.record.errors)
+    false
   end
 
   private
@@ -86,6 +89,9 @@ class EmailSubmission
           email.attachments.create!(filename: attachment[:filename],
             content_type: attachment[:content_type], byte_size: decoded_size(attachment))
         end
+
+        Email::MimeStore.write(email, Email::MimeBuilder.new(email, attachments: attachments).to_eml)
+        email.deliver_later
 
         email
       end

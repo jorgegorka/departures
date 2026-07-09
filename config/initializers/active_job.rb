@@ -30,8 +30,12 @@ module DeparturesJobExtensions
   end
 end
 
-Rails.application.config.active_job.enqueue_after_transaction_commit = true
-
 ActiveSupport.on_load(:active_job) do
   prepend DeparturesJobExtensions
+
+  # Defer perform_later calls made inside a transaction until it commits (and
+  # drop them if it rolls back). Rails 8.1 silently ignores the
+  # config.active_job.enqueue_after_transaction_commit key — the setting only
+  # exists as this per-class attribute — so it must be set here, not in config.
+  self.enqueue_after_transaction_commit = true
 end

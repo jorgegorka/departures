@@ -1,6 +1,8 @@
 require "test_helper"
 
 class EmailSubmissionTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     Current.session = sessions(:owner)
   end
@@ -173,4 +175,57 @@ class EmailSubmissionTest < ActiveSupport::TestCase
   test "scalar recipients are normalized to arrays for internal callers" do
     assert submission(to: "user@example.com").valid?
   end
+
+  # --- Phase 2: MIME + delivery wiring ---
+
+  test "save stores the MIME and enqueues delivery" do
+    submission = delivery_submission
+
+    email = nil
+    assert_enqueued_with(job: SendEmailJob) do
+      email = submission.save
+    end
+
+    assert_equal "queued", email.status
+    assert_equal "#{email.project_id}/#{email.public_id}.eml", email.mime_path
+    assert Email::MimeStore.root.join(email.mime_path).exist?
+    assert_includes Email::MimeStore.read(email), "X-Departures-Id: #{email.public_id}"
+  end
+
+  test "request-time attachment bytes reach the stored MIME" do
+    submission = delivery_submission(attachments: [
+      { filename: "hello.txt", content_type: "text/plain", content: Base64.strict_encode64("Hello!") } ])
+
+    email = submission.save
+
+    parsed = Mail.read_from_string(Email::MimeStore.read(email))
+    assert_equal "Hello!", parsed.attachments["hello.txt"].decoded
+  end
+
+  test "an invalid submission writes no MIME and enqueues nothing" do
+    submission = delivery_submission(to: [])
+
+    assert_no_enqueued_jobs only: SendEmailJob do
+      assert_not submission.save
+    end
+  end
+
+  # --- Phase 1 carry-overs: delivery-safety races ---
+
+  test "save returns false with errors when a validation race raises RecordInvalid" do
+    submission = delivery_submission
+    invalid_email = Email.new.tap { |email| email.errors.add(:from, "is required") }
+
+    Email.stub :create!, ->(*) { raise ActiveRecord::RecordInvalid.new(invalid_email) } do
+      assert_not submission.save
+    end
+
+    assert_includes submission.errors.full_messages.join(", "), "From is required"
+  end
+
+  private
+    def delivery_submission(**overrides)
+      EmailSubmission.new({ project: projects(:acme_default), source: sources(:acme_production),
+        from: "hello@acme.com", to: [ "user@example.com" ], subject: "Hi", html: "<p>Hi</p>" }.merge(overrides))
+    end
 end

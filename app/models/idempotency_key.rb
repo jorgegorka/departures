@@ -64,6 +64,15 @@ class IdempotencyKey < ApplicationRecord
         email
       rescue ActiveRecord::RecordNotUnique
         replay(active.find_by!(api_key: api_key, key: key), fingerprint)
+      rescue ActiveRecord::RecordInvalid => invalid
+        # A winner that committed between our lookup and our insert surfaces as
+        # a uniqueness-validation failure rather than RecordNotUnique. Anything
+        # else is a genuine bug and must propagate.
+        if invalid.record.is_a?(IdempotencyKey) && invalid.record.errors.of_kind?(:key, :taken)
+          replay(active.find_by!(api_key: api_key, key: key), fingerprint)
+        else
+          raise
+        end
       end
   end
 end
