@@ -1,0 +1,17 @@
+{
+  "eventType": "Complaint",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["complainer@example.com"]
+  },
+  "complaint": {
+    "complainedRecipients": [ { "emailAddress": "complainer@example.com" } ],
+    "timestamp": "2026-07-01T11:00:00.000Z",
+    "feedbackId": "0100feedback-complaint",
+    "complaintFeedbackType": "abuse",
+    "userAgent": "Yahoo!-Mail-Feedback/2.0"
+  }
+}

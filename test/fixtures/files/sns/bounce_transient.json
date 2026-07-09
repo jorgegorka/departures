@@ -1,0 +1,20 @@
+{
+  "eventType": "Bounce",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["soft@example.com"]
+  },
+  "bounce": {
+    "bounceType": "Transient",
+    "bounceSubType": "MailboxFull",
+    "bouncedRecipients": [
+      { "emailAddress": "soft@example.com", "action": "failed", "status": "4.2.2",
+        "diagnosticCode": "smtp; 452 4.2.2 mailbox full" }
+    ],
+    "timestamp": "2026-07-01T10:00:03.000Z",
+    "feedbackId": "0100feedback-transient"
+  }
+}

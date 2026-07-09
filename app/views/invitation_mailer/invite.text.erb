@@ -1,0 +1,5 @@
+<%= @invitation.invited_by.email_address %> invited you to the <%= @invitation.workspace.name %> workspace as <%= @invitation.role.humanize.downcase %>.
+
+Accept invitation: <%= @acceptance_url %>
+
+This invitation expires on <%= @invitation.expires_at.to_date %>.

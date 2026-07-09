@@ -1,0 +1,49 @@
+acme_full:
+  project: acme_default
+  workspace: acme
+  name: Acme full access
+  prefix: dp_acmeacmea
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "acme" * 12) %>
+  scopes: ["send", "read:activity"]
+
+acme_read_only:
+  project: acme_default
+  workspace: acme
+  name: Acme read only
+  prefix: dp_readreadr
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "read" * 12) %>
+  scopes: ["read:activity"]
+
+acme_send_only:
+  project: acme_default
+  workspace: acme
+  name: Acme send only
+  prefix: dp_mailmailm
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "mail" * 12) %>
+  scopes: ["send"]
+
+acme_revoked:
+  project: acme_default
+  workspace: acme
+  name: Acme revoked
+  prefix: dp_gonegoneg
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "gone" * 12) %>
+  scopes: ["send", "read:activity"]
+  revoked_at: <%= 1.day.ago %>
+
+acme_expired:
+  project: acme_default
+  workspace: acme
+  name: Acme expired
+  prefix: dp_latelatel
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "late" * 12) %>
+  scopes: ["send", "read:activity"]
+  expires_at: <%= 1.hour.ago %>
+
+globex_full:
+  project: globex_default
+  workspace: globex
+  name: Globex full access
+  prefix: dp_globglobg
+  key_hash: <%= Digest::SHA256.hexdigest("dp_" + "glob" * 12) %>
+  scopes: ["send", "read:activity"]

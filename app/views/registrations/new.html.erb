@@ -1,0 +1,25 @@
+<h1>Create your account</h1>
+
+<% if @user.errors.any? %>
+  <ul class="txt-negative">
+    <% @user.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with url: registration_path, class: "flex flex-column gap" do |form| %>
+  <div class="flex flex-column gap-half">
+    <%= form.label :email_address %>
+    <%= form.email_field :email_address, class: "input", required: true, autofocus: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :password %>
+    <%= form.password_field :password, class: "input", required: true %>
+  </div>
+  <div class="flex flex-column gap-half">
+    <%= form.label :password_confirmation %>
+    <%= form.password_field :password_confirmation, class: "input", required: true %>
+  </div>
+  <%= form.submit "Create account", class: "btn btn--primary btn--medium" %>
+<% end %>

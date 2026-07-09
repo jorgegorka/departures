@@ -1,0 +1,10 @@
+acme_welcome:
+  project: acme_default
+  workspace: acme
+  source: acme_production
+  api_key: acme_full
+  public_id: em_fixturewelcome000000001
+  status: queued
+  from: hello@acme.com
+  subject: Welcome
+  html_body: "<p>Welcome</p>"

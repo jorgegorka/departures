@@ -1,0 +1,10 @@
+<% %w[ owner member sender api_keys domains read_only ].each do |role| %>
+acme_<%= role %>:
+  workspace: acme
+  user: <%= role %>
+  role: <%= role %>
+<% end %>
+globex_owner:
+  workspace: globex
+  user: outsider
+  role: owner

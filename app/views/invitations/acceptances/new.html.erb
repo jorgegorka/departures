@@ -1,0 +1,22 @@
+<h1>Join <%= @invitation.workspace.name %></h1>
+
+<% if authenticated? %>
+  <%= button_to "Accept invitation", invitation_acceptance_path(invitation_token: params[:invitation_token]),
+        class: "btn btn--primary btn--large" %>
+<% else %>
+  <% if @user.errors.any? %>
+    <ul class="txt-negative">
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= form_with url: invitation_acceptance_path(invitation_token: params[:invitation_token]),
+        class: "flex flex-column gap" do |form| %>
+    <%= form.email_field :email_address, value: @invitation.email, class: "input", readonly: true %>
+    <%= form.password_field :password, class: "input", required: true, placeholder: "Password" %>
+    <%= form.password_field :password_confirmation, class: "input", required: true, placeholder: "Confirm password" %>
+    <%= form.submit "Create account & join", class: "btn btn--primary btn--medium" %>
+  <% end %>
+<% end %>

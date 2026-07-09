@@ -1,0 +1,11 @@
+{
+  "eventType": "Reject",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["user@example.com"]
+  },
+  "reject": { "reason": "Bad content" }
+}

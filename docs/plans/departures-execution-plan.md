@@ -126,6 +126,8 @@ Tests: issue/authenticate/revoke/rotate key; scope matrix; rate-limit 429; idemp
 
 ### Phase 2 — Send pipeline: MIME, storage, SES job
 
+Detailed plan: **docs/plans/phase-2-send-pipeline-plan.md** (complete).
+
 | Task | Files | Directives |
 |---|---|---|
 | 2.1 `Email::MimeBuilder` | `app/models/email/mime_builder.rb` | Plain Ruby class (presenter shape): builds multipart/alternative via the `mail` gem, attachments, custom headers, `X-Departures-Id`. `to_eml` → String. |
@@ -136,6 +138,8 @@ Tests: issue/authenticate/revoke/rotate key; scope matrix; rate-limit 429; idemp
 Tests: MIME structure assertions (parts, headers, attachment encoding); store round-trip; `deliver` happy path + SES error → retry → failed, all with stubbed SES client; `assert_enqueued_with(job: SendEmailJob)`.
 
 ### Phase 3 — SNS ingestion, events, suppressions, live activity
+
+Detailed plan: **docs/plans/phase-3-sns-ingestion-plan.md** (complete).
 
 | Task | Files | Directives |
 |---|---|---|

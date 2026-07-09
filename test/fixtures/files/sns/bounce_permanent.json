@@ -1,0 +1,21 @@
+{
+  "eventType": "Bounce",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["bounce@example.com"]
+  },
+  "bounce": {
+    "bounceType": "Permanent",
+    "bounceSubType": "General",
+    "bouncedRecipients": [
+      { "emailAddress": "bounce@example.com", "action": "failed", "status": "5.1.1",
+        "diagnosticCode": "smtp; 550 5.1.1 user unknown" }
+    ],
+    "timestamp": "2026-07-01T10:00:03.000Z",
+    "feedbackId": "0100feedback-permanent",
+    "reportingMTA": "dns; a8-50.smtp-out.amazonses.com"
+  }
+}

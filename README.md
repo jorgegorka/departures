@@ -88,13 +88,110 @@ bin/rails db:prepare
 bin/dev
 ```
 
+Registration is open only for the first user; set `OPEN_REGISTRATION=1` to allow more sign-ups.
+
 Run the test suite:
 
 ```bash
 bin/rails test
 ```
 
+The `minitest` gem is pinned to `~> 5.25` because minitest 6 removed `minitest/mock`, which the delivery-job tests rely on.
+
 Detailed setup (AWS credentials, SNS topic wiring, deployment) will be documented as the corresponding features land.
+
+## API
+
+### Authentication
+
+Every request carries a bearer API key:
+
+```
+Authorization: Bearer dp_...
+```
+
+Keys are scoped (`send`, `read:activity`); a key missing the scope required by the endpoint gets a `403`. An invalid, revoked, or expired token gets a `401`.
+
+### `POST /api/emails`
+
+Accepts a message for sending. `to`, `cc`, and `bcc` are always arrays, even for a single recipient:
+
+```bash
+curl -i -X POST https://your-departures-host/api/emails \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: order-42-confirmation" \
+  -d '{
+    "from": "hello@example.com",
+    "to": ["user@example.com"],
+    "cc": [],
+    "bcc": [],
+    "subject": "Welcome",
+    "html": "<p>Hi there</p>",
+    "text": "Hi there",
+    "headers": {},
+    "tags": {},
+    "attachments": [
+      { "filename": "invoice.pdf", "content_type": "application/pdf", "content": "<base64>" }
+    ]
+  }'
+```
+
+Send either `subject` + a body (`html` and/or `text`), or a `template_id` — not both. Up to 50 total recipients across `to`/`cc`/`bcc`, up to 25 attachments capped at 30 MB decoded total.
+
+An optional `environment` param selects which of the project's sources (environments) to send through, defaulting to `production`. An unknown environment returns `422`.
+
+A successful request returns `202 Accepted` immediately — the email is queued, not yet delivered:
+
+```json
+{ "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6" }
+```
+
+Delivery then happens asynchronously through SES: the email's status advances `queued → sending → sent`. If SES rejects the send, delivery is retried with backoff up to 3 attempts; on final failure the email is marked `failed` and the reason is recorded in `failure_reason`.
+
+### Idempotency
+
+Pass an `Idempotency-Key` header to make retries safe. Replaying the exact same request body with the same key returns the original email's `id` without creating a second send. Reusing the same key with a **different** body returns `409 Conflict`:
+
+```json
+{ "error": "Idempotency-Key was already used with a different request body" }
+```
+
+### `GET /api/emails`
+
+Lists the calling key's project's 50 most recent emails (requires the `read:activity` scope):
+
+```json
+{ "data": [ { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6", "status": "queued", "created_at": "2026-07-08T13:04:40.146Z" } ] }
+```
+
+### SES event webhook (inbound)
+
+Each source has a secret webhook token; subscribe its SNS topic (the SES configuration set's event destination) to:
+
+```
+POST /api/webhooks/ses/:webhook_token
+```
+
+Subscription confirmations are handled automatically. Every notification is SNS-signature-verified (signing-cert host pinned to `sns.<region>.amazonaws.com`) and logged, then processed in the background: events are matched to emails by SES message id, recorded per recipient, and the email's status advances monotonically (`sent → delivered → opened → clicked`, or `bounced`/`complained`) — out-of-order events never regress status. Complaints and permanent bounces suppress the recipient automatically (soft bounces never do; expired suppressions are reactivated). Unknown tokens 404, bad signatures 403, and the endpoint is throttled to 120 requests/minute per token.
+
+### Rate limiting
+
+Each API key is limited to 60 requests per minute. Exceeding it returns `429 Too Many Requests`:
+
+```json
+{ "error": "Too many requests" }
+```
+
+### Error format
+
+| Status | When | Body |
+|---|---|---|
+| 401 | Missing, unknown, revoked, or expired token | `{ "error": "Unauthorized" }` |
+| 403 | Key lacks the required scope | `{ "error": "Forbidden: this key is missing the <scope> scope" }` |
+| 409 | Idempotency key reused with a different body | `{ "error": "..." }` |
+| 422 | Validation failure (bad recipients, suppressed address, unknown environment, etc.) | `{ "errors": ["..."] }` |
+| 429 | Rate limit exceeded | `{ "error": "Too many requests" }` |
 
 ## Contributing
 

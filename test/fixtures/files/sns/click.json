@@ -1,0 +1,17 @@
+{
+  "eventType": "Click",
+  "mail": {
+    "timestamp": "2026-07-01T09:59:58.000Z",
+    "messageId": "ses-fixture-message-1",
+    "source": "hello@acme.com",
+    "sendingAccountId": "123456789012",
+    "destination": ["user@example.com"]
+  },
+  "click": {
+    "timestamp": "2026-07-01T12:05:00.000Z",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5)",
+    "ipAddress": "192.0.2.1",
+    "link": "https://acme.com/welcome",
+    "linkTags": {}
+  }
+}

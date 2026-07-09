@@ -1,0 +1,7 @@
+<nav class="flex gap align-center">
+  <% Current.user.workspaces.each do |workspace| %>
+    <%= button_to workspace.name, workspace_switch_path(workspace),
+          class: "btn btn--plain btn--medium#{" btn--current" if workspace == Current.workspace}" %>
+  <% end %>
+  <%= link_to "New workspace", new_workspace_path, class: "btn btn--secondary btn--medium" %>
+</nav>
