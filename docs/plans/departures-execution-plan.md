@@ -179,6 +179,8 @@ Detailed plan: **docs/plans/phase-5-platform-plan.md** (complete). Scope additio
 
 ### Phase 6 — Recurring work, retention, ops
 
+Detailed plan: **docs/plans/phase-6-recurring-ops-plan.md** (complete).
+
 | Task | Files | Directives |
 |---|---|---|
 | 6.1 Recurring jobs | `config/recurring.yml`, `SyncQuotasJob`, `PruneRetentionJob` | `SyncQuotasJob` every 4 h → `Source.sync_all_quotas`; `PruneRetentionJob` daily → class methods `Email.prune_expired` (respects `source.retention_days`, deletes `.eml` via MimeStore), `WebhookLog.prune`, `WebhookDelivery.prune` (30 d), `IdempotencyKey.prune_expired`, `Invitation.prune_expired`. All use `in_batches` (SQLite lock hygiene, risk #3). Logic in models; jobs stay 3-liners. |
