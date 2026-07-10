@@ -34,7 +34,7 @@ class Email::MimeBuilder
     end
 
     def from_domain
-      email.from.to_s.split("@").last
+      EmailAddress.address_part(email.from).to_s.split("@").last
     end
 
     def add_body(message)

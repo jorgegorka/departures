@@ -14,7 +14,7 @@ class Domain < ApplicationRecord
   attr_writer :ses_client
 
   def self.verifies?(project, address)
-    host = address.to_s[/@([^@\s]+)\z/, 1]&.downcase
+    host = EmailAddress.address_part(address)&.split("@")&.last&.downcase
     return false if host.blank?
 
     project.domains.verified.pluck(:name).any? do |name|
