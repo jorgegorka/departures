@@ -53,6 +53,31 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_not submission(from: "not-an-email").valid?
   end
 
+  test "a display-name formatted from address is accepted" do
+    assert submission(from: "Acme Support <hello@acme.com>").valid?
+  end
+
+  test "a display-name formatted recipient is accepted" do
+    assert submission(to: [ "Jane Doe <user@example.com>" ]).valid?
+  end
+
+  test "an absurdly long formatted address is rejected" do
+    from = "#{"A" * 2000} <hello@acme.com>"
+    assert_not submission(from: from).valid?
+  end
+
+  test "garbage addresses are rejected" do
+    assert_not submission(from: "<<<").valid?
+    assert_not submission(to: [ "<<<" ]).valid?
+  end
+
+  test "a comma-separated list inside one recipient string is rejected, not smuggled past suppression" do
+    subject = submission(to: [ "user@example.com, blocked@example.com" ])
+
+    assert_not subject.valid?
+    assert subject.errors[:to].any? { |message| message.include?("invalid address") }
+  end
+
   test "at least one to recipient is required" do
     subject = submission(to: [])
 
@@ -198,6 +223,13 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_includes message, "temporary@example.com"
   end
 
+  test "a formatted recipient is still blocked by a bare suppression" do
+    subject = submission(to: [ "Blocked User <blocked@example.com>" ])
+
+    assert_not subject.valid?
+    assert_includes subject.errors[:base].sole, "blocked@example.com"
+  end
+
   test "expired suppressions do not block sends" do
     assert submission(to: [ "lapsed@example.com" ]).valid?
   end
@@ -222,6 +254,10 @@ class EmailSubmissionTest < ActiveSupport::TestCase
 
   test "guardrail: accepts a from address on a subdomain of a verified domain" do
     assert submission(from: "no-reply@mail.acme.com").valid?
+  end
+
+  test "guardrail: domain verification passes for a formatted from on a verified domain" do
+    assert submission(from: "Acme Support <hello@acme.com>").valid?
   end
 
   test "guardrail: a stale quota is refreshed best-effort before rejecting" do
