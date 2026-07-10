@@ -67,6 +67,8 @@ class Email < ApplicationRecord
 
   scope :preloaded, -> { preload(:recipients, :events, :source) }
 
+  scope :retention_expired_for, ->(source) { where(source: source, created_at: ...source.retention_days.days.ago) }
+
   before_create :assign_public_id
 
   def self.to_csv
@@ -75,6 +77,19 @@ class Email < ApplicationRecord
       preloaded.find_each do |email|
         csv << [ email.public_id, email.status, csv_safe(email.from), csv_safe(email.subject), email.bounce_type,
           csv_safe(email.recipients.map(&:address).join(" ")), email.created_at.iso8601 ]
+      end
+    end
+  end
+
+  # Destroys per record (not delete_all) so dependent rows cascade and the
+  # archived .eml comes off disk; small batches keep SQLite write locks short.
+  def self.prune_expired
+    Source.find_each do |source|
+      retention_expired_for(source).in_batches(of: 100) do |batch|
+        batch.each do |email|
+          Email::MimeStore.delete(email)
+          email.destroy
+        end
       end
     end
   end
