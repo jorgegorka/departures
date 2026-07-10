@@ -14,6 +14,10 @@ class EmailAddressTest < ActiveSupport::TestCase
     assert_nil EmailAddress.address_part("garbage @ two @ ats")
   end
 
+  test "address_part returns nil for a comma-separated address list" do
+    assert_nil EmailAddress.address_part("a@b.com, c@d.com")
+  end
+
   test "address_part returns nil for blank input" do
     assert_nil EmailAddress.address_part("")
     assert_nil EmailAddress.address_part(nil)
@@ -22,6 +26,11 @@ class EmailAddressTest < ActiveSupport::TestCase
   test "valid? accepts plain and display-name addresses" do
     assert EmailAddress.valid?("ann@example.com")
     assert EmailAddress.valid?("Ann Smith <ann@example.com>")
+  end
+
+  test "valid? rejects a comma-separated address list but keeps quoted-comma display names" do
+    assert_not EmailAddress.valid?("a@b.com, c@d.com")
+    assert EmailAddress.valid?(%q("Smith, Ann" <ann@example.com>))
   end
 
   test "valid? rejects an address with no domain" do

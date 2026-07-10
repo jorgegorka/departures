@@ -71,6 +71,13 @@ class EmailSubmissionTest < ActiveSupport::TestCase
     assert_not submission(to: [ "<<<" ]).valid?
   end
 
+  test "a comma-separated list inside one recipient string is rejected, not smuggled past suppression" do
+    subject = submission(to: [ "user@example.com, blocked@example.com" ])
+
+    assert_not subject.valid?
+    assert subject.errors[:to].any? { |message| message.include?("invalid address") }
+  end
+
   test "at least one to recipient is required" do
     subject = submission(to: [])
 

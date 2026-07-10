@@ -8,12 +8,21 @@ class EmailAddress
   MAX_ADDRESS_LENGTH = 320
 
   class << self
+    # The bare addr-spec, or nil unless the value parses as EXACTLY one
+    # address. Mail::AddressList is used (not Mail::Address) because the
+    # latter silently returns only the first address of a comma-separated
+    # list — which would let one recipient string smuggle extra deliverable
+    # addresses past validation, suppression, and recipient-count limits.
     def address_part(value)
       string = value.to_s
       return nil if string.blank?
 
-      address = Mail::Address.new(string).address
-      address.presence
+      addresses = Mail::AddressList.new(string).addresses
+      if addresses.one?
+        addresses.first.address.presence
+      else
+        nil
+      end
     rescue Mail::Field::IncompleteParseError, ArgumentError
       nil
     end
