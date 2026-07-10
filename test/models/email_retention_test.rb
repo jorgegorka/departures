@@ -50,9 +50,19 @@ class EmailRetentionTest < ActiveSupport::TestCase
     assert_not Email.exists?(expired.id)
   end
 
+  test "prune_expired never destroys in-flight (queued/sending) emails past the window" do
+    in_flight = create_email(subject: "Still queued", created_at: 31.days.ago, status: "queued")
+    terminal = create_email(subject: "Delivered long ago", created_at: 31.days.ago, status: "sent")
+
+    Email.prune_expired
+
+    assert Email.exists?(in_flight.id)
+    assert_not Email.exists?(terminal.id)
+  end
+
   private
-    def create_email(subject:, created_at:)
+    def create_email(subject:, created_at:, status: "sent")
       Email.create!(project: @source.project, source: @source, from: "hello@acme.com",
-        subject: subject, html_body: "<p>hi</p>", created_at: created_at)
+        subject: subject, html_body: "<p>hi</p>", created_at: created_at, status: status)
     end
 end

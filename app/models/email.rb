@@ -67,7 +67,9 @@ class Email < ApplicationRecord
 
   scope :preloaded, -> { preload(:recipients, :events, :source) }
 
-  scope :retention_expired_for, ->(source) { where(source: source, created_at: ...source.retention_days.days.ago) }
+  scope :retention_expired_for, ->(source) do
+    where(source: source, created_at: ...source.retention_days.days.ago).where.not(status: %w[ queued sending ])
+  end
 
   before_create :assign_public_id
 

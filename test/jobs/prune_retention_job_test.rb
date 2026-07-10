@@ -9,7 +9,7 @@ class PruneRetentionJobTest < ActiveSupport::TestCase
   test "perform prunes every retention-bound table in one pass" do
     source = sources(:acme_production)
     expired_email = Email.create!(project: source.project, source: source, from: "hello@acme.com",
-      subject: "Old", html_body: "<p>old</p>", created_at: 31.days.ago)
+      subject: "Old", html_body: "<p>old</p>", status: "sent", created_at: 31.days.ago)
     fresh_email = Email.create!(project: source.project, source: source, from: "hello@acme.com",
       subject: "New", html_body: "<p>new</p>")
     old_log = WebhookLog.create!(source: source, message_type: "Notification",
