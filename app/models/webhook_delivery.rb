@@ -4,6 +4,7 @@ class WebhookDelivery < ApplicationRecord
 
   MAX_RESPONSE_BODY = 1_000
   TIMEOUT = 5.seconds
+  PRUNE_AFTER = 30.days
   BLOCKED_RANGES = [
     IPAddr.new("0.0.0.0/8").freeze,
     IPAddr.new("100.64.0.0/10").freeze,
@@ -24,6 +25,10 @@ class WebhookDelivery < ApplicationRecord
   scope :reverse_chronologically, -> { order(created_at: :desc, id: :desc) }
 
   validates :event_type, presence: true
+
+  def self.prune
+    where(created_at: ...PRUNE_AFTER.ago).in_batches.delete_all
+  end
 
   # Solid Queue delivers at least once — a settled delivery must never post again.
   def deliver

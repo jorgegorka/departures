@@ -7,6 +7,12 @@ class WebhookLog < ApplicationRecord
   enum :status, %w[ received processed unmatched failed ].index_by(&:itself),
     default: "received", validate: true
 
+  PRUNE_AFTER = 30.days
+
+  def self.prune
+    where(created_at: ...PRUNE_AFTER.ago).in_batches.delete_all
+  end
+
   # Solid Queue delivers at least once, so a retried or redelivered job may
   # call this again — only a received log processes; anything else is a no-op.
   def process
