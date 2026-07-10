@@ -310,6 +310,18 @@ class WebhookLogTest < ActiveSupport::TestCase
     assert_empty webhook_endpoints(:globex_bounces).deliveries
   end
 
+  test "prune deletes logs older than the retention window and keeps newer ones" do
+    old_log = WebhookLog.create!(source: sources(:acme_production), message_type: "Notification",
+      payload: { "Type" => "Notification" }, created_at: 31.days.ago)
+    recent_log = WebhookLog.create!(source: sources(:acme_production), message_type: "Notification",
+      payload: { "Type" => "Notification" }, created_at: 29.days.ago)
+
+    WebhookLog.prune
+
+    assert_not WebhookLog.exists?(old_log.id)
+    assert WebhookLog.exists?(recent_log.id)
+  end
+
   private
     def matched_email
       Email.create!(project: projects(:acme_default), source: sources(:acme_production),
