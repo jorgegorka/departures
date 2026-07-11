@@ -7,5 +7,6 @@ class PruneRetentionJob < ApplicationJob
     WebhookDelivery.prune
     IdempotencyKey.prune_expired
     Invitation.prune_expired
+    AuditEvent.prune
   end
 end

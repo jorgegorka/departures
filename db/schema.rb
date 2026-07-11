@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_113527) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_114015) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -28,6 +28,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_113527) do
     t.index ["key_hash"], name: "index_api_keys_on_key_hash", unique: true
     t.index ["project_id"], name: "index_api_keys_on_project_id"
     t.index ["workspace_id"], name: "index_api_keys_on_workspace_id"
+  end
+
+  create_table "audit_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.string "ip"
+    t.json "metadata", default: {}, null: false
+    t.integer "subject_id"
+    t.string "subject_type"
+    t.integer "user_id"
+    t.integer "workspace_id"
+    t.index ["subject_type", "subject_id"], name: "index_audit_events_on_subject"
+    t.index ["user_id"], name: "index_audit_events_on_user_id"
+    t.index ["workspace_id", "action"], name: "index_audit_events_on_workspace_id_and_action"
+    t.index ["workspace_id", "created_at"], name: "index_audit_events_on_workspace_id_and_created_at"
+    t.index ["workspace_id"], name: "index_audit_events_on_workspace_id"
   end
 
   create_table "domains", force: :cascade do |t|
