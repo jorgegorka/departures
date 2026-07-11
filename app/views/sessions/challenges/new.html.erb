@@ -1,0 +1,11 @@
+<% content_for :title, "Two-factor code" %>
+
+<h1>Enter your two-factor code</h1>
+
+<%= form_with url: challenge_path do |form| %>
+  <%= form.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "numeric",
+    placeholder: "6-digit or recovery code", class: "input" %>
+  <%= form.submit "Verify", class: "btn btn--primary btn--medium" %>
+<% end %>
+
+<p>Lost your device? Enter one of your recovery codes instead.</p>

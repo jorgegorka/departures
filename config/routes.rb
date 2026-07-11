@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resource :session
+  resource :challenge, only: %i[ new create ], controller: "sessions/challenges"
   resource :registration, only: %i[ new create ]
   resources :passwords, param: :token
   scope module: :users do
