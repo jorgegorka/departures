@@ -18,6 +18,7 @@ class ApiKey < ApplicationRecord
       create!(project: project, name: name, scopes: scopes, prefix: token.first(12),
         key_hash: digest(token), expires_at: expires_in&.from_now).tap do |api_key|
         api_key.instance_variable_set(:@token, token)
+        AuditEvent.record("api_key.issued", subject: api_key, metadata: { prefix: api_key.prefix }, workspace: api_key.workspace)
       end
     end
 
@@ -48,11 +49,13 @@ class ApiKey < ApplicationRecord
   def revoke
     unless revoked?
       update! revoked_at: Time.current
+      AuditEvent.record("api_key.revoked", subject: self, metadata: { prefix: prefix }, workspace: workspace)
     end
   end
 
   def rotate
     transaction do
+      AuditEvent.record("api_key.rotated", subject: self, metadata: { prefix: prefix }, workspace: workspace)
       revoke
       self.class.issue(project: project, name: name, scopes: scopes)
     end

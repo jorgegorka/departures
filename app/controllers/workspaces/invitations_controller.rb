@@ -12,6 +12,7 @@ class Workspaces::InvitationsController < ApplicationController
 
     if @invitation.save
       @invitation.deliver_later
+      AuditEvent.record("invitation.created", subject: @invitation, metadata: { email: @invitation.email, role: @invitation.role }, workspace: @workspace)
       redirect_to root_url, notice: "Invitation sent to #{@invitation.email}"
     else
       render :new, status: :unprocessable_entity

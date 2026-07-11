@@ -20,6 +20,7 @@ class SourcesController < ApplicationController
     @source = Current.project.sources.new(source_params)
 
     if @source.save
+      AuditEvent.record("source.created", subject: @source, metadata: { environment: @source.environment })
       redirect_to sources_path, notice: "Source added."
     else
       render :new, status: :unprocessable_entity
@@ -31,6 +32,7 @@ class SourcesController < ApplicationController
 
   def update
     if @source.update(source_params)
+      AuditEvent.record("source.updated", subject: @source, metadata: { environment: @source.environment })
       redirect_to sources_path, notice: "Source updated."
     else
       render :edit, status: :unprocessable_entity

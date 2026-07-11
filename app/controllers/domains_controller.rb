@@ -18,6 +18,7 @@ class DomainsController < ApplicationController
       @domain = Current.project.domains.new(domain_params)
 
       if @domain.save
+        AuditEvent.record("domain.created", subject: @domain, metadata: { name: @domain.name })
         if @domain.provision
           redirect_to domains_path, notice: "Domain added. Create the DNS records below, then re-check."
         else
@@ -30,7 +31,9 @@ class DomainsController < ApplicationController
   end
 
   def destroy
-    Current.project.domains.find(params[:id]).decommission
+    domain = Current.project.domains.find(params[:id])
+    domain.decommission
+    AuditEvent.record("domain.destroyed", metadata: { name: domain.name })
     redirect_to domains_path, notice: "Domain removed."
   end
 

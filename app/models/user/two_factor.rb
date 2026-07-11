@@ -25,6 +25,7 @@ module User::TwoFactor
     if timestep
       codes = build_recovery_codes
       update! otp_enabled_at: Time.current, otp_consumed_timestep: timestep, otp_recovery_codes: digest_codes(codes)
+      AuditEvent.record("two_factor.enabled", subject: self, user: self)
       codes
     else
       false
@@ -33,6 +34,7 @@ module User::TwoFactor
 
   def disable_two_factor
     update! otp_secret: nil, otp_enabled_at: nil, otp_consumed_timestep: nil, otp_recovery_codes: []
+    AuditEvent.record("two_factor.disabled", subject: self, user: self)
   end
 
   def verify_totp(code, at: Time.current)
@@ -58,6 +60,7 @@ module User::TwoFactor
     with_lock do
       if otp_recovery_codes.include?(digest)
         update! otp_recovery_codes: otp_recovery_codes - [ digest ]
+        AuditEvent.record("two_factor.recovery_code_redeemed", subject: self, user: self)
         true
       else
         false
@@ -68,6 +71,7 @@ module User::TwoFactor
   def regenerate_recovery_codes
     codes = build_recovery_codes
     update! otp_recovery_codes: digest_codes(codes)
+    AuditEvent.record("two_factor.recovery_codes_regenerated", subject: self, user: self)
     codes
   end
 

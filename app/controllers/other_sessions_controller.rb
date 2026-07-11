@@ -3,7 +3,8 @@ class OtherSessionsController < ApplicationController
   allow_two_factor_unenrolled_access
 
   def destroy
-    Current.user.sessions.where.not(id: Current.session.id).destroy_all
+    revoked = Current.user.sessions.where.not(id: Current.session.id).destroy_all
+    AuditEvent.record("session.bulk_revoked", metadata: { count: revoked.size })
     redirect_to user_sessions_path, notice: "Signed out everywhere else."
   end
 end

@@ -33,6 +33,7 @@ class SessionsController < ApplicationController
       redirect_to new_session_path, status: :see_other
     else
       session_record.destroy
+      AuditEvent.record("session.revoked", metadata: { device: session_record.device_summary })
       redirect_to user_sessions_path, notice: "Session signed out."
     end
   end

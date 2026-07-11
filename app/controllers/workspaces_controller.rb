@@ -23,6 +23,10 @@ class WorkspacesController < ApplicationController
 
   def update
     if @workspace.update(settings_params)
+      if @workspace.saved_change_to_require_two_factor?
+        action = @workspace.require_two_factor? ? "workspace.two_factor_required" : "workspace.two_factor_requirement_removed"
+        AuditEvent.record(action, subject: @workspace, workspace: @workspace)
+      end
       redirect_to edit_workspace_path(@workspace), notice: "Workspace settings saved."
     else
       render :edit, status: :unprocessable_entity

@@ -11,14 +11,17 @@ class SuppressionsController < ApplicationController
   end
 
   def create
-    Suppression.record(Current.project, suppression_params[:email], reason: "manual")
+    suppression = Suppression.record(Current.project, suppression_params[:email], reason: "manual")
+    AuditEvent.record("suppression.created", subject: suppression, metadata: { email: suppression.email })
     redirect_to suppressions_path, notice: "Address suppressed."
   rescue ActiveRecord::RecordInvalid => invalid
     redirect_to suppressions_path, alert: invalid.record.errors.full_messages.to_sentence
   end
 
   def destroy
-    Current.project.suppressions.find(params[:id]).destroy
+    suppression = Current.project.suppressions.find(params[:id])
+    suppression.destroy
+    AuditEvent.record("suppression.destroyed", metadata: { email: suppression.email })
     redirect_to suppressions_path, notice: "Suppression removed."
   end
 
