@@ -47,6 +47,13 @@ class User::TwoFactorTest < ActiveSupport::TestCase
     assert_equal 9, @user.otp_recovery_codes.length
   end
 
+  test "redeem_recovery_code accepts an uppercase-entered code" do
+    codes = @user.enable_two_factor(@totp.code)
+
+    assert @user.redeem_recovery_code(codes.first.upcase)
+    assert_equal 9, @user.otp_recovery_codes.length
+  end
+
   test "redeem_recovery_code refuses unknown codes" do
     @user.enable_two_factor(@totp.code)
     assert_not @user.redeem_recovery_code("nope")

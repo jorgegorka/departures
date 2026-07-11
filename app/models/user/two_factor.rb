@@ -36,28 +36,32 @@ module User::TwoFactor
   end
 
   def verify_totp(code, at: Time.current)
-    if two_factor_enabled?
-      timestep = totp.verify(code, at: at)
+    with_lock do
+      if two_factor_enabled?
+        timestep = totp.verify(code, at: at)
 
-      if timestep && timestep > otp_consumed_timestep.to_i
-        update! otp_consumed_timestep: timestep
-        true
+        if timestep && timestep > otp_consumed_timestep.to_i
+          update! otp_consumed_timestep: timestep
+          true
+        else
+          false
+        end
       else
         false
       end
-    else
-      false
     end
   end
 
   def redeem_recovery_code(code)
-    digest = Digest::SHA256.hexdigest(code.to_s.strip)
+    digest = Digest::SHA256.hexdigest(code.to_s.strip.downcase)
 
-    if otp_recovery_codes.include?(digest)
-      update! otp_recovery_codes: otp_recovery_codes - [ digest ]
-      true
-    else
-      false
+    with_lock do
+      if otp_recovery_codes.include?(digest)
+        update! otp_recovery_codes: otp_recovery_codes - [ digest ]
+        true
+      else
+        false
+      end
     end
   end
 
