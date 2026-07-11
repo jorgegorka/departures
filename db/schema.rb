@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_111225) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -225,6 +225,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
+    t.integer "otp_consumed_timestep"
+    t.datetime "otp_enabled_at"
+    t.json "otp_recovery_codes", default: [], null: false
+    t.string "otp_secret"
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
