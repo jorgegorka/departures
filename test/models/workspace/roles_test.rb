@@ -35,4 +35,11 @@ class Workspace::RolesTest < ActiveSupport::TestCase
     assert_equal "owner", workspaces(:acme).role_for(users(:owner))
     assert_nil workspaces(:acme).role_for(users(:outsider))
   end
+
+  test "only owners can view the audit log" do
+    assert workspaces(:acme).capability?(users(:owner), :view_audit_log)
+    %i[ member sender api_keys domains read_only ].each do |role|
+      assert_not workspaces(:acme).capability?(users(role), :view_audit_log), "#{role} should not view audit log"
+    end
+  end
 end

@@ -2,7 +2,7 @@ module Workspace::Roles
   extend ActiveSupport::Concern
 
   ROLE_CAPABILITIES = {
-    "owner"     => %w[ send manage_api_keys manage_domains manage_templates manage_webhooks manage_members ],
+    "owner"     => %w[ send manage_api_keys manage_domains manage_templates manage_webhooks manage_members view_audit_log ],
     "member"    => %w[ send manage_api_keys manage_domains manage_templates manage_webhooks ],
     "sender"    => %w[ send ],
     "api_keys"  => %w[ manage_api_keys ],

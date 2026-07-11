@@ -61,6 +61,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :audit_events, only: :index
+
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do
     resource :retry, only: :create

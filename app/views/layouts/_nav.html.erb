@@ -12,6 +12,9 @@
   <% if Current.workspace&.capability?(Current.user, :manage_members) %>
     <%= link_to "Workspace", edit_workspace_path(Current.workspace), class: "nav__link", aria: { current: current_page?(edit_workspace_path(Current.workspace)) ? "page" : nil } %>
   <% end %>
+  <% if Current.workspace&.capability?(Current.user, :view_audit_log) %>
+    <%= link_to "Audit log", audit_events_path, class: "nav__link", aria: { current: current_page?(audit_events_path) ? "page" : nil } %>
+  <% end %>
   <%= link_to "Send test", new_test_email_path, class: "nav__link", aria: { current: current_page?(new_test_email_path) ? "page" : nil } %>
   <%= link_to "Security", user_sessions_path, class: "nav__link", aria: { current: current_page?(user_sessions_path) ? "page" : nil } %>
 </nav>
