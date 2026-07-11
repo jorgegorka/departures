@@ -42,6 +42,12 @@ class Sessions::ChallengesControllerTest < ActionDispatch::IntegrationTest
     assert_nil cookies[:session_id].presence
   end
 
+  test "the code param is filtered from request logs" do
+    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+
+    assert_equal "[FILTERED]", filter.filter(code: "a1b2c3d4e5")[:code]
+  end
+
   test "challenge without a pending login redirects to sign-in" do
     get new_challenge_path
     assert_redirected_to new_session_path
