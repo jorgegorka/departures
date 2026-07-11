@@ -1,5 +1,6 @@
 class Users::RecoveryCodesController < ApplicationController
   allow_unonboarded_access
+  allow_two_factor_unenrolled_access
 
   def create
     if Current.user.two_factor_enabled? && Current.user.authenticate(params[:password])

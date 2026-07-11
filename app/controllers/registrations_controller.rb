@@ -1,5 +1,6 @@
 class RegistrationsController < ApplicationController
   allow_unonboarded_access
+  allow_two_factor_unenrolled_access
   allow_unauthenticated_access
 
   before_action :ensure_registration_open

@@ -1,0 +1,15 @@
+<% content_for :title, "Workspace settings" %>
+
+<h1>Workspace settings</h1>
+
+<%= form_with model: @workspace do |form| %>
+  <%= form.label :name %>
+  <%= form.text_field :name, required: true, class: "input" %>
+
+  <label class="flex align-center gap">
+    <%= form.check_box :require_two_factor %>
+    Require two-factor authentication for every member of this workspace
+  </label>
+
+  <%= form.submit "Save settings", class: "btn btn--primary btn--medium" %>
+<% end %>

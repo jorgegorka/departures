@@ -1,5 +1,6 @@
 class Users::TwoFactorsController < ApplicationController
   allow_unonboarded_access
+  allow_two_factor_unenrolled_access
 
   def new
     unless Current.user.two_factor_enabled?

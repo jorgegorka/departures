@@ -7,7 +7,7 @@ Rails.application.routes.draw do
     resource :two_factor, only: %i[ new create destroy ]
     resource :recovery_codes, only: :create
   end
-  resources :workspaces, only: %i[ new create ] do
+  resources :workspaces, only: %i[ new create edit update ] do
     scope module: :workspaces do
       resource :switch, only: :create
       resources :invitations, only: %i[ new create ]

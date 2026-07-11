@@ -1,6 +1,7 @@
 class Sessions::ChallengesController < ApplicationController
   allow_unauthenticated_access
   allow_unonboarded_access
+  allow_two_factor_unenrolled_access
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_challenge_path, alert: "Try again later." }
   before_action :set_pending_user
 
