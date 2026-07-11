@@ -1,0 +1,16 @@
+<% content_for :title, "Enable two-factor authentication" %>
+
+<h1>Enable two-factor authentication</h1>
+
+<p>Scan this QR code with your authenticator app, then confirm with the 6-digit code it shows.</p>
+
+<div data-controller="qr-code" data-qr-code-text-value="<%= @totp.provisioning_uri(account: Current.user.email_address) %>"
+  style="max-inline-size: 14rem;"></div>
+
+<p>Can't scan? Enter this secret manually: <code><%= Current.user.otp_secret %></code></p>
+
+<%= form_with url: two_factor_path do |form| %>
+  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Your password", class: "input" %>
+  <%= form.text_field :code, required: true, autocomplete: "one-time-code", inputmode: "numeric", pattern: "\\d{6}", placeholder: "6-digit code", class: "input" %>
+  <%= form.submit "Enable two-factor", class: "btn btn--primary btn--medium" %>
+<% end %>

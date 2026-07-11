@@ -2,6 +2,10 @@ Rails.application.routes.draw do
   resource :session
   resource :registration, only: %i[ new create ]
   resources :passwords, param: :token
+  scope module: :users do
+    resource :two_factor, only: %i[ new create destroy ]
+    resource :recovery_codes, only: :create
+  end
   resources :workspaces, only: %i[ new create ] do
     scope module: :workspaces do
       resource :switch, only: :create

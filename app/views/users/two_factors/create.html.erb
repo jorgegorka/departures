@@ -1,0 +1,18 @@
+<% content_for :title, "Recovery codes" %>
+
+<h1>Two-factor authentication enabled</h1>
+
+<div class="secret-reveal">
+  <p>These recovery codes are shown <strong>only once</strong>. Each works a single time if you lose your authenticator.</p>
+  <ul>
+    <% @recovery_codes.each do |code| %>
+      <li><code><%= code %></code></li>
+    <% end %>
+  </ul>
+  <button type="button" class="btn btn--secondary btn--medium" data-controller="clipboard"
+    data-clipboard-text-value="<%= @recovery_codes.join("\n") %>" data-action="clipboard#copy">
+    Copy all codes
+  </button>
+</div>
+
+<p><%= link_to "Done", root_path, class: "btn btn--plain btn--medium" %></p>

@@ -49,6 +49,12 @@ module ActiveSupport
       Session.delete_all
       User.delete_all
     end
+
+    # Enables TOTP for a user and returns the plaintext recovery codes.
+    def enable_two_factor_for(user)
+      user.prepare_two_factor
+      user.enable_two_factor(Totp.new(user.otp_secret).code)
+    end
   end
 end
 
