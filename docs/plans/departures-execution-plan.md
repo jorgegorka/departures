@@ -194,6 +194,14 @@ Delivered: zero-runtime-dependency API client (`Departures::Client`), ActionMail
 
 Verified: live smoke — gem `deliver!` → local server 202, id written back as `X-Departures-Id`, display name preserved into stored record and archived MIME; Railtie registration confirmed in a real Rails boot.
 
+### Phase 8 — Security hardening (complete)
+
+Spec: **`docs/superpowers/specs/2026-07-11-phase-8-security-hardening-design.md`**. Detailed plan: **`docs/plans/phase-8-security-hardening-plan.md`**.
+
+Delivered: pure-Ruby RFC 6238 TOTP (`lib/totp.rb`, tested against the RFC vectors); `User::TwoFactor` (AR-encrypted secret, replay guard via consumed timestep under `with_lock`, SHA-256 recovery codes); enrollment with client-side QR (vendored `qrcode-generator` via importmap, no runtime CDN) and one-time recovery-code reveal; two-step login challenge (signed 10-minute pending cookie, rate-limited, TOTP or single-use recovery code); per-workspace 2FA enforcement (`workspaces.require_two_factor`, gate in `SetsCurrentWorkspaceAndProject`, workspace settings page); session management (`last_active_at` throttled touch, Security page, per-session + bulk revocation); `AuditEvent` (23-action allowlist, `Current.ip`, curated instrumentation, owner-only viewer behind `view_audit_log`, 180-day prune in `PruneRetentionJob`); closing adversarial security review (one Important fixed: `:code` added to `filter_parameters` so recovery codes never reach request logs).
+
+Post-merge follow-ups noted in review: already-enrolled guard on `Users::TwoFactorsController#new/#create`; drop unused `:subject` from `AuditEvent.preloaded`; audit-row assertions for 5 uncovered actions + prune-job wiring test; enable `force_ssl`/CSP when Kamal SSL termination lands (pre-existing).
+
 ---
 
 ## Section C — Execution protocol
