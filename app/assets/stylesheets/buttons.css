@@ -19,6 +19,7 @@
     gap: var(--inline-space-half);
     padding: var(--btn-padding);
     text-decoration: none;
+    white-space: nowrap;
     transition: background-color var(--duration-fast) var(--ease-out-quart),
       border-color var(--duration-fast) var(--ease-out-quart),
       color var(--duration-fast) var(--ease-out-quart);

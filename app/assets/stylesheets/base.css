@@ -153,6 +153,10 @@
     text-wrap: balance;
   }
 
+  a {
+    color: var(--color-link);
+  }
+
   ::selection {
     background-color: color-mix(in oklch, var(--color-accent) 25%, transparent);
   }

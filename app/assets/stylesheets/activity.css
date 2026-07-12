@@ -1,3 +1,10 @@
+/*
+ * activity.css sorts alphabetically before application.css, so it must
+ * repeat the cascade layer order first — otherwise its @layer modules
+ * block would register `modules` as the lowest-priority layer.
+ */
+@layer reset, base, components, modules, utilities;
+
 @layer modules {
   .activity {
     background-color: var(--color-surface);

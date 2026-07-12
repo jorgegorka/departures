@@ -6,7 +6,9 @@
    * style="" attributes. Propshaft rewrites each url() to the fingerprinted
    * asset path at compile time.
    */
+  .icon--add { --svg: url("add.svg"); }
   .icon--alert-circle { --svg: url("alert-circle.svg"); }
+  .icon--check { --svg: url("check.svg"); }
   .icon--check-circle { --svg: url("check-circle.svg"); }
   .icon--close { --svg: url("close.svg"); }
   .icon--copy-paste { --svg: url("copy-paste.svg"); }
