@@ -4,8 +4,7 @@
 
 <p>Scan this QR code with your authenticator app, then confirm with the 6-digit code it shows.</p>
 
-<div data-controller="qr-code" data-qr-code-text-value="<%= @totp.provisioning_uri(account: Current.user.email_address) %>"
-  style="max-inline-size: 14rem;"></div>
+<div class="qr-code" data-controller="qr-code" data-qr-code-text-value="<%= @totp.provisioning_uri(account: Current.user.email_address) %>"></div>
 
 <p>Can't scan? Enter this secret manually: <code><%= Current.user.otp_secret %></code></p>
 

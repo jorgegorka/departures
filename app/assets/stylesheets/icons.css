@@ -1,0 +1,19 @@
+@layer components {
+  /*
+   * Per-icon --svg custom properties consumed by the `.icon` rule in
+   * base.css. Kept as classes (not inline style attributes) so the strict,
+   * nonce-based CSP holds: nonces cover <style> elements, never inline
+   * style="" attributes. Propshaft rewrites each url() to the fingerprinted
+   * asset path at compile time.
+   */
+  .icon--add { --svg: url("add.svg"); }
+  .icon--arrow-left { --svg: url("arrow-left.svg"); }
+  .icon--caret-down { --svg: url("caret-down.svg"); }
+  .icon--check { --svg: url("check.svg"); }
+  .icon--close { --svg: url("close.svg"); }
+  .icon--copy-paste { --svg: url("copy-paste.svg"); }
+  .icon--pencil { --svg: url("pencil.svg"); }
+  .icon--person { --svg: url("person.svg"); }
+  .icon--search { --svg: url("search.svg"); }
+  .icon--trash { --svg: url("trash.svg"); }
+}

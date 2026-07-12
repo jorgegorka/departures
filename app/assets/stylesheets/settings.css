@@ -90,4 +90,8 @@
     font-size: var(--text-medium);
     margin-block: 0;
   }
+
+  .qr-code {
+    max-inline-size: 14rem;
+  }
 }
