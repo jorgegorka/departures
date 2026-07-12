@@ -1,0 +1,19 @@
+<%# One column of the overview board. Links into the matching activity view. %>
+<a class="board__metric" href="<%= href %>">
+  <p class="board__label"><%= label %></p>
+  <p class="board__value"><%= blank ? "—" : "#{value}#{suffix}" %></p>
+  <% unless blank %>
+    <% direction = delta >= 0 ? "up" : "down" %>
+    <% tone = delta.zero? ? "flat" : ((delta >= 0) == up_is_good ? "good" : "bad") %>
+    <% amount = suffix == "%" ? "#{delta.abs.round(1)} pts" : delta.abs.round(1).to_s %>
+    <p class="board__delta board__delta--<%= tone %>">
+      <% if delta.zero? %>
+        <span aria-hidden="true">—</span>
+        <span class="for-screen-reader">unchanged vs previous period</span>
+      <% else %>
+        <span aria-hidden="true"><%= direction == "up" ? "▲" : "▼" %> <%= amount %></span>
+        <span class="for-screen-reader"><%= direction %> <%= suffix == "%" ? "#{delta.abs.round(1)} percentage points" : delta.abs.round(1) %> vs previous period</span>
+      <% end %>
+    </p>
+  <% end %>
+</a>

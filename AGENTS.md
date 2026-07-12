@@ -60,3 +60,7 @@ Roles/authorization: six workspace roles defined in `Workspace::Roles`, enforced
 ### Testing
 
 Minitest + fixtures only (no RSpec, no factories). Tests run parallelized with `fixtures :all`; `test/test_helper.rb` provides `wipe_send_domain` / `wipe_workspace_records` helpers for tests needing clean absolute counts. minitest is pinned to 5.x because job tests rely on `minitest/mock`'s `Object#stub`. AWS clients are stubbed (`Aws::SESV2::Client.new` via stubs), never hit for real.
+
+## Design Context
+
+Before any UI/frontend work, read `PRODUCT.md` (register: product; platform: web; users, positioning, brand personality, anti-references, design principles) and `DESIGN.md` (visual direction — currently a SEED: restrained tinted neutrals + one warm coral accent, single humanist sans, flat elevation, Linear/Cursor craft bar, explicitly not the AWS console). WCAG 2.1 AA is the accessibility target. `docs/style-guide.md` describes the current CSS architecture, but the visual style it encodes is being replaced per DESIGN.md.

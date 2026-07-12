@@ -78,6 +78,6 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   private
     def assert_notice(text)
-      assert_select "p.flash", /#{text}/
+      assert_select ".flash .flash__message", /#{text}/
     end
 end

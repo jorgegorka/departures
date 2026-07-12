@@ -1,7 +1,8 @@
-<nav class="flex gap align-center">
+<nav class="workspace-switcher" aria-label="Workspaces">
   <% Current.user.workspaces.each do |workspace| %>
     <%= button_to workspace.name, workspace_switch_path(workspace),
-          class: "btn btn--plain btn--medium#{" btn--current" if workspace == Current.workspace}" %>
+          class: "workspace-switcher__item#{" workspace-switcher__item--current" if workspace == Current.workspace}",
+          aria: { current: workspace == Current.workspace ? "true" : nil } %>
   <% end %>
-  <%= link_to "New workspace", new_workspace_path, class: "btn btn--secondary btn--medium" %>
+  <%= link_to "New workspace", new_workspace_path, class: "workspace-switcher__new" %>
 </nav>

@@ -21,7 +21,7 @@ class DashboardsControllerTest < ActionDispatch::IntegrationTest
     get root_url
 
     assert_response :success
-    assert_select ".metric-tile", 6
+    assert_select ".board__metric", 6
     assert_select ".sparkline svg polyline"
   end
 

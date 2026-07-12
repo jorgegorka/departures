@@ -9,6 +9,7 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+    <meta name="view-transition" content="same-origin">
 
     <%= yield :head %>
 
@@ -26,18 +27,38 @@
 
   <body>
     <% if authenticated? %>
-      <header class="flex align-center justify-space-between pad">
-        <div class="flex align-center gap">
-          <%= link_to "Departures", root_path, class: "font-weight-bold txt-medium" %>
+      <header class="shell-header">
+        <div class="shell-header__identity center main-width">
+          <%= link_to root_path, class: "wordmark" do %>Departures<span class="wordmark__dot" aria-hidden="true">.</span><% end %>
+          <div class="shell-header__actions">
+            <%= render "workspaces/switcher" %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain" %>
+          </div>
+        </div>
+        <div class="shell-header__nav center main-width">
           <%= render "layouts/nav" %>
         </div>
-        <%= render "workspaces/switcher" %>
-        <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain btn--medium" %>
       </header>
     <% end %>
     <main id="main" class="center pad main-width">
-      <% if notice.present? %><p class="flash txt-positive pad-block-half"><%= notice %></p><% end %>
-      <% if alert.present? %><p class="flash txt-negative pad-block-half"><%= alert %></p><% end %>
+      <% if notice.present? %>
+        <div class="flash flash--notice" role="status" data-controller="flash">
+          <%= icon_tag "check-circle" %>
+          <p class="flash__message"><%= notice %></p>
+          <button type="button" class="flash__dismiss" data-action="flash#dismiss" aria-label="Dismiss">
+            <%= icon_tag "close" %>
+          </button>
+        </div>
+      <% end %>
+      <% if alert.present? %>
+        <div class="flash flash--alert" role="alert" data-controller="flash">
+          <%= icon_tag "alert-circle" %>
+          <p class="flash__message"><%= alert %></p>
+          <button type="button" class="flash__dismiss" data-action="flash#dismiss" aria-label="Dismiss">
+            <%= icon_tag "close" %>
+          </button>
+        </div>
+      <% end %>
       <%= yield %>
     </main>
   </body>

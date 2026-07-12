@@ -1,23 +1,173 @@
 @layer modules {
+  /* App shell: two-tier top bar — identity row above, primary nav below. */
+  .shell-header {
+    background-color: var(--color-surface);
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  .shell-header__identity {
+    align-items: center;
+    display: flex;
+    gap: var(--space-md);
+    justify-content: space-between;
+    padding: var(--space-xs) var(--main-padding) 0;
+  }
+
+  .shell-header__actions {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-small);
+    gap: var(--space-xs);
+    min-inline-size: 0;
+  }
+
+  .shell-header__nav {
+    padding-inline: var(--main-padding);
+  }
+
+  .wordmark {
+    color: var(--color-ink);
+    font-size: var(--text-medium);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .wordmark__dot {
+    color: var(--color-accent);
+  }
+
   .nav {
     display: flex;
-    gap: var(--inline-space);
+    gap: var(--space-2xs);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
   .nav__link {
-    border-radius: 0.5em;
+    border-block-end: 2px solid transparent;
     color: var(--color-ink-light);
-    padding: 0.35em 0.8em;
+    font-size: var(--text-small);
+    font-weight: 500;
+    padding: var(--space-xs) var(--space-sm) calc(var(--space-xs) + 1px);
+    margin-block-end: -1px;
     text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out-quart),
+      border-color var(--duration-fast) var(--ease-out-quart);
+    white-space: nowrap;
 
     &:hover {
+      border-block-end-color: var(--color-border-strong);
       color: var(--color-ink);
+    }
+
+    &:focus-visible {
+      border-radius: 0.25rem;
+      outline-offset: -2px;
     }
 
     &[aria-current="page"] {
-      background-color: var(--color-surface);
+      border-block-end-color: var(--color-accent);
       color: var(--color-ink);
-      font-weight: 700;
+      font-weight: 600;
     }
+  }
+
+  .workspace-switcher {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2xs);
+    min-inline-size: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .workspace-switcher form {
+    display: contents;
+  }
+
+  .workspace-switcher__item {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0.375rem;
+    color: var(--color-ink-light);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-small);
+    padding: 0.3em 0.7em;
+    transition: background-color var(--duration-fast) var(--ease-out-quart),
+      color var(--duration-fast) var(--ease-out-quart);
+    white-space: nowrap;
+
+    &:hover {
+      background-color: var(--color-surface-sunken);
+      color: var(--color-ink);
+    }
+
+    &.workspace-switcher__item--current {
+      background-color: var(--color-surface-sunken);
+      color: var(--color-ink);
+      font-weight: 600;
+    }
+  }
+
+  .workspace-switcher__new {
+    border-radius: 0.375rem;
+    color: var(--color-link);
+    font-size: var(--text-small);
+    font-weight: 500;
+    padding: 0.3em 0.5em;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  /* Flash banners */
+  .flash {
+    align-items: center;
+    border: 1px solid;
+    border-radius: 0.5rem;
+    display: flex;
+    font-size: var(--text-small);
+    gap: var(--space-xs);
+    margin-block: var(--space-md);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .flash--notice {
+    background-color: color-mix(in oklch, var(--color-positive) 7%, var(--color-surface));
+    border-color: color-mix(in oklch, var(--color-positive) 35%, var(--color-border));
+
+    > .icon { color: var(--color-positive); }
+  }
+
+  .flash--alert {
+    background-color: color-mix(in oklch, var(--color-negative) 7%, var(--color-surface));
+    border-color: color-mix(in oklch, var(--color-negative) 35%, var(--color-border));
+
+    > .icon { color: var(--color-negative); }
+  }
+
+  .flash__message {
+    color: var(--color-ink);
+    flex: 1;
+    margin: 0;
+  }
+
+  .flash__dismiss {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0.25rem;
+    color: var(--color-ink-lighter);
+    cursor: pointer;
+    display: inline-flex;
+    padding: var(--space-2xs);
+
+    &:hover { color: var(--color-ink); }
   }
 }

@@ -1,21 +1,32 @@
 @layer components {
   .input {
-    --input-background: transparent;
+    --input-background: var(--color-surface);
     --input-border-color: var(--color-border-strong);
     --input-padding: 0.5em 0.8em;
 
     background-color: var(--input-background);
     border: 1px solid var(--input-border-color);
-    border-radius: 0.5em;
+    border-radius: 0.5rem;
     color: var(--color-ink);
     font: inherit;
     font-size: max(16px, 1em);
     inline-size: 100%;
     padding: var(--input-padding);
     resize: none;
+    transition: border-color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-light);
+    opacity: 1;
+  }
+
+  .input:hover {
+    --input-border-color: color-mix(in oklch, var(--color-border-strong) 70%, var(--color-ink));
   }
 
   .input:focus {
+    --input-border-color: var(--color-accent);
     outline: var(--focus-ring-size) solid var(--focus-ring-color);
     outline-offset: -1px;
   }
@@ -31,9 +42,19 @@
     padding-inline-end: 1.8em;
   }
 
+  html[data-theme="dark"] .input--select {
+    background-image: url("caret-down-inverted.svg");
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .input--select {
+      background-image: url("caret-down-inverted.svg");
+    }
+  }
+
   .input--actor {
     &:focus-within {
-      --input-border-color: var(--color-link);
+      --input-border-color: var(--color-accent);
       outline: var(--focus-ring-size) solid var(--focus-ring-color);
       outline-offset: -1px;
     }

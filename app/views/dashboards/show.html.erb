@@ -1,7 +1,7 @@
 <div data-workspace-slug="<%= Current.workspace&.slug %>" data-project-slug="<%= Current.project&.slug %>">
 <% if Current.project %>
-  <div class="flex align-center justify-space-between margin-block">
-    <h1 class="margin-none txt-large"><%= Current.project.name %> overview</h1>
+  <div class="page-head">
+    <h1 class="page-head__title"><%= Current.project.name %> overview</h1>
     <%= form_with url: root_path, method: :get, data: { controller: "auto-submit" } do |form| %>
       <%= form.select :range,
             options_for_select({ "Last 24 hours" => "24h", "Last 7 days" => "7d", "Last 30 days" => "30d" }, @metrics.range),
@@ -11,23 +11,44 @@
   </div>
 
   <% cache @metrics.cache_key, expires_in: 60.seconds do %>
-    <div class="metrics">
-      <%= render "tile", label: "Sent", value: @metrics.sent_count, delta: @metrics.sent_delta, suffix: "", up_is_good: true %>
-      <%= render "tile", label: "Delivery rate", value: @metrics.delivery_rate, delta: @metrics.delivery_rate_delta, suffix: "%", up_is_good: true %>
-      <%= render "tile", label: "Open rate", value: @metrics.open_rate, delta: @metrics.open_rate_delta, suffix: "%", up_is_good: true %>
-      <%= render "tile", label: "Click rate", value: @metrics.click_rate, delta: @metrics.click_rate_delta, suffix: "%", up_is_good: true %>
-      <%= render "tile", label: "Bounce rate", value: @metrics.bounce_rate, delta: @metrics.bounce_rate_delta, suffix: "%", up_is_good: false %>
-      <%= render "tile", label: "Complaints", value: @metrics.complaint_count, delta: @metrics.complaint_delta, suffix: "", up_is_good: false %>
+    <% no_sends = @metrics.sent_count.zero? %>
+    <div class="board">
+      <%= render "metric", label: "Sent", value: @metrics.sent_count, suffix: "",
+            delta: @metrics.sent_delta, up_is_good: true, blank: false,
+            href: activity_path(range: @metrics.range) %>
+      <%= render "metric", label: "Delivery rate", value: @metrics.delivery_rate, suffix: "%",
+            delta: @metrics.delivery_rate_delta, up_is_good: true, blank: no_sends,
+            href: activity_path(filter: "delivered", range: @metrics.range) %>
+      <%= render "metric", label: "Open rate", value: @metrics.open_rate, suffix: "%",
+            delta: @metrics.open_rate_delta, up_is_good: true, blank: no_sends,
+            href: activity_path(filter: "opened", range: @metrics.range) %>
+      <%= render "metric", label: "Click rate", value: @metrics.click_rate, suffix: "%",
+            delta: @metrics.click_rate_delta, up_is_good: true, blank: no_sends,
+            href: activity_path(filter: "clicked", range: @metrics.range) %>
+      <%= render "metric", label: "Bounce rate", value: @metrics.bounce_rate, suffix: "%",
+            delta: @metrics.bounce_rate_delta, up_is_good: false, blank: no_sends,
+            href: activity_path(filter: "bounced", range: @metrics.range) %>
+      <%= render "metric", label: "Complaints", value: @metrics.complaint_count, suffix: "",
+            delta: @metrics.complaint_delta, up_is_good: false, blank: no_sends,
+            href: activity_path(filter: "complained", range: @metrics.range) %>
     </div>
+    <% if no_sends %>
+      <p class="board-hint">No sends in this period.</p>
+    <% end %>
 
-    <figure class="sparkline margin-block" aria-label="Emails sent per <%= @metrics.range == "24h" ? "hour" : "day" %>">
+    <figure class="sparkline" aria-label="Emails sent per <%= @metrics.range == "24h" ? "hour" : "day" %>">
       <svg viewBox="0 0 120 32" preserveAspectRatio="none" role="img">
-        <polyline points="<%= @metrics.sparkline_points %>" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+        <polygon class="sparkline__area" points="0,32 <%= @metrics.sparkline_points %> 120,32" />
+        <polyline class="sparkline__line" points="<%= @metrics.sparkline_points %>" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" />
       </svg>
-      <figcaption class="txt-x-small txt-subtle">Send volume, <%= { "24h" => "last 24 hours", "7d" => "last 7 days", "30d" => "last 30 days" }[@metrics.range] %></figcaption>
+      <figcaption class="sparkline__caption">Send volume, <%= { "24h" => "last 24 hours", "7d" => "last 7 days", "30d" => "last 30 days" }[@metrics.range] %></figcaption>
     </figure>
   <% end %>
 <% else %>
-  <p class="txt-subtle margin-block">No active project yet — create a project to start sending.</p>
+  <div class="empty-state">
+    <h1 class="empty-state__title">No project yet</h1>
+    <p class="empty-state__lead">Create a project to start sending — you'll connect a source, verify a domain, and get an API key.</p>
+    <%= link_to "Get started", onboarding_path, class: "btn btn--primary btn--medium" %>
+  </div>
 <% end %>
 </div>

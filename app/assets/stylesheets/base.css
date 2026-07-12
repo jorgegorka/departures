@@ -1,77 +1,160 @@
 @layer reset, base, components, modules, utilities;
 
 @layer base {
+  /*
+   * "The Sunlit Terminal" — see DESIGN.md.
+   * Restrained tinted neutrals + one warm coral accent (≤10% of any screen).
+   * Neutrals are tinted toward the accent's own hue (35), chroma 0.004–0.015.
+   * Light is the designed-first theme; dark is a maintained equal below.
+   */
   :root {
-    /* neutrals + semantic colors (OKLCH, style-guide.md) */
-    --lch-black: 0% 0 0;
-    --lch-white: 100% 0 0;
-    --color-ink: oklch(21% 0.01 260);
-    --color-ink-light: oklch(45% 0.015 260);
-    --color-ink-lighter: oklch(60% 0.012 260);
-    --color-ink-inverted: oklch(98% 0 0);
-    --color-canvas: oklch(98.5% 0.002 260);
-    --color-surface: oklch(100% 0 0);
-    --color-border: oklch(92.8% 0.006 264);
-    --color-border-strong: oklch(70.7% 0.022 261);
-    --color-link: oklch(55% 0.18 260);
-    --color-positive: oklch(58% 0.15 150);
-    --color-negative: oklch(58% 0.2 25);
+    /* accent — Sunset Coral */
+    --color-accent: oklch(63% 0.17 35);        /* graphic accent: indicators, sparkline, focus */
+    --color-accent-ink: oklch(52% 0.16 35);    /* text-safe coral: links, primary button bg (≥4.5:1) */
+    --color-accent-contrast: oklch(99% 0 0);   /* text on accent-ink surfaces */
+
+    /* neutrals */
+    --color-ink: oklch(22% 0.012 35);
+    --color-ink-light: oklch(45% 0.015 35);
+    --color-ink-lighter: oklch(53% 0.012 35);
+    --color-ink-inverted: oklch(98.5% 0 0);
+    --color-canvas: oklch(97.5% 0.004 35);
+    --color-surface: oklch(99.5% 0.002 35);
+    --color-surface-sunken: oklch(95.5% 0.006 35);
+    --color-border: oklch(91% 0.008 35);
+    --color-border-strong: oklch(78% 0.015 35);
+
+    /* semantic states — never color-alone; pair with an icon or label */
+    --color-link: var(--color-accent-ink);
+    --color-positive: oklch(52% 0.13 155);
+    --color-negative: oklch(53% 0.19 27);
+    --color-warning: oklch(55% 0.12 80);
     --color-highlight: oklch(90% 0.15 95);
 
-    /* typography */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-    --font-mono: ui-monospace, monospace;
-    --text-x-small: 0.75rem;
-    --text-small: 0.85rem;
-    --text-normal: 1rem;
-    --text-medium: 1.1rem;
-    --text-large: 1.5rem;
+    /* typography — fixed rem scale, ~1.2 ratio */
+    --font-sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+    --text-x-small: 0.75rem;    /* 12 — captions, deltas */
+    --text-small: 0.875rem;     /* 14 — secondary UI, table data */
+    --text-normal: 1rem;        /* 16 — body */
+    --text-medium: 1.1875rem;   /* 19 — section titles */
+    --text-large: 1.4375rem;    /* 23 — page titles */
+    --text-x-large: 1.75rem;    /* 28 — key figures */
 
-    /* spacing */
+    /* spacing — 4pt scale */
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
     --inline-space: 1ch;
     --inline-space-half: 0.5ch;
-    --block-space: 1rem;
-    --block-space-half: 0.5rem;
-    --block-space-double: 2rem;
+    --block-space: var(--space-md);
+    --block-space-half: var(--space-xs);
+    --block-space-double: var(--space-xl);
     --main-padding: clamp(1ch, 3vw, 3ch);
     --main-width: 1400px;
 
+    /* motion */
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+
+    /* depth — flat at rest; shadows respond to state (menus, dialogs) */
+    --shadow-overlay: 0 8px 24px oklch(22% 0.012 35 / 0.14);
+
+    /* z-index scale */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal-backdrop: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+    --z-tooltip: 600;
+
     /* focus */
-    --focus-ring-color: var(--color-link);
+    --focus-ring-color: var(--color-accent);
     --focus-ring-size: 2px;
   }
 
   html[data-theme="dark"] {
-    --color-ink: oklch(93% 0.005 260);
-    --color-ink-light: oklch(72% 0.01 260);
-    --color-ink-lighter: oklch(58% 0.012 260);
-    --color-ink-inverted: oklch(18% 0.01 260);
-    --color-canvas: oklch(18% 0.012 260);
-    --color-surface: oklch(23% 0.012 260);
-    --color-border: oklch(32% 0.012 260);
-    --color-border-strong: oklch(45% 0.02 260);
+    --color-accent: oklch(72% 0.16 38);
+    --color-accent-ink: oklch(72% 0.16 38);
+    --color-accent-contrast: oklch(18% 0.02 35);
+    --color-ink: oklch(92% 0.006 35);
+    --color-ink-light: oklch(74% 0.01 35);
+    --color-ink-lighter: oklch(63% 0.01 35);
+    --color-ink-inverted: oklch(18% 0.01 35);
+    --color-canvas: oklch(17% 0.008 35);
+    --color-surface: oklch(21% 0.01 35);
+    --color-surface-sunken: oklch(15% 0.008 35);
+    --color-border: oklch(29% 0.01 35);
+    --color-border-strong: oklch(43% 0.015 35);
+    --color-positive: oklch(72% 0.14 155);
+    --color-negative: oklch(70% 0.17 27);
+    --color-warning: oklch(75% 0.12 80);
+    --shadow-overlay: 0 8px 24px oklch(0% 0 0 / 0.45);
   }
 
   @media (prefers-color-scheme: dark) {
     html:not([data-theme]) {
-      --color-ink: oklch(93% 0.005 260);
-      --color-ink-light: oklch(72% 0.01 260);
-      --color-ink-lighter: oklch(58% 0.012 260);
-      --color-ink-inverted: oklch(18% 0.01 260);
-      --color-canvas: oklch(18% 0.012 260);
-      --color-surface: oklch(23% 0.012 260);
-      --color-border: oklch(32% 0.012 260);
-      --color-border-strong: oklch(45% 0.02 260);
+      --color-accent: oklch(72% 0.16 38);
+      --color-accent-ink: oklch(72% 0.16 38);
+      --color-accent-contrast: oklch(18% 0.02 35);
+      --color-ink: oklch(92% 0.006 35);
+      --color-ink-light: oklch(74% 0.01 35);
+      --color-ink-lighter: oklch(63% 0.01 35);
+      --color-ink-inverted: oklch(18% 0.01 35);
+      --color-canvas: oklch(17% 0.008 35);
+      --color-surface: oklch(21% 0.01 35);
+      --color-surface-sunken: oklch(15% 0.008 35);
+      --color-border: oklch(29% 0.01 35);
+      --color-border-strong: oklch(43% 0.015 35);
+      --color-positive: oklch(72% 0.14 155);
+      --color-negative: oklch(70% 0.17 27);
+      --color-warning: oklch(75% 0.12 80);
+      --shadow-overlay: 0 8px 24px oklch(0% 0 0 / 0.45);
     }
+  }
+
+  @font-face {
+    font-family: "Hanken Grotesk";
+    src: url("hanken-grotesk-latin.woff2") format("woff2");
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+  @font-face {
+    font-family: "Hanken Grotesk";
+    src: url("hanken-grotesk-latin-ext.woff2") format("woff2");
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
   }
 
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    line-height: 1.375;
+    font-kerning: normal;
+    font-optical-sizing: auto;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     margin: 0;
+  }
+
+  h1, h2, h3 {
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--color-accent) 25%, transparent);
   }
 
   :focus-visible {
@@ -95,6 +178,12 @@
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
+    }
+
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
     }
   }
 }

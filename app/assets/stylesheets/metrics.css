@@ -1,49 +1,155 @@
 @layer modules {
-  .metrics {
+  .page-head {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    justify-content: space-between;
+    margin-block: var(--space-lg) var(--space-xl);
+  }
+
+  .page-head__title {
+    font-size: var(--text-large);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /*
+   * The overview board: metric columns separated by hairline rules on the
+   * open canvas — a departure board, not a card grid. Column counts are
+   * fixed per breakpoint so the nth-child rules below can suppress the
+   * leading rule of each row.
+   */
+  .board {
+    border-block: 1px solid var(--color-border);
     display: grid;
-    gap: var(--block-space);
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    grid-template-columns: repeat(6, 1fr);
   }
 
-  .metric-tile {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 0.75em;
-    padding: var(--block-space) var(--inline-space-double, 2ch);
+  .board__metric {
+    border-inline-start: 1px solid var(--color-border);
+    color: inherit;
+    display: block;
+    padding: var(--space-md) var(--space-md) var(--space-md) var(--space-lg);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-out-quart);
+
+    &:nth-child(6n + 1) { border-inline-start: 0; }
+
+    &:hover {
+      background-color: var(--color-surface);
+
+      .board__label { color: var(--color-ink); }
+    }
+
+    &:focus-visible { outline-offset: -2px; }
   }
 
-  .metric-tile__label {
+  .board__label {
+    color: var(--color-ink-light);
+    font-size: var(--text-small);
+    font-weight: 500;
+    margin: 0;
+    transition: color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .board__value {
+    font-size: var(--text-x-large);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: var(--space-2xs) 0 0;
+  }
+
+  .board__delta {
     color: var(--color-ink-lighter);
     font-size: var(--text-x-small);
-    letter-spacing: 0.04em;
-    margin: 0;
-    text-transform: uppercase;
-  }
-
-  .metric-tile__value {
-    font-size: var(--text-large);
     font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    margin-block: var(--block-space-half) 0;
-  }
+    margin: var(--space-2xs) 0 0;
 
-  .metric-tile__delta {
-    font-size: var(--text-x-small);
-    margin-block: var(--block-space-half) 0;
-
-    &.metric-tile__delta--good { color: var(--color-positive); }
-    &.metric-tile__delta--bad  { color: var(--color-negative); }
-    &.metric-tile__delta--flat { color: var(--color-ink-lighter); }
-  }
-
-  .sparkline {
-    color: var(--color-link);
-    margin-inline: 0;
-
-    svg {
-      block-size: 4rem;
-      display: block;
-      inline-size: 100%;
+    &.board__delta--bad {
+      color: var(--color-negative);
+      font-weight: 600;
     }
+  }
+
+  .board-hint {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-small);
+    margin-block: var(--space-xs) 0;
+  }
+
+  @media (max-width: 960px) {
+    .board { grid-template-columns: repeat(3, 1fr); }
+
+    .board__metric {
+      border-inline-start: 1px solid var(--color-border);
+
+      &:nth-child(6n + 1) { border-inline-start: 1px solid var(--color-border); }
+      &:nth-child(3n + 1) { border-inline-start: 0; }
+      &:nth-child(n + 4) { border-block-start: 1px solid var(--color-border); }
+    }
+  }
+
+  @media (max-width: 560px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+
+    .board__metric {
+      border-inline-start: 1px solid var(--color-border);
+      padding-inline: var(--space-md);
+
+      &:nth-child(3n + 1) { border-inline-start: 1px solid var(--color-border); }
+      &:nth-child(2n + 1) { border-inline-start: 0; }
+      &:nth-child(n + 4) { border-block-start: 0; }
+      &:nth-child(n + 3) { border-block-start: 1px solid var(--color-border); }
+    }
+  }
+
+  /* Send-volume chart under the board */
+  .sparkline {
+    margin-block: var(--space-lg);
+    margin-inline: 0;
+  }
+
+  .sparkline svg {
+    block-size: 5rem;
+    display: block;
+    inline-size: 100%;
+  }
+
+  .sparkline__line {
+    stroke: var(--color-accent);
+  }
+
+  .sparkline__area {
+    fill: color-mix(in oklch, var(--color-accent) 10%, transparent);
+  }
+
+  .sparkline__caption {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-x-small);
+    margin-block-start: var(--space-xs);
+  }
+
+  /* Teaching empty state: no project in the workspace yet */
+  .empty-state {
+    margin-block: var(--space-2xl);
+    margin-inline: auto;
+    max-inline-size: 36ch;
+    padding-block: var(--space-2xl);
+    text-align: center;
+  }
+
+  .empty-state__title {
+    font-size: var(--text-large);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .empty-state__lead {
+    color: var(--color-ink-light);
+    margin-block: var(--space-sm) var(--space-lg);
   }
 }
