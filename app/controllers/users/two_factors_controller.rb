@@ -2,10 +2,10 @@ class Users::TwoFactorsController < ApplicationController
   allow_unonboarded_access
   allow_two_factor_unenrolled_access
 
+  before_action :redirect_enrolled, only: %i[ new create ]
+
   def new
-    unless Current.user.two_factor_enabled?
-      Current.user.prepare_two_factor
-    end
+    Current.user.prepare_two_factor
     @totp = Totp.new(Current.user.otp_secret)
   end
 
@@ -25,4 +25,11 @@ class Users::TwoFactorsController < ApplicationController
       redirect_to root_path, alert: "Wrong password — two-factor authentication is still enabled."
     end
   end
+
+  private
+    def redirect_enrolled
+      if Current.user.two_factor_enabled?
+        redirect_to user_sessions_path, notice: "Two-factor authentication is already enabled."
+      end
+    end
 end

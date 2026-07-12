@@ -71,4 +71,23 @@ class Users::TwoFactorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_not_equal old_digests, @user.reload.otp_recovery_codes
   end
+
+  test "new redirects when already enrolled without rotating the secret" do
+    enable_two_factor_for @user
+    secret_before = @user.reload.otp_secret
+
+    get new_two_factor_path
+
+    assert_redirected_to user_sessions_path
+    assert_equal secret_before, @user.reload.otp_secret
+  end
+
+  test "create redirects when already enrolled" do
+    enable_two_factor_for @user
+
+    post two_factor_path, params: { password: "secret123456", code: "000000" }
+
+    assert_redirected_to user_sessions_path
+    assert @user.reload.two_factor_enabled?
+  end
 end
