@@ -2,15 +2,19 @@
 service: departures
 
 # Name of the container image (use your-user/app-name on external registries).
-image: departures
+image: jorgegorka/departures
 
+# NOTE: <VPS_IP> and <APP_DOMAIN> below are literal placeholders — replace them
+# with the real production values before the first `kamal setup`. See the
+# deployment runbooks in docs/ops/ for the exact procedure.
+#
 # Deploy to these servers.
 servers:
   web:
-    - 192.168.0.1
+    - <VPS_IP>
   job:
     hosts:
-      - 192.168.0.1
+      - <VPS_IP>
     cmd: bin/jobs
 
 # Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
@@ -20,21 +24,23 @@ servers:
 #
 # Don't use this when deploying to multiple web servers (then you have to terminate SSL at your load balancer).
 #
-# proxy:
-#   ssl: true
-#   host: app.example.com
+# NOTE: <APP_DOMAIN> is a literal placeholder — replace with the real domain
+# before the first `kamal setup`. See docs/ops/ runbooks.
+proxy:
+  ssl: true
+  host: <APP_DOMAIN>
 
 # Where you keep your container images.
 registry:
   # Alternatives: hub.docker.com / registry.digitalocean.com / ghcr.io / ...
-  server: localhost:5555
+  server: ghcr.io
 
   # Needed for authenticated registries.
-  # username: your-user
+  username: jorgegorka
 
   # Always use an access token rather than real password when possible.
-  # password:
-  #   - KAMAL_REGISTRY_PASSWORD
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
