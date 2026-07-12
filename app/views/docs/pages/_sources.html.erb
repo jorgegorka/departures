@@ -1,0 +1,29 @@
+<h1>Sources</h1>
+
+<p>
+  A source is the SES identity Departures sends with: an AWS region plus an access key and secret,
+  stored encrypted. Each project can have one source per environment (for example
+  <code>production</code> and <code>staging</code>), and API calls pick the source with the
+  <code>environment</code> parameter — so your staging app can send through a sandboxed SES account
+  while production uses the real one.
+</p>
+
+<h2>Adding a source</h2>
+
+<ol>
+  <li>Create an IAM user in the AWS account you send from, with permission to call SES
+    (<code>ses:SendEmail</code> for delivery, plus <code>ses:GetAccount</code> for quota checks).</li>
+  <li>In <strong>Sources</strong>, add the access key id, secret, and the SES region you operate in.</li>
+  <li>Wire delivery events back: the source's page shows its unique webhook URL — follow
+    <%= link_to "SES event ingestion", doc_path("ses-sns-ingestion") %> to connect it to your SES
+    configuration set.</li>
+</ol>
+
+<h2>Quota</h2>
+
+<p>
+  Departures caches your SES sending quota and refreshes it automatically when it goes stale (older
+  than six hours); you can also refresh it manually from the source's page. If the quota can't be
+  refreshed, sends are rejected rather than risking silent SES throttling — see the guardrails on the
+  <%= link_to "API reference", doc_path("api-reference") %>.
+</p>

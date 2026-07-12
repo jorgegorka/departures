@@ -1,0 +1,46 @@
+<h1>Workspaces & access</h1>
+
+<h2>Workspaces and projects</h2>
+
+<p>
+  A <strong>workspace</strong> is a team: it has members, roles, and settings. Inside a workspace,
+  <strong>projects</strong> separate sending concerns — each project has its own sources, domains,
+  API keys, templates, suppression list, and activity. One workspace per team and one project per
+  application is the usual shape. You can belong to several workspaces and switch between them from
+  the header.
+</p>
+
+<h2>Roles</h2>
+
+<p>Each member has one role in the workspace:</p>
+
+<table>
+  <thead>
+    <tr><th>Role</th><th>What it can do</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>owner</code></td><td>Everything, including workspace settings, members, and the audit log</td></tr>
+    <tr><td><code>member</code></td><td>Day-to-day use of every sending feature</td></tr>
+    <tr><td><code>sender</code></td><td>Send and inspect email only</td></tr>
+    <tr><td><code>api_keys</code></td><td>Manage API keys</td></tr>
+    <tr><td><code>domains</code></td><td>Manage domains and sources</td></tr>
+    <tr><td><code>read_only</code></td><td>Look, don't touch</td></tr>
+  </tbody>
+</table>
+
+<p>Every mutating action in the dashboard is checked against the member's role.</p>
+
+<h2>Invitations</h2>
+
+<p>
+  Invite teammates by email from the workspace settings. The invitation link signs them up (or signs
+  them in) and adds them to the workspace with the role you chose — this works even when open
+  registration is off.
+</p>
+
+<h2>Audit log</h2>
+
+<p>
+  Security-relevant actions — issuing, revoking, or rotating API keys, and similar — are recorded in
+  the workspace audit log with who did what, from where, and when.
+</p>

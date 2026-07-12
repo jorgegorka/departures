@@ -1,0 +1,32 @@
+<h1>Activity & inspecting email</h1>
+
+<h2>The activity feed</h2>
+
+<p>
+  <strong>Activity</strong> is the live pulse of your sending: metric tiles (sent, delivery, open,
+  click, and bounce rates, complaints) with period-over-period deltas and sparklines, above a
+  searchable feed of recent email. It updates in real time as delivery events arrive — no refresh
+  needed. Time-range and search controls narrow the view when you're investigating.
+</p>
+
+<h2>Inspecting an email</h2>
+
+<p>Open any email to see everything Departures knows about it:</p>
+
+<ul>
+  <li><strong>Detail & timeline</strong> — sender, recipients, status, and the full per-recipient
+    event history (delivered, opened, bounced with diagnostics, …).</li>
+  <li><strong>Preview</strong> — the rendered HTML in a sandboxed frame.</li>
+  <li><strong>Raw</strong> — the exact MIME message that went to SES, downloadable as an
+    <code>.eml</code> file. Every send is archived byte-for-byte.</li>
+  <li><strong>Resend</strong> — one click re-queues an exact copy (rebuilt from the archived
+    message, attachments included) as a new email with its own tracking.</li>
+</ul>
+
+<h2>Finding an email</h2>
+
+<p>
+  Coming from the other direction — a user forwarded you a message and asked "why did I get this?" —
+  check its headers: every email Departures sends carries its id in the
+  <code>X-Departures-Id</code> header, which takes you straight to the email in the dashboard.
+</p>

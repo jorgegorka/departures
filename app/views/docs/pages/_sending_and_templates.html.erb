@@ -1,0 +1,36 @@
+<h1>Sending & templates</h1>
+
+<h2>Test emails</h2>
+
+<p>
+  <strong>Send test</strong> in the dashboard sends a real email through your source without touching
+  the API — the quickest way to prove the pipeline end to end, and the final step of first-run
+  onboarding. The test email goes through exactly the same delivery path as an API send, so you'll
+  see it in the activity feed with its full event timeline.
+</p>
+
+<h2>Templates</h2>
+
+<p>
+  Templates let your app send structured data instead of pre-rendered bodies. A template holds a
+  subject, an HTML body, a text body (at least one body is required), and a URL-friendly slug.
+  Anywhere in those three parts you can write <code>{{ variable_name }}</code> placeholders.
+</p>
+
+<p>
+  An API call then references the template instead of providing a subject and body — by slug or id —
+  and supplies the values:
+</p>
+
+<pre><code>{
+  "from": "hello@example.com",
+  "to": ["user@example.com"],
+  "template_id": "welcome-email",
+  "variables": { "first_name": "Ada" }
+}</code></pre>
+
+<p>
+  A send uses <em>either</em> a <code>subject</code> plus inline body <em>or</em> a
+  <code>template_id</code> — never both. Values substituted into the HTML body are HTML-escaped
+  automatically; subject and text parts are inserted as-is.
+</p>

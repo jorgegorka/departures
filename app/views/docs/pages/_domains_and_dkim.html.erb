@@ -1,0 +1,22 @@
+<h1>Domains & DKIM</h1>
+
+<p>
+  Before Departures accepts a send, the <code>from</code> address must use a domain you've verified.
+  Verification proves to mailbox providers that mail from your domain is really yours — it's the
+  single biggest factor in whether your email lands in the inbox.
+</p>
+
+<h2>Verifying a domain</h2>
+
+<ol>
+  <li>In <strong>Domains</strong>, add your sending domain. Departures creates the SES identity and
+    shows the DKIM records you need.</li>
+  <li>Create the three DKIM <code>CNAME</code> records at your DNS provider, exactly as shown.</li>
+  <li>Use <strong>Check</strong> on the domain to re-query DNS. Propagation can take from minutes to
+    a few hours depending on your provider; keep re-checking until the domain shows verified.</li>
+</ol>
+
+<p>
+  Once verified, any address at the domain can be a <code>from</code> address. Sends from unverified
+  domains are rejected with a <code>422</code> that says so.
+</p>

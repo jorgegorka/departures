@@ -17,7 +17,14 @@ class Docs::Page
     Entry.new(slug: "api-reference", title: "API reference", section: "API reference"),
     Entry.new(slug: "api-keys", title: "API keys", section: "API reference"),
     Entry.new(slug: "outbound-webhooks", title: "Outbound webhooks", section: "Webhooks"),
-    Entry.new(slug: "ses-sns-ingestion", title: "SES event ingestion", section: "Webhooks")
+    Entry.new(slug: "ses-sns-ingestion", title: "SES event ingestion", section: "Webhooks"),
+    Entry.new(slug: "sources", title: "Sources", section: "Dashboard guides"),
+    Entry.new(slug: "domains-and-dkim", title: "Domains & DKIM", section: "Dashboard guides"),
+    Entry.new(slug: "sending-and-templates", title: "Sending & templates", section: "Dashboard guides"),
+    Entry.new(slug: "activity-and-inspecting-email", title: "Activity & inspecting email", section: "Dashboard guides"),
+    Entry.new(slug: "suppressions-and-bounces", title: "Suppressions & bounces", section: "Dashboard guides"),
+    Entry.new(slug: "workspaces-and-access", title: "Workspaces & access", section: "Dashboard guides"),
+    Entry.new(slug: "account-security", title: "Account security", section: "Dashboard guides")
   ].freeze
 
   class << self

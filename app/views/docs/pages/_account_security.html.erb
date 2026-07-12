@@ -1,0 +1,28 @@
+<h1>Account security</h1>
+
+<h2>Registration</h2>
+
+<p>
+  Registration is open only for the very first user — whoever brings the instance up becomes its
+  first workspace owner. After that, new people join by invitation. To open registration up (for
+  example on a shared internal instance), set the <code>OPEN_REGISTRATION</code> environment
+  variable.
+</p>
+
+<h2>Two-factor authentication</h2>
+
+<p>
+  Enable two-factor authentication from the <strong>Security</strong> section: scan the QR code with
+  any TOTP app (1Password, Google Authenticator, …) and confirm with a code. You'll get a set of
+  single-use recovery codes — store them somewhere safe; each one can stand in for a TOTP code once,
+  and you can regenerate the set at any time. A workspace can also <em>require</em> two-factor for
+  all of its members; anyone without it is prompted to enroll before they can continue.
+</p>
+
+<h2>Sessions</h2>
+
+<p>
+  <strong>Security</strong> also lists your active sessions with device and IP details. You can sign
+  out everywhere else in one click — useful after using a shared machine. Password resets go through
+  the usual email flow and sign out all existing sessions.
+</p>

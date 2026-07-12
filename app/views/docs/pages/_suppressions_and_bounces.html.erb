@@ -1,0 +1,29 @@
+<h1>Suppressions & bounces</h1>
+
+<h2>How suppression works</h2>
+
+<p>
+  When a recipient complains (marks your mail as spam) or hard-bounces (the address permanently
+  doesn't exist), Departures adds them to the project's suppression list automatically. From then on,
+  any send that includes them is rejected with a <code>422</code> naming the addresses — protecting
+  your sender reputation before SES ever sees the message. Soft bounces (full mailbox, temporary
+  server trouble) never suppress.
+</p>
+
+<h2>Managing the list</h2>
+
+<p>
+  <strong>Suppressions</strong> shows every suppressed address with its reason. You can add an
+  address manually (an unsubscribe request, for example), remove one that no longer applies, or
+  export the whole list as CSV. Suppressions can carry an expiry date; an expired suppression stops
+  blocking sends, and re-suppressing the same address reactivates it.
+</p>
+
+<h2>Bounces</h2>
+
+<p>
+  <strong>Bounces</strong> lists bounced email with the diagnostic SES reported — hard or soft, the
+  SMTP response, the exact recipient. Soft-bounced mail is often deliverable later (the mailbox was
+  full, the server was down), so the bounce queue has a bulk <strong>retry</strong> action that
+  re-sends soft-bounced messages.
+</p>
