@@ -202,6 +202,14 @@ Delivered: pure-Ruby RFC 6238 TOTP (`lib/totp.rb`, tested against the RFC vector
 
 Post-merge follow-ups noted in review: already-enrolled guard on `Users::TwoFactorsController#new/#create`; drop unused `:subject` from `AuditEvent.preloaded`; audit-row assertions for 5 uncovered actions + prune-job wiring test; enable `force_ssl`/CSP when Kamal SSL termination lands (pre-existing).
 
+### Phase 9 — Production readiness (code complete; first deploy pending)
+
+Spec: **`docs/superpowers/specs/2026-07-12-phase-9-production-readiness-design.md`**. Detailed plan: **`docs/plans/phase-9-production-readiness-plan.md`**.
+
+Delivered: Phase 8 follow-ups cleared (2FA re-enrollment guard on `Users::TwoFactorsController`, `AuditEvent.preloaded` cleanup, audit-row tests for the 5 previously-uncovered actions, prune-job wiring test); `Ops::ErrorNotifier` (subscribed to `Rails.error`, dedicated ops SES credentials under the `ops:` block, at most one email per error class per 10 minutes); strict nonce-based CSP (every inline `style` attribute refactored to CSS classes — `icon_tag` is now class-based) alongside `force_ssl`/`assume_ssl` with `/up` excluded from the redirect; Kamal production config (`ghcr.io/jorgegorka/departures`, kamal-proxy + Let's Encrypt, web + job roles, persistent storage volume) carrying literal `<VPS_IP>`/`<APP_DOMAIN>` placeholders; `bin/backup` and the ops runbooks `docs/ops/backup-and-restore.md`, `docs/ops/monitoring.md`, `docs/ops/first-deploy.md`.
+
+Pending (needs production details — VPS IP, domain, ghcr PAT, ops SES credentials): placeholder replacement in `config/deploy.yml` and the mailer host in `config/environments/production.rb`, `bin/kamal setup`, the 8-point first-deploy verification checklist (`docs/ops/first-deploy.md`), the `ops:` credentials entry, the external uptime monitor on `/up`, and the backup cron + restore drill.
+
 ---
 
 ## Section C — Execution protocol
