@@ -9,6 +9,8 @@
     </div>
   </div>
 
+  <p class="txt-subtle margin-block"><%= docs_link_to "Learn more about bounces", "suppressions-and-bounces" %></p>
+
   <nav class="flex gap-half margin-block" aria-label="Bounce type">
     <%= link_to "All", bounces_path, class: "btn btn--plain btn--medium #{"btn--current" if params[:filter].blank?}" %>
     <%= link_to "Hard", bounces_path(filter: "hard_bounces"), class: "btn btn--plain btn--medium #{"btn--current" if params[:filter] == "hard_bounces"}" %>

@@ -21,6 +21,8 @@
     <% end %>
   </div>
 
+  <p class="txt-subtle margin-block"><%= docs_link_to "Learn more about activity", "activity-and-inspecting-email" %></p>
+
   <div class="activity" id="activity_feed">
     <% if @emails.any? %>
       <%= render partial: "activity/email", collection: @emails %>

@@ -5,6 +5,8 @@
     <h1>Domains</h1>
   </header>
 
+  <p><%= docs_link_to "Learn more about domains & DKIM", "domains-and-dkim" %></p>
+
   <% if Current.workspace.capability?(Current.user, :manage_domains) %>
     <%= form_with model: Domain.new, url: domains_path, class: "inline-form" do |form| %>
       <%= form.text_field :name, class: "input", placeholder: "mail.example.com", required: true,

@@ -4,6 +4,8 @@
     <%= link_to "Export CSV", export_path("suppressions"), class: "btn btn--plain btn--medium", data: { turbo: false } %>
   </div>
 
+  <p class="txt-subtle margin-block"><%= docs_link_to "Learn more about suppressions", "suppressions-and-bounces" %></p>
+
   <% if Current.workspace.capability?(Current.user, :send) %>
     <%= form_with model: Suppression.new, url: suppressions_path, class: "flex align-center gap-half margin-block" do |form| %>
       <%= form.email_field :email, placeholder: "address@example.com", class: "input", required: true %>

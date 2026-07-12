@@ -8,7 +8,7 @@
     <%= icon_tag @onboarding.source_added? ? "check" : "add" %>
     <div>
       <h2><%= link_to "Add a source", @onboarding.source_added? ? sources_path : new_source_path %></h2>
-      <p>Connect the SES credentials and region Departures sends with.</p>
+      <p>Connect the SES credentials and region Departures sends with. <%= docs_link_to "Learn about sources", "sources" %></p>
     </div>
   </li>
 
@@ -16,7 +16,7 @@
     <%= icon_tag @onboarding.domain_verified? ? "check" : "add" %>
     <div>
       <h2><%= link_to "Verify a domain", domains_path %></h2>
-      <p>Add your sending domain and create its DKIM records. Sends from unverified domains are rejected.</p>
+      <p>Add your sending domain and create its DKIM records. Sends from unverified domains are rejected. <%= docs_link_to "Learn about domain verification", "domains-and-dkim" %></p>
     </div>
   </li>
 
@@ -24,7 +24,7 @@
     <%= icon_tag @onboarding.api_key_issued? ? "check" : "add" %>
     <div>
       <h2><%= link_to "Issue an API key", @onboarding.api_key_issued? ? api_keys_path : new_api_key_path %></h2>
-      <p>Your apps authenticate to <code>POST /api/emails</code> with it.</p>
+      <p>Your apps authenticate to <code>POST /api/emails</code> with it. <%= docs_link_to "Learn about API keys", "api-keys" %></p>
     </div>
   </li>
 
@@ -32,7 +32,7 @@
     <%= icon_tag @onboarding.test_email_sent? ? "check" : "add" %>
     <div>
       <h2><%= link_to "Send a test email", new_test_email_path %></h2>
-      <p>Prove the pipeline end to end.</p>
+      <p>Prove the pipeline end to end. <%= docs_link_to "Learn about sending", "sending-and-templates" %></p>
     </div>
   </li>
 </ol>

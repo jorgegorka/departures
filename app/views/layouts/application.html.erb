@@ -8,6 +8,7 @@
         <div class="shell-header__identity center main-width">
           <%= link_to root_path, class: "wordmark" do %>Departures<span class="wordmark__dot" aria-hidden="true">.</span><% end %>
           <div class="shell-header__actions">
+            <%= link_to "Docs", docs_path, class: "btn btn--plain" %>
             <%= render "workspaces/switcher" %>
             <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain" %>
           </div>

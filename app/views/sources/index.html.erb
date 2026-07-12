@@ -8,6 +8,8 @@
     <% end %>
   </header>
 
+  <p><%= docs_link_to "Learn more about sources", "sources" %></p>
+
   <% if @sources.any? %>
     <% @sources.each do |source| %>
       <article class="settings-card">
