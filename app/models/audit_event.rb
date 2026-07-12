@@ -19,7 +19,7 @@ class AuditEvent < ApplicationRecord
   validates :action, inclusion: { in: ACTIONS }
 
   scope :reverse_chronologically, -> { order(created_at: :desc, id: :desc) }
-  scope :preloaded, -> { includes(:user, :subject) }
+  scope :preloaded, -> { includes(:user) }
   scope :indexed_by, ->(group) do
     case group
     when "api_keys" then where("action LIKE 'api_key.%'")
