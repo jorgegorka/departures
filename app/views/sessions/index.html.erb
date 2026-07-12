@@ -1,0 +1,46 @@
+<% content_for :title, "Security" %>
+
+<h1>Security</h1>
+
+<section>
+  <h2>Two-factor authentication</h2>
+  <% if Current.user.two_factor_enabled? %>
+    <p>Two-factor authentication is <strong>enabled</strong>.</p>
+    <%= form_with url: recovery_codes_path do |form| %>
+      <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Your password", class: "input" %>
+      <%= form.submit "Regenerate recovery codes", class: "btn btn--secondary btn--medium" %>
+    <% end %>
+    <%= form_with url: two_factor_path, method: :delete do |form| %>
+      <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Your password", class: "input" %>
+      <%= form.submit "Disable two-factor", class: "btn btn--destroy btn--medium" %>
+    <% end %>
+  <% else %>
+    <p>Two-factor authentication is <strong>off</strong>.</p>
+    <%= link_to "Enable two-factor authentication", new_two_factor_path, class: "btn btn--primary btn--medium" %>
+  <% end %>
+</section>
+
+<section>
+  <h2>Sessions</h2>
+  <table>
+    <thead>
+      <tr><th>Device</th><th>IP</th><th>Signed in</th><th>Last active</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% @sessions.each do |session_record| %>
+        <tr>
+          <td><%= session_record.device_summary %><%= " (this device)" if session_record.current? %></td>
+          <td><%= session_record.ip_address %></td>
+          <td><%= session_record.created_at.to_fs(:short) %></td>
+          <td><%= session_record.last_active_at&.to_fs(:short) || "—" %></td>
+          <td>
+            <% unless session_record.current? %>
+              <%= button_to "Sign out", user_session_path(session_record), method: :delete, class: "btn btn--plain btn--medium" %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <%= button_to "Sign out everywhere else", other_sessions_path, method: :delete, class: "btn btn--secondary btn--medium" %>
+</section>

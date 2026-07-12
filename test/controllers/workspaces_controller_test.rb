@@ -23,4 +23,30 @@ class WorkspacesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_select "ul.txt-negative li"
   end
+
+  test "owner can toggle require_two_factor" do
+    sign_in_as users(:owner)
+
+    patch workspace_path(workspaces(:acme)), params: { workspace: { require_two_factor: true } }
+
+    assert_redirected_to edit_workspace_path(workspaces(:acme))
+    assert workspaces(:acme).reload.require_two_factor?
+  end
+
+  test "non-owner cannot update the workspace" do
+    sign_in_as users(:member)
+
+    patch workspace_path(workspaces(:acme)), params: { workspace: { require_two_factor: true } }
+
+    assert_response :forbidden
+    assert_not workspaces(:acme).reload.require_two_factor?
+  end
+
+  test "updating a foreign workspace 404s" do
+    sign_in_as users(:owner)
+
+    patch workspace_path(workspaces(:globex)), params: { workspace: { require_two_factor: true } }
+
+    assert_response :not_found
+  end
 end

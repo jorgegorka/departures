@@ -1,8 +1,15 @@
 Rails.application.routes.draw do
   resource :session
+  resource :challenge, only: %i[ new create ], controller: "sessions/challenges"
+  resources :sessions, only: %i[ index destroy ], as: :user_sessions
+  resource :other_sessions, only: :destroy, controller: "other_sessions"
   resource :registration, only: %i[ new create ]
   resources :passwords, param: :token
-  resources :workspaces, only: %i[ new create ] do
+  scope module: :users do
+    resource :two_factor, only: %i[ new create destroy ]
+    resource :recovery_codes, only: :create
+  end
+  resources :workspaces, only: %i[ new create edit update ] do
     scope module: :workspaces do
       resource :switch, only: :create
       resources :invitations, only: %i[ new create ]
@@ -53,6 +60,8 @@ Rails.application.routes.draw do
       resource :completion, only: :create
     end
   end
+
+  resources :audit_events, only: :index
 
   resources :bounces, only: :index
   scope module: :bounces, path: :bounces, as: :bounces do

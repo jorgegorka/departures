@@ -34,6 +34,16 @@ class Email::MimeBuilderTest < ActiveSupport::TestCase
     assert_equal "#{@email.public_id}@acme.com", mail.message_id
   end
 
+  test "a display-name from preserves the display name and derives the Message-ID domain from the addr-spec" do
+    @email.update!(from: "Acme Support <hello@acme.com>")
+
+    mail = parsed
+
+    assert_equal [ "hello@acme.com" ], mail.from
+    assert_equal [ "Acme Support" ], mail[:from].display_names
+    assert_equal "#{@email.public_id}@acme.com", mail.message_id
+  end
+
   test "custom headers pass through" do
     assert_equal "onboarding", parsed.header["X-Campaign"].value
   end

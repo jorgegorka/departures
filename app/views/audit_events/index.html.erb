@@ -1,0 +1,34 @@
+<% content_for :title, "Audit log" %>
+
+<h1>Audit log</h1>
+
+<%= form_with url: audit_events_path, method: :get, data: { controller: "auto-submit" } do |form| %>
+  <%= form.select :group, options_for_select(
+        [ [ "All events", "" ], [ "API keys", "api_keys" ], [ "Members", "members" ],
+          [ "Sending", "sending" ], [ "Security", "security" ] ], params[:group]),
+      {}, class: "input input--select", data: { action: "auto-submit#submit" } %>
+  <%= form.select :range, options_for_select(
+        [ [ "All time", "" ], [ "Last 24 hours", "24h" ], [ "Last 7 days", "7d" ], [ "Last 30 days", "30d" ] ], params[:range]),
+      {}, class: "input input--select", data: { action: "auto-submit#submit" } %>
+<% end %>
+
+<table>
+  <thead>
+    <tr><th>When</th><th>Who</th><th>Action</th><th>Details</th><th>IP</th></tr>
+  </thead>
+  <tbody>
+    <% @audit_events.each do |event| %>
+      <tr>
+        <td><%= event.created_at.to_fs(:short) %></td>
+        <td><%= event.user&.email_address || "system" %></td>
+        <td><code><%= event.action %></code></td>
+        <td><%= event.metadata.map { |key, value| "#{key}: #{value}" }.join(", ") %></td>
+        <td><%= event.ip %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @audit_events.empty? %>
+  <p>No audit events yet.</p>
+<% end %>

@@ -23,6 +23,7 @@ class WebhookEndpointsController < ApplicationController
     @webhook_endpoint = Current.project.webhook_endpoints.new(webhook_endpoint_params)
 
     if @webhook_endpoint.save
+      AuditEvent.record("webhook_endpoint.created", subject: @webhook_endpoint, metadata: { url: @webhook_endpoint.url })
       render :create
     else
       render :new, status: :unprocessable_entity
@@ -34,6 +35,7 @@ class WebhookEndpointsController < ApplicationController
 
   def update
     if @webhook_endpoint.update(webhook_endpoint_params)
+      AuditEvent.record("webhook_endpoint.updated", subject: @webhook_endpoint, metadata: { url: @webhook_endpoint.url })
       redirect_to webhook_endpoints_path, notice: "Endpoint updated."
     else
       render :edit, status: :unprocessable_entity
@@ -42,6 +44,7 @@ class WebhookEndpointsController < ApplicationController
 
   def destroy
     @webhook_endpoint.destroy
+    AuditEvent.record("webhook_endpoint.destroyed", metadata: { url: @webhook_endpoint.url })
     redirect_to webhook_endpoints_path, notice: "Endpoint removed."
   end
 

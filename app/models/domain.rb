@@ -14,7 +14,7 @@ class Domain < ApplicationRecord
   attr_writer :ses_client
 
   def self.verifies?(project, address)
-    host = address.to_s[/@([^@\s]+)\z/, 1]&.downcase
+    host = EmailAddress.address_part(address)&.split("@")&.last&.downcase
     return false if host.blank?
 
     project.domains.verified.pluck(:name).any? do |name|
@@ -34,10 +34,14 @@ class Domain < ApplicationRecord
   end
 
   def check
+    previously_verified = verified?
     response = ses_client.get_email_identity(email_identity: name)
     update!(status: response.verified_for_sending_status ? "verified" : "pending",
       dkim_tokens: Array(response.dkim_attributes&.tokens).presence || dkim_tokens,
       last_checked_at: Time.current)
+    if verified? && !previously_verified
+      AuditEvent.record("domain.verified", subject: self, metadata: { name: name }, workspace: workspace)
+    end
     verified?
   rescue Aws::SESV2::Errors::NotFoundException
     update!(status: "failed", last_checked_at: Time.current)

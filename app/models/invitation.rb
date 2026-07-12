@@ -26,6 +26,7 @@ class Invitation < ApplicationRecord
     transaction do
       workspace.memberships.find_or_create_by!(user: user) { |membership| membership.role = role }
       update! accepted_at: Time.current
+      AuditEvent.record("invitation.accepted", subject: self, metadata: { email: email, role: role }, workspace: workspace, user: user)
     end
   end
 

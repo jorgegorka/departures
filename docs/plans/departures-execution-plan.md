@@ -179,10 +179,28 @@ Detailed plan: **docs/plans/phase-5-platform-plan.md** (complete). Scope additio
 
 ### Phase 6 — Recurring work, retention, ops
 
+Detailed plan: **docs/plans/phase-6-recurring-ops-plan.md** (complete).
+
 | Task | Files | Directives |
 |---|---|---|
 | 6.1 Recurring jobs | `config/recurring.yml`, `SyncQuotasJob`, `PruneRetentionJob` | `SyncQuotasJob` every 4 h → `Source.sync_all_quotas`; `PruneRetentionJob` daily → class methods `Email.prune_expired` (respects `source.retention_days`, deletes `.eml` via MimeStore), `WebhookLog.prune`, `WebhookDelivery.prune` (30 d), `IdempotencyKey.prune_expired`, `Invitation.prune_expired`. All use `in_batches` (SQLite lock hygiene, risk #3). Logic in models; jobs stay 3-liners. |
 | 6.2 Kamal + smoke test | `config/deploy.yml`, `test/integration/full_loop_test.rb` | Persistent volume for `storage/`; `jobs` role running `bin/jobs`; health `/up`. Smoke: onboard → create key → POST /api/emails (stubbed SES) → fixture SNS bounce → assert status change, suppression row, live dashboard broadcast, blocked resend to suppressed address. |
+
+### Phase 7 — Client integration: the `departures-ruby` gem (complete)
+
+Spec: **`docs/superpowers/specs/2026-07-10-departures-ruby-gem-design.md`**. Detailed plan: **`docs/superpowers/plans/2026-07-10-departures-ruby-gem.md`**. Code lives in its own repository: **`~/Sites/rails/departures-ruby`** (gem `departures-ruby`, module `Departures`).
+
+Delivered: zero-runtime-dependency API client (`Departures::Client`), ActionMailer delivery method (`Departures::DeliveryMethod`, config via `departures_settings`), Railtie (conditional load), typed errors (`ApiError.for` → `AuthenticationError`/`RateLimitedError`/`SuppressedRecipientsError`, `ConnectionError`), CI matrix Ruby 3.1–3.4, README, smoke script. Platform-side companion change (this repo): `EmailAddress` utility so the API accepts RFC display-name addresses (`Ann <ann@example.com>`) end-to-end while suppression/domain/Message-ID consumers use the bare addr-spec; comma-list smuggling rejected (`Mail::AddressList` must parse exactly one address).
+
+Verified: live smoke — gem `deliver!` → local server 202, id written back as `X-Departures-Id`, display name preserved into stored record and archived MIME; Railtie registration confirmed in a real Rails boot.
+
+### Phase 8 — Security hardening (complete)
+
+Spec: **`docs/superpowers/specs/2026-07-11-phase-8-security-hardening-design.md`**. Detailed plan: **`docs/plans/phase-8-security-hardening-plan.md`**.
+
+Delivered: pure-Ruby RFC 6238 TOTP (`lib/totp.rb`, tested against the RFC vectors); `User::TwoFactor` (AR-encrypted secret, replay guard via consumed timestep under `with_lock`, SHA-256 recovery codes); enrollment with client-side QR (vendored `qrcode-generator` via importmap, no runtime CDN) and one-time recovery-code reveal; two-step login challenge (signed 10-minute pending cookie, rate-limited, TOTP or single-use recovery code); per-workspace 2FA enforcement (`workspaces.require_two_factor`, gate in `SetsCurrentWorkspaceAndProject`, workspace settings page); session management (`last_active_at` throttled touch, Security page, per-session + bulk revocation); `AuditEvent` (23-action allowlist, `Current.ip`, curated instrumentation, owner-only viewer behind `view_audit_log`, 180-day prune in `PruneRetentionJob`); closing adversarial security review (one Important fixed: `:code` added to `filter_parameters` so recovery codes never reach request logs).
+
+Post-merge follow-ups noted in review: already-enrolled guard on `Users::TwoFactorsController#new/#create`; drop unused `:subject` from `AuditEvent.preloaded`; audit-row assertions for 5 uncovered actions + prune-job wiring test; enable `force_ssl`/CSP when Kamal SSL termination lands (pre-existing).
 
 ---
 

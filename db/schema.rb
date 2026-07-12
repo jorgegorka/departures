@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_114015) do
   create_table "api_keys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at"
@@ -28,6 +28,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
     t.index ["key_hash"], name: "index_api_keys_on_key_hash", unique: true
     t.index ["project_id"], name: "index_api_keys_on_project_id"
     t.index ["workspace_id"], name: "index_api_keys_on_workspace_id"
+  end
+
+  create_table "audit_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.string "ip"
+    t.json "metadata", default: {}, null: false
+    t.integer "subject_id"
+    t.string "subject_type"
+    t.integer "user_id"
+    t.integer "workspace_id"
+    t.index ["subject_type", "subject_id"], name: "index_audit_events_on_subject"
+    t.index ["user_id"], name: "index_audit_events_on_user_id"
+    t.index ["workspace_id", "action"], name: "index_audit_events_on_workspace_id_and_action"
+    t.index ["workspace_id", "created_at"], name: "index_audit_events_on_workspace_id_and_created_at"
+    t.index ["workspace_id"], name: "index_audit_events_on_workspace_id"
   end
 
   create_table "domains", force: :cascade do |t|
@@ -166,6 +182,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
+    t.datetime "last_active_at"
     t.datetime "updated_at", null: false
     t.string "user_agent"
     t.integer "user_id", null: false
@@ -225,6 +242,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
+    t.integer "otp_consumed_timestep"
+    t.datetime "otp_enabled_at"
+    t.json "otp_recovery_codes", default: [], null: false
+    t.string "otp_secret"
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
@@ -283,6 +304,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_211414) do
     t.string "name", null: false
     t.datetime "onboarded_at"
     t.integer "owner_id", null: false
+    t.boolean "require_two_factor", default: false, null: false
     t.datetime "setup_started_at"
     t.string "slug", null: false
     t.datetime "updated_at", null: false

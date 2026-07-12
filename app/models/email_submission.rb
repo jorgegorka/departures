@@ -11,8 +11,6 @@ class EmailSubmission
     content-type content-transfer-encoding dkim-signature x-departures-id
   ].freeze
 
-  ADDRESS_FORMAT = URI::MailTo::EMAIL_REGEXP
-
   attr_accessor :project, :source, :api_key, :from, :subject, :template_id, :html, :text
   attr_reader :to, :cc, :bcc, :headers, :tags, :attachments, :variables
 
@@ -202,7 +200,7 @@ class EmailSubmission
 
     def validate_suppressed_recipients
       if project
-        suppressed = Suppression.covers?(project, all_recipients)
+        suppressed = Suppression.covers?(project, bare_recipients)
 
         if suppressed.any?
           errors.add(:base, "recipients are suppressed: #{suppressed.join(", ")}")
@@ -253,8 +251,12 @@ class EmailSubmission
       to + cc + bcc
     end
 
+    def bare_recipients
+      all_recipients.filter_map { |address| EmailAddress.address_part(address) }
+    end
+
     def valid_address?(address)
-      address.length <= MAX_ADDRESS_LENGTH && address.match?(ADDRESS_FORMAT)
+      address.length <= MAX_ADDRESS_LENGTH && EmailAddress.valid?(address)
     end
 
     def decoded_size(attachment)

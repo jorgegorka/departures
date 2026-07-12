@@ -124,6 +124,17 @@ class WebhookDeliveryTest < ActiveSupport::TestCase
     end
   end
 
+  test "prune deletes deliveries older than the retention window and keeps newer ones" do
+    endpoint = webhook_endpoints(:acme_all)
+    old_delivery = endpoint.deliveries.create!(event_type: "delivery", payload: {}, created_at: 31.days.ago)
+    recent_delivery = endpoint.deliveries.create!(event_type: "delivery", payload: {}, created_at: 29.days.ago)
+
+    WebhookDelivery.prune
+
+    assert_not WebhookDelivery.exists?(old_delivery.id)
+    assert WebhookDelivery.exists?(recent_delivery.id)
+  end
+
   private
     def delivery_to(url)
       endpoint = WebhookEndpoint.create!(project: webhook_endpoints(:acme_all).project,
