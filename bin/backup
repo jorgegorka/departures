@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Nightly Departures backup. Runs on the HOST (not in the container) via cron.
+# Requires: sqlite3, rclone (with a remote configured — see docs/ops/backup-and-restore.md).
+set -euo pipefail
+
+VOLUME="${DEPARTURES_VOLUME:-/var/lib/docker/volumes/departures_storage/_data}"
+REMOTE="${DEPARTURES_BACKUP_REMOTE:-departures-backups:departures-backups}"
+RETENTION="${DEPARTURES_BACKUP_RETENTION:-30d}"
+STAMP="$(date -u +%Y-%m-%d)"
+WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
+# Consistent online copies of the databases that matter (cache/cable are disposable).
+for db in production production_queue; do
+  sqlite3 "$VOLUME/${db}.sqlite3" ".backup '$WORKDIR/${db}.sqlite3'"
+done
+
+# Archived MIME messages.
+tar -czf "$WORKDIR/emails.tar.gz" -C "$VOLUME" emails
+
+rclone copy "$WORKDIR" "$REMOTE/$STAMP"
+
+# Prune snapshots past retention, then drop the emptied date directories.
+rclone delete "$REMOTE" --min-age "$RETENTION"
+rclone rmdirs "$REMOTE" --leave-root
+
+echo "backup $STAMP complete: $(rclone size "$REMOTE/$STAMP")"
