@@ -27,6 +27,14 @@
   path.
 </p>
 
+<h2>Snapshot layout</h2>
+
+<p>Each nightly snapshot contains both SQLite databases and the archived <code>.eml</code> files — a restore needs all three.</p>
+
+<pre><code>&lt;bucket&gt;/&lt;YYYY-MM-DD&gt;/production.sqlite3
+&lt;bucket&gt;/&lt;YYYY-MM-DD&gt;/production_queue.sqlite3
+&lt;bucket&gt;/&lt;YYYY-MM-DD&gt;/emails.tar.gz</code></pre>
+
 <h2>Restoring</h2>
 
 <ol>

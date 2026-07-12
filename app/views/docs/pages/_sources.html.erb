@@ -11,8 +11,11 @@
 <h2>Adding a source</h2>
 
 <ol>
-  <li>Create an IAM user in the AWS account you send from, with permission to call SES
-    (<code>ses:SendRawEmail</code> for delivery, plus <code>ses:GetAccount</code> for quota checks).</li>
+  <li>Create an IAM user in the AWS account you send from, with permission to call SES:
+    <code>ses:SendRawEmail</code> for delivery, <code>ses:GetAccount</code> for quota checks, and
+    <code>ses:CreateEmailIdentity</code>, <code>ses:GetEmailIdentity</code>,
+    <code>ses:DeleteEmailIdentity</code> for domain verification (the same source credentials verify
+    your sending domains).</li>
   <li>In <strong>Sources</strong>, add the access key id, secret, and the SES region you operate in.</li>
   <li>Wire delivery events back: the source's page shows its unique webhook URL — follow
     <%= link_to "SES event ingestion", doc_path("ses-sns-ingestion") %> to connect it to your SES
