@@ -16,6 +16,7 @@ class Docs::Page
     Entry.new(slug: "getting-started", title: "Getting started", section: "Getting started"),
     Entry.new(slug: "api-reference", title: "API reference", section: "API reference"),
     Entry.new(slug: "api-keys", title: "API keys", section: "API reference"),
+    Entry.new(slug: "ruby-gem", title: "Ruby gem", section: "API reference"),
     Entry.new(slug: "outbound-webhooks", title: "Outbound webhooks", section: "Webhooks"),
     Entry.new(slug: "ses-sns-ingestion", title: "SES event ingestion", section: "Webhooks"),
     Entry.new(slug: "sources", title: "Sources", section: "Dashboard guides"),

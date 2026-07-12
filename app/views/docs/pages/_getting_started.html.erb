@@ -11,7 +11,7 @@
 
 <ol>
   <li>Your app calls <code>POST /api/emails</code> with a bearer API key — or uses the
-    <%= link_to "Ruby gem", doc_path("getting-started") %>'s drop-in Action Mailer delivery method.</li>
+    <%= link_to "Ruby gem", doc_path("ruby-gem") %>'s drop-in Action Mailer delivery method.</li>
   <li>Departures validates the request, checks guardrails (verified sending domain, suppression list,
     SES quota, complaint-rate circuit breaker), builds the full MIME message, archives it, and queues
     delivery through SES.</li>

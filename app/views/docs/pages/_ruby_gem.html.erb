@@ -1,0 +1,68 @@
+<h1>Ruby gem</h1>
+
+<p>
+  <code>departures-ruby</code> is the official Ruby client: a drop-in Action Mailer delivery method
+  for Rails apps, and a plain HTTP client for everything else. It has zero runtime dependencies.
+</p>
+
+<pre><code># Gemfile
+gem "departures-ruby"</code></pre>
+
+<h2>Rails: Action Mailer</h2>
+
+<p>Point Action Mailer at your Departures instance and every existing mailer just works:</p>
+
+<pre><code># config/environments/production.rb
+config.action_mailer.delivery_method = :departures
+config.action_mailer.departures_settings = {
+  api_key: Rails.application.credentials.dig(:departures, :api_key),
+  base_url: "https://your-departures-host"
+}</code></pre>
+
+<p>
+  The delivery method maps the whole <code>Mail::Message</code> — from/to/cc/bcc, subject, HTML and
+  text parts, attachments, custom <code>X-</code> headers — onto the API, and writes the returned id
+  back into the message as <code>X-Departures-Id</code> so your logs can reference the dashboard
+  record.
+</p>
+
+<h2>Plain client</h2>
+
+<pre><code>client = Departures::Client.new(api_key: ENV["DEPARTURES_API_KEY"], base_url: "https://your-departures-host")
+
+client.send_email(
+  from: "hello@example.com",
+  to: ["user@example.com"],
+  subject: "Welcome",
+  html: "&lt;p&gt;Hi there&lt;/p&gt;",
+  idempotency_key: "welcome-user-42"
+)
+
+client.list_emails</code></pre>
+
+<p>
+  <code>send_email</code> accepts every parameter the <%= link_to "API", doc_path("api-reference") %>
+  does, including <code>template_id:</code> and <code>variables:</code> for template sends and
+  <code>environment:</code> for selecting a source.
+</p>
+
+<h2>Errors and retries</h2>
+
+<table>
+  <thead>
+    <tr><th>Error</th><th>Raised on</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Departures::ConnectionError</code></td><td>Network failure or timeout</td></tr>
+    <tr><td><code>Departures::AuthenticationError</code></td><td>401 / 403</td></tr>
+    <tr><td><code>Departures::RateLimitedError</code></td><td>429</td></tr>
+    <tr><td><code>Departures::SuppressedRecipientsError</code></td><td>422 for suppressed recipients</td></tr>
+    <tr><td><code>Departures::ApiError</code></td><td>Any other non-2xx (carries <code>#status</code> and <code>#errors</code>)</td></tr>
+  </tbody>
+</table>
+
+<p>
+  The gem deliberately never retries — your job layer is the right place for retry policy
+  (<code>retry_on Departures::ConnectionError</code>, for example), paired with an idempotency key so
+  retries can't double-send.
+</p>
