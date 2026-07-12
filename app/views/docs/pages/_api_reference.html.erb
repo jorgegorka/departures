@@ -1,0 +1,118 @@
+<h1>API reference</h1>
+
+<p>
+  The API is deliberately small: send an email, list recent emails. Everything else — inspection,
+  suppressions, webhooks — lives in the dashboard.
+</p>
+
+<h2>Authentication</h2>
+
+<p>Every request carries a bearer <%= link_to "API key", doc_path("api-keys") %>:</p>
+
+<pre><code>Authorization: Bearer dp_...</code></pre>
+
+<p>
+  Keys are scoped (<code>send</code>, <code>read:activity</code>); a key missing the scope required
+  by the endpoint gets a <code>403</code>. An invalid, revoked, or expired token gets a <code>401</code>.
+</p>
+
+<h2>POST /api/emails</h2>
+
+<p>
+  Accepts a message for sending (requires the <code>send</code> scope). <code>to</code>,
+  <code>cc</code>, and <code>bcc</code> are always arrays, even for a single recipient:
+</p>
+
+<pre><code>curl -i -X POST https://your-departures-host/api/emails \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: order-42-confirmation" \
+  -d '{
+    "from": "hello@example.com",
+    "to": ["user@example.com"],
+    "cc": [],
+    "bcc": [],
+    "subject": "Welcome",
+    "html": "&lt;p&gt;Hi there&lt;/p&gt;",
+    "text": "Hi there",
+    "headers": {},
+    "tags": {},
+    "attachments": [
+      { "filename": "invoice.pdf", "content_type": "application/pdf", "content": "&lt;base64&gt;" }
+    ]
+  }'</code></pre>
+
+<p>
+  Send either <code>subject</code> plus a body (<code>html</code> and/or <code>text</code>), or a
+  <code>template_id</code> with a <code>variables</code> map — not both. A template is referenced by
+  its slug or numeric id. Up to 50 total recipients across <code>to</code>/<code>cc</code>/<code>bcc</code>,
+  up to 25 attachments capped at 30&nbsp;MB decoded total.
+</p>
+
+<p>
+  An optional <code>environment</code> parameter selects which of the project's sources to send
+  through, defaulting to <code>production</code>. An unknown environment returns <code>422</code>.
+</p>
+
+<p>A successful request returns <code>202 Accepted</code> immediately — the email is queued, not yet delivered:</p>
+
+<pre><code>{ "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6" }</code></pre>
+
+<p>
+  Delivery then happens asynchronously through SES: the status advances
+  <code>queued → sending → sent</code>, and onward as delivery events arrive. If SES rejects the
+  send, delivery is retried with backoff up to 3 attempts; on final failure the email is marked
+  <code>failed</code> with the reason recorded. The id comes back to your app and is also stamped
+  into the message as the <code>X-Departures-Id</code> header, so you can correlate an email in a
+  recipient's inbox with its record in the dashboard.
+</p>
+
+<h2>Guardrails</h2>
+
+<p>Departures rejects a send with <code>422</code> before it ever reaches SES when:</p>
+
+<ul>
+  <li>the <code>from</code> address does not use a verified sending domain,</li>
+  <li>any recipient is on the project's suppression list (the response names the addresses),</li>
+  <li>the source's SES quota information is stale and cannot be refreshed, or</li>
+  <li>the complaint-rate circuit breaker has paused sending (at least 100 sends in the last 30 days
+    with a complaint rate of 0.1% or more).</li>
+</ul>
+
+<h2>Idempotency</h2>
+
+<p>
+  Pass an <code>Idempotency-Key</code> header to make retries safe. Replaying the exact same request
+  body with the same key returns the original email's <code>id</code> without creating a second send.
+  Keys expire after 24 hours. Reusing a key with a <strong>different</strong> body returns
+  <code>409 Conflict</code>:
+</p>
+
+<pre><code>{ "error": "Idempotency-Key was already used with a different request body" }</code></pre>
+
+<h2>GET /api/emails</h2>
+
+<p>Lists the calling key's project's 50 most recent emails (requires the <code>read:activity</code> scope):</p>
+
+<pre><code>{ "data": [ { "id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6", "status": "queued", "created_at": "2026-07-08T13:04:40.146Z" } ] }</code></pre>
+
+<h2>Rate limiting</h2>
+
+<p>Each API key is limited to 60 requests per minute. Exceeding it returns <code>429 Too Many Requests</code>:</p>
+
+<pre><code>{ "error": "Too many requests" }</code></pre>
+
+<h2>Errors</h2>
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>When</th><th>Body</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>401</code></td><td>Missing, unknown, revoked, or expired token</td><td><code>{ "error": "Unauthorized" }</code></td></tr>
+    <tr><td><code>403</code></td><td>Key lacks the required scope</td><td><code>{ "error": "Forbidden: this key is missing the &lt;scope&gt; scope" }</code></td></tr>
+    <tr><td><code>409</code></td><td>Idempotency key reused with a different body</td><td><code>{ "error": "..." }</code></td></tr>
+    <tr><td><code>422</code></td><td>Validation failure (bad recipients, suppressed address, unknown environment, …)</td><td><code>{ "errors": ["..."] }</code></td></tr>
+    <tr><td><code>429</code></td><td>Rate limit exceeded</td><td><code>{ "error": "Too many requests" }</code></td></tr>
+  </tbody>
+</table>

@@ -13,7 +13,9 @@ class Docs::Page
   ].freeze
 
   PAGES = [
-    Entry.new(slug: "getting-started", title: "Getting started", section: "Getting started")
+    Entry.new(slug: "getting-started", title: "Getting started", section: "Getting started"),
+    Entry.new(slug: "api-reference", title: "API reference", section: "API reference"),
+    Entry.new(slug: "api-keys", title: "API keys", section: "API reference")
   ].freeze
 
   class << self

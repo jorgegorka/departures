@@ -1,0 +1,44 @@
+<h1>API keys</h1>
+
+<p>
+  API keys are how your applications authenticate to the <%= link_to "API", doc_path("api-reference") %>.
+  Each key belongs to a project, carries a set of scopes, and can expire, be rotated, or be revoked
+  at any time from the dashboard's <strong>API keys</strong> section.
+</p>
+
+<h2>Issuing a key</h2>
+
+<p>
+  Create a key with a name (so you can tell keys apart later), the scopes it needs, and an optional
+  expiry date. The plaintext key — it starts with <code>dp_</code> — is shown <strong>once</strong>,
+  on creation. Departures stores only a SHA-256 hash, so it cannot show the key again: copy it into
+  your app's credential store right away.
+</p>
+
+<h2>Scopes</h2>
+
+<table>
+  <thead>
+    <tr><th>Scope</th><th>Grants</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>send</code></td><td><code>POST /api/emails</code> — submitting email for delivery</td></tr>
+    <tr><td><code>read:activity</code></td><td><code>GET /api/emails</code> — listing recent emails</td></tr>
+  </tbody>
+</table>
+
+<p>Give each application only the scopes it needs — a key used solely for sending has no reason to read activity.</p>
+
+<h2>Rotation and revocation</h2>
+
+<p>
+  <strong>Rotate</strong> revokes a key and issues a fresh one with the same name and scopes in a
+  single step — the new plaintext is shown once, exactly like a new key. <strong>Revoke</strong>
+  disables a key immediately; requests with it get <code>401</code> from that moment on.
+</p>
+
+<p>
+  The key list shows last-used telemetry (when, from which IP and user agent), which makes it easy to
+  spot keys that are no longer in use before revoking them. Issuing, revoking, and rotating keys are
+  all recorded in the workspace audit log.
+</p>
