@@ -1,0 +1,42 @@
+<h1>Getting started</h1>
+
+<p>
+  Departures is a self-hosted transactional email platform: a control plane for Amazon SES that you
+  run on your own infrastructure. Your applications send mail through a simple HTTP API; Departures
+  delivers it through SES, tracks the full delivery lifecycle, maintains suppression lists, relays
+  events to your own webhooks, and shows everything live in the dashboard.
+</p>
+
+<h2>How a send works</h2>
+
+<ol>
+  <li>Your app calls <code>POST /api/emails</code> with a bearer API key — or uses the
+    <%= link_to "Ruby gem", doc_path("getting-started") %>'s drop-in Action Mailer delivery method.</li>
+  <li>Departures validates the request, checks guardrails (verified sending domain, suppression list,
+    SES quota, complaint-rate circuit breaker), builds the full MIME message, archives it, and queues
+    delivery through SES.</li>
+  <li>SES delivery events flow back to Departures, which records each one, advances the email's status,
+    creates suppressions where appropriate, updates the dashboard in real time, and fans events out to
+    your webhook endpoints.</li>
+</ol>
+
+<h2>First-run setup</h2>
+
+<p>
+  After signing in for the first time, the onboarding checklist walks you through the four steps that
+  get your first email out the door:
+</p>
+
+<ol>
+  <li><strong>Add a source</strong> — the SES credentials and region Departures sends with.</li>
+  <li><strong>Verify a domain</strong> — add your sending domain and create its DKIM records.
+    Sends from unverified domains are rejected.</li>
+  <li><strong>Issue an API key</strong> — your apps authenticate to the API with it.</li>
+  <li><strong>Send a test email</strong> — prove the pipeline end to end.</li>
+</ol>
+
+<p>
+  Registration is open only for the very first user, who becomes the workspace owner. To let more
+  people sign up directly, set the <code>OPEN_REGISTRATION</code> environment variable — or simply
+  invite teammates from the workspace settings, which always works.
+</p>

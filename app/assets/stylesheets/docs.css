@@ -1,0 +1,128 @@
+@layer modules {
+  /* Docs: two-column shell — sticky section nav beside a measured prose column. */
+  .docs-layout {
+    align-items: start;
+    display: grid;
+    gap: var(--space-2xl);
+    grid-template-columns: 13rem minmax(0, 1fr);
+    padding-block: var(--space-lg);
+  }
+
+  .docs-sidebar {
+    inset-block-start: var(--space-lg);
+    position: sticky;
+  }
+
+  .docs-nav__section {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-x-small);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-block: var(--space-md) var(--space-2xs);
+    text-transform: uppercase;
+  }
+
+  .docs-nav__list {
+    display: grid;
+    gap: 1px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .docs-nav__link {
+    border-radius: 0.375rem;
+    color: var(--color-ink-light);
+    display: block;
+    font-size: var(--text-small);
+    padding: 0.3em 0.6em;
+    text-decoration: none;
+
+    &:hover {
+      background-color: var(--color-surface-sunken);
+      color: var(--color-ink);
+    }
+
+    &[aria-current="page"] {
+      background-color: var(--color-surface-sunken);
+      color: var(--color-ink);
+      font-weight: 600;
+    }
+  }
+
+  .docs-nav__link--home {
+    font-weight: 600;
+    margin-block-end: var(--space-xs);
+  }
+
+  .docs-content {
+    max-inline-size: 72ch;
+    min-inline-size: 0;
+
+    h1 {
+      font-size: var(--text-large);
+      margin-block-end: var(--space-sm);
+    }
+
+    h2 {
+      font-size: var(--text-medium);
+      margin-block: var(--space-xl) var(--space-xs);
+    }
+
+    p,
+    li {
+      line-height: 1.65;
+    }
+
+    ol,
+    ul {
+      padding-inline-start: 1.5em;
+    }
+
+    pre {
+      background-color: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-radius: 0.5rem;
+      font-size: var(--text-small);
+      line-height: 1.5;
+      margin-block: var(--space-md);
+      overflow-x: auto;
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    table {
+      border-collapse: collapse;
+      font-size: var(--text-small);
+      inline-size: 100%;
+      margin-block: var(--space-md);
+    }
+
+    th {
+      color: var(--color-ink-light);
+      font-weight: 600;
+      text-align: start;
+    }
+
+    th,
+    td {
+      border-block-end: 1px solid var(--color-border);
+      padding: var(--space-xs) var(--space-sm) var(--space-xs) 0;
+      vertical-align: top;
+    }
+  }
+
+  .docs-lead {
+    color: var(--color-ink-light);
+    font-size: var(--text-medium);
+  }
+
+  @media (max-width: 48rem) {
+    .docs-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .docs-sidebar {
+      position: static;
+    }
+  }
+}

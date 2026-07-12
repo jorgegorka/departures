@@ -1,0 +1,16 @@
+<nav class="docs-nav" aria-label="Documentation">
+  <%= link_to "Documentation", docs_path, class: "docs-nav__link docs-nav__link--home",
+        aria: { current: current_page?(docs_path) ? "page" : nil } %>
+  <% Docs::Page.sections.each do |section, pages| %>
+    <% next if pages.empty? %>
+    <h2 class="docs-nav__section"><%= section %></h2>
+    <ul class="docs-nav__list">
+      <% pages.each do |page| %>
+        <li>
+          <%= link_to page.title, doc_path(page), class: "docs-nav__link",
+                aria: { current: current_page?(doc_path(page)) ? "page" : nil } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</nav>

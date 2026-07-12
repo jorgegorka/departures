@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <%= render "layouts/head" %>
+
+  <body>
+    <header class="shell-header">
+      <div class="shell-header__identity center main-width">
+        <%= link_to root_path, class: "wordmark" do %>Departures<span class="wordmark__dot" aria-hidden="true">.</span><% end %>
+        <div class="shell-header__actions">
+          <% if authenticated? %>
+            <%= link_to "Dashboard", root_path, class: "btn btn--plain" %>
+          <% else %>
+            <%= link_to "Sign in", new_session_path, class: "btn btn--plain" %>
+          <% end %>
+        </div>
+      </div>
+    </header>
+    <div class="docs-layout center pad main-width">
+      <aside class="docs-sidebar">
+        <%= render "docs/sidebar" %>
+      </aside>
+      <main id="main" class="docs-content">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

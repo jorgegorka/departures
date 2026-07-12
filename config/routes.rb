@@ -71,6 +71,8 @@ Rails.application.routes.draw do
   resources :test_emails, only: %i[ new create ]
 
   resources :exports, only: :show
+
+  resources :docs, only: %i[ index show ], param: :slug
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   namespace :api do

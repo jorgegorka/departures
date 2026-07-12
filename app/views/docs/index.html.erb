@@ -1,0 +1,16 @@
+<% content_for :title, "Documentation — Departures" %>
+
+<h1>Documentation</h1>
+<p class="docs-lead">Everything you need to run Departures, wire your apps to it, and keep mail flowing.</p>
+
+<% Docs::Page.sections.each do |section, pages| %>
+  <% next if pages.empty? %>
+  <section>
+    <h2><%= section %></h2>
+    <ul>
+      <% pages.each do |page| %>
+        <li><%= link_to page.title, doc_path(page) %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
