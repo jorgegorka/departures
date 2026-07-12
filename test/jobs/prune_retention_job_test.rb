@@ -18,6 +18,8 @@ class PruneRetentionJobTest < ActiveSupport::TestCase
       key: "prune-test-key", fingerprint: "f", expires_at: 1.hour.ago)
     expired_invitation = Invitation.create!(workspace: workspaces(:acme), email: "late@example.com",
       role: "member", expires_at: 1.day.ago)
+    old_audit = AuditEvent.create!(action: "domain.created", created_at: 181.days.ago)
+    fresh_audit = AuditEvent.create!(action: "domain.created")
 
     PruneRetentionJob.perform_now
 
@@ -26,5 +28,7 @@ class PruneRetentionJobTest < ActiveSupport::TestCase
     assert_not WebhookLog.exists?(old_log.id)
     assert_not IdempotencyKey.exists?(expired_idempotency.id)
     assert_not Invitation.exists?(expired_invitation.id)
+    assert_not AuditEvent.exists?(old_audit.id)
+    assert AuditEvent.exists?(fresh_audit.id)
   end
 end
