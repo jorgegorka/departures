@@ -4,13 +4,23 @@ Departures is a self-hosted transactional email platform built on Ruby on Rails.
 
 You run it yourself, on your own infrastructure, against your own AWS account. No per-email pricing, no third-party data processor — just SES rates and a single Rails app.
 
-> **Status:** Under active development. The feature set below describes the target scope; see `docs/` for the evaluation and implementation plan.
+> **Status:** Feature-complete through production readiness (phases 0–9) plus in-app documentation.
+> See `docs/plans/departures-execution-plan.md` for the build history.
 
 ## How it works
 
 1. Your app makes a `POST /api/emails` request with a bearer API key (or uses a drop-in Action Mailer delivery method, planned as a companion gem).
 2. Departures validates the request, checks guardrails (verified sending domain, suppression list, SES quota, complaint-rate circuit breaker), builds the full MIME message, persists it, and queues delivery through SES v2 raw send.
 3. SES delivery events flow back via SNS to a per-source webhook endpoint. Departures verifies the SNS signature, records each event, advances the email's status, creates suppressions where appropriate, updates the dashboard in real time, and fans events out to your webhook endpoints.
+
+## Documentation
+
+Departures documents itself: every instance serves its own docs at **`/docs`** — publicly, versioned
+with the code it describes. Guides for every dashboard feature, the full API reference, webhook
+signature verification, and self-hosting runbooks (deployment, monitoring, backup & restore).
+
+The official Ruby client is [`departures-ruby`](https://github.com/jorgegorka/departures-ruby): a
+drop-in Action Mailer delivery method plus a plain HTTP client.
 
 ## Features
 
@@ -98,7 +108,8 @@ bin/rails test
 
 The `minitest` gem is pinned to `~> 5.25` because minitest 6 removed `minitest/mock`, which the delivery-job tests rely on.
 
-Detailed setup (AWS credentials, SNS topic wiring, deployment) will be documented as the corresponding features land.
+Full documentation — dashboard guides, API reference, webhooks, and self-hosting — is built into the
+app at `/docs` (no account needed). For production setup start with `/docs/self-hosting-quickstart`.
 
 ## API
 

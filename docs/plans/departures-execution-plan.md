@@ -210,6 +210,18 @@ Delivered: Phase 8 follow-ups cleared (2FA re-enrollment guard on `Users::TwoFac
 
 Pending (needs production details — VPS IP, domain, ghcr PAT, ops SES credentials): placeholder replacement in `config/deploy.yml` and the mailer host in `config/environments/production.rb`, `bin/kamal setup`, the 8-point first-deploy verification checklist (`docs/ops/first-deploy.md`), the `ops:` credentials entry, the external uptime monitor on `/up`, and the backup cron + restore drill.
 
+### Phase 10 — Documentation (complete)
+
+Detailed plan: **`docs/plans/phase-10-documentation-plan.md`**.
+
+Delivered: public in-app docs at `/docs` — a `Docs::Page` plain-Ruby registry driving routes,
+sidebar, landing page, and table-driven tests; 18 hand-written ERB pages across 5 sections (getting
+started, dashboard guides, API reference, webhooks, self-hosting & operations); dedicated `docs`
+layout + `docs.css` on the token system; `docs_link_to` helper with header Docs link and contextual
+Learn-more links across the dashboard and onboarding; README documentation section; `docs/ops/*`
+slimmed to operator notes. OpenAPI spec deliberately deferred (hand-maintained spec would drift; no
+gem to serve/validate one) — candidate for a future phase.
+
 ---
 
 ## Section C — Execution protocol
