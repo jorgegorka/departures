@@ -31,7 +31,7 @@ class Ops::ErrorNotifier
       Mail.new.tap do |message|
         message.from = settings[:from]
         message.to = settings[:to]
-        message.subject = "[Departures] #{error.class}: #{error.message.to_s.truncate(120)}"
+        message.subject = "[Departures] #{error.class}: #{error.message.to_s.tr("\r\n", " ").truncate(120)}"
         message.body = <<~BODY
           #{error.class}: #{error.message}
 

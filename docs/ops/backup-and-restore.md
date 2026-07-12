@@ -48,6 +48,10 @@ Retention: 30 days (pruned by the script).
    `tar -xzf /root/restore/<DATE>/emails.tar.gz -C /var/lib/docker/volumes/departures_storage/_data/` to restore the archive.
 5. Start the app: `bin/kamal app boot`. Verify `/up`, sign in, open the activity page.
 
+The production and queue snapshots are taken sequentially and can be seconds
+apart, so after a restore expect a handful of duplicate sends or orphaned jobs;
+the platform's at-least-once delivery design tolerates this.
+
 ## Restore drill (run at phase close and after any script change)
 
 Steps 1–2 only, against last night's snapshot, in a scratch directory. Record

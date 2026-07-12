@@ -50,6 +50,17 @@ class Ops::ErrorNotifierTest < ActiveSupport::TestCase
     assert_empty @client.api_requests
   end
 
+  test "flattens CRLF in the message so it cannot inject Subject headers" do
+    @notifier.report(ArgumentError.new("boom\r\nBcc: evil@example.com"),
+      handled: false, severity: :error, context: {})
+
+    assert_equal 1, @client.api_requests.size
+    raw = @client.api_requests.first[:params][:content][:raw][:data]
+    headers = raw.split("\r\n\r\n", 2).first
+    assert_no_match(/^Bcc: evil@example.com/m, headers)
+    assert_includes headers, "Subject: [Departures] ArgumentError: boom  Bcc: evil@example.com"
+  end
+
   test "never raises when SES delivery fails" do
     @client.stub_responses(:send_email, "MessageRejected")
 

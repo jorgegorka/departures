@@ -5,8 +5,10 @@
 External monitor pinging `https://<APP_DOMAIN>/up` every 5 minutes
 (UptimeRobot free tier or equivalent; HTTP monitor, keyword optional, alert
 to Jorge's email). `/up` is excluded from the force_ssl redirect and from
-request logs, and reports 200 only when the app boots and connects to its
-databases.
+request logs, and returns 200 once the app boots. It does NOT exercise the
+databases (Rails' HealthController performs no database check), so it only
+proves the process is up and serving HTTP — the true end-to-end probe is a
+real send (see the first-deploy checklist, item 4).
 
 ## Error alerts
 

@@ -59,8 +59,10 @@ Record each result.
 - [ ] 1. `curl -s -o /dev/null -w "%{http_code}" https://<APP_DOMAIN>/up` → `200`;
       certificate valid in the browser.
 - [ ] 2. `curl -s -o /dev/null -w "%{http_code}" http://<APP_DOMAIN>/` → `301`
-      redirect to https (`force_ssl` live). Response headers include
-      `Strict-Transport-Security` and `Content-Security-Policy`.
+      redirect to https (`force_ssl` live; the 301 itself typically comes from
+      kamal-proxy). Then confirm the `Strict-Transport-Security` and
+      `Content-Security-Policy` headers are present on the HTTPS response:
+      `curl -sI https://<APP_DOMAIN>/ | grep -iE "strict-transport-security|content-security-policy"`.
 - [ ] 3. Register the first user (registration is open while `User.none?`),
       complete onboarding: workspace → source (live SES credentials) → domain →
       API key.
