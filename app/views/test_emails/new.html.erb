@@ -11,7 +11,7 @@
   </div>
 <% end %>
 
-<%= form_with model: @submission, url: test_emails_path, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+<%= form_with model: @submission, url: test_emails_path, class: "flex flex-column gap form-width" do |form| %>
   <div class="flex flex-column gap-half">
     <label for="email_submission_from">From</label>
     <%= form.email_field :from, class: "input", required: true %>

@@ -1,4 +1,4 @@
-<%= form_with model: webhook_endpoint, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+<%= form_with model: webhook_endpoint, class: "flex flex-column gap form-width" do |form| %>
   <% if webhook_endpoint.errors.any? %>
     <div class="txt-negative txt-small margin-block-half">
       <p class="font-weight-bold margin-none">This endpoint couldn't be saved:</p>

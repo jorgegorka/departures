@@ -2,7 +2,7 @@
 
 <h1>New API key</h1>
 
-<%= form_with model: @api_key, class: "flex flex-column gap", style: "max-inline-size: 40rem;" do |form| %>
+<%= form_with model: @api_key, class: "flex flex-column gap form-width" do |form| %>
   <div class="flex flex-column gap-half">
     <%= form.label :name %>
     <%= form.text_field :name, class: "input", placeholder: "Production app" %>

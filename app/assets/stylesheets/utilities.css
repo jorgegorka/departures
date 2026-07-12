@@ -9,6 +9,7 @@
   .justify-space-between { justify-content: space-between; }
   .full-width { inline-size: 100%; }
   .main-width { max-inline-size: var(--main-width); }
+  .form-width { max-inline-size: 40rem; }
   .center { margin-inline: auto; }
 
   .pad { padding: var(--block-space) var(--inline-space); }
