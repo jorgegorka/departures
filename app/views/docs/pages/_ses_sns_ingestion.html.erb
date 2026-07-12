@@ -1,0 +1,47 @@
+<h1>SES event ingestion</h1>
+
+<p>
+  Delivery events — deliveries, bounces, complaints, opens, clicks — flow from Amazon SES back to
+  Departures through an SNS subscription. This is the wiring that turns "we handed the message to
+  SES" into the live statuses you see in the dashboard. It is set up once per
+  <%= link_to "source", doc_path("ses-sns-ingestion") %>.
+</p>
+
+<h2>Wiring it up</h2>
+
+<p>
+  Every source has its own secret webhook URL, shown on the source's page in the dashboard:
+</p>
+
+<pre><code>https://your-departures-host/api/webhooks/ses/&lt;webhook_token&gt;</code></pre>
+
+<ol>
+  <li>In the AWS console, open the SES <strong>configuration set</strong> the source sends through and
+    add (or edit) its <strong>event destination</strong>, selecting the event types you want and
+    pointing it at an SNS topic.</li>
+  <li>Create an HTTPS <strong>subscription</strong> on that topic with the source's webhook URL as the
+    endpoint.</li>
+  <li>That's it — Departures confirms the subscription automatically. In the AWS console the
+    subscription should show <em>Confirmed</em> within a few seconds.</li>
+</ol>
+
+<h2>What happens to each event</h2>
+
+<p>
+  Every notification is verified against its SNS signature (the signing certificate host is pinned to
+  <code>sns.&lt;region&gt;.amazonaws.com</code>) and logged before processing. Events are matched to
+  emails by SES message id and recorded per recipient; the email's status advances monotonically
+  (<code>sent → delivered → opened → clicked</code>, or <code>bounced</code>/<code>complained</code>)
+  — out-of-order events never regress a status. Complaints and permanent bounces add the recipient to
+  the suppression list automatically; soft bounces never do. Matching events also fan out to your
+  <%= link_to "outbound webhooks", doc_path("outbound-webhooks") %>.
+</p>
+
+<h2>Endpoint behavior</h2>
+
+<ul>
+  <li>Unknown tokens 404; invalid SNS signatures 403.</li>
+  <li>The endpoint is throttled to 120 requests per minute per token.</li>
+  <li>Processing is asynchronous: the endpoint acknowledges quickly and a background job applies the
+    event, so a burst of notifications never blocks SNS.</li>
+</ul>

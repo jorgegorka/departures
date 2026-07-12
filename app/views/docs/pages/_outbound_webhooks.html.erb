@@ -1,0 +1,75 @@
+<h1>Outbound webhooks</h1>
+
+<p>
+  Departures can relay email events to your own HTTPS endpoints as they happen — so your app can
+  react to a bounce, mark a user's address as bad, or log deliveries in your own systems. Manage
+  endpoints in the dashboard's <strong>Webhooks</strong> section: each endpoint has a URL, a signing
+  secret, and the set of event types it subscribes to.
+</p>
+
+<h2>Event types</h2>
+
+<p>
+  <code>send</code>, <code>delivery</code>, <code>open</code>, <code>click</code>, <code>bounce</code>,
+  <code>complaint</code>, <code>delivery_delay</code>, <code>reject</code>,
+  <code>rendering_failure</code>, <code>subscription</code>.
+</p>
+
+<h2>Payload</h2>
+
+<pre><code>{
+  "event": "delivery",
+  "email_id": "em_9Y6g1q2Flh4CvFzlKCFzUjO6",
+  "recipients": ["user@example.com"],
+  "occurred_at": "2026-07-08T13:04:41.000Z",
+  "payload": { ... }
+}</code></pre>
+
+<p>
+  <code>email_id</code> is the same id the API returned when the email was submitted (and the value
+  of its <code>X-Departures-Id</code> header). <code>payload</code> carries the underlying SES event
+  verbatim, so diagnostic detail — bounce subtypes, SMTP responses, user agents — is never lost.
+</p>
+
+<h2>Verifying signatures</h2>
+
+<p>
+  Every delivery is signed. The endpoint's secret (it starts with <code>whsec_</code>) is shown once
+  when the endpoint is created. Each request carries:
+</p>
+
+<pre><code>Departures-Signature: t=1720000000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd</code></pre>
+
+<p>
+  <code>v1</code> is an HMAC-SHA256 of <code>"&lt;timestamp&gt;.&lt;raw request body&gt;"</code> using
+  your endpoint's secret as the key. To verify:
+</p>
+
+<ol>
+  <li>Split the header on commas into <code>t</code> and <code>v1</code>.</li>
+  <li>Compute <code>HMAC_SHA256(secret, "#{t}.#{raw_body}")</code> over the <strong>raw</strong> body —
+    before any JSON parsing.</li>
+  <li>Compare against <code>v1</code> with a constant-time comparison, and reject stale timestamps
+    (for example, older than 5 minutes) to prevent replays.</li>
+</ol>
+
+<pre><code># Ruby example (e.g. in a Rails controller)
+timestamp, signature = request.headers["Departures-Signature"]
+  .split(",").map { |part| part.split("=", 2).last }
+expected = OpenSSL::HMAC.hexdigest("SHA256", ENV["WEBHOOK_SECRET"], "#{timestamp}.#{request.raw_post}")
+
+unless Rack::Utils.secure_compare(expected, signature) && Time.at(timestamp.to_i) > 5.minutes.ago
+  head :unauthorized and return
+end</code></pre>
+
+<h2>Delivery behavior</h2>
+
+<ul>
+  <li>Endpoints must be HTTPS. Requests are sent with <code>User-Agent: Departures-Webhooks</code>
+    and a 5-second timeout.</li>
+  <li>Delivery is <strong>at-least-once</strong>: a non-2xx response or timeout is retried with
+    backoff, so your handler should be idempotent (the <code>email_id</code> + event type make a
+    good deduplication key).</li>
+  <li>Every attempt is logged — status, latency, and response snippet — and each endpoint shows its
+    success rate. Delivery logs are kept for 30 days.</li>
+</ul>
