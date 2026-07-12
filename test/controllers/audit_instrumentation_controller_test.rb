@@ -48,4 +48,31 @@ class AuditInstrumentationControllerTest < ActionDispatch::IntegrationTest
     delete webhook_endpoint_path(webhook_endpoints(:acme_all))
     assert AuditEvent.exists?(action: "webhook_endpoint.destroyed")
   end
+
+  test "domain create and destroy are audited" do
+    post domains_path, params: { domain: { name: "audit-example.com" } }
+    assert AuditEvent.exists?(action: "domain.created"), "expected a domain.created audit event"
+
+    delete domain_path(domains(:acme_com))
+    assert AuditEvent.exists?(action: "domain.destroyed"), "expected a domain.destroyed audit event"
+  end
+
+  test "creating a source is audited" do
+    post sources_path, params: { source: { name: "Audit source", environment: "staging",
+      region: "eu-west-1", aws_access_key_id: "AKIAAUDIT", aws_secret_access_key: "audit-secret" } }
+
+    source = Source.find_by!(name: "Audit source")
+    assert AuditEvent.exists?(action: "source.created", subject: source)
+  end
+
+  test "webhook endpoint create and update are audited" do
+    post webhook_endpoints_path, params: { webhook_endpoint: { url: "https://hooks.example.com/audit",
+      events: [ "bounce" ], active: true } }
+    endpoint = WebhookEndpoint.find_by!(url: "https://hooks.example.com/audit")
+    assert AuditEvent.exists?(action: "webhook_endpoint.created", subject: endpoint)
+
+    patch webhook_endpoint_path(webhook_endpoints(:acme_all)),
+      params: { webhook_endpoint: { url: "https://hooks.acme.com/renamed" } }
+    assert AuditEvent.exists?(action: "webhook_endpoint.updated", subject: webhook_endpoints(:acme_all))
+  end
 end
