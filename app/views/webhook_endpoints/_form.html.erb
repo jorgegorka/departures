@@ -1,14 +1,5 @@
 <%= form_with model: webhook_endpoint, class: "flex flex-column gap form-width" do |form| %>
-  <% if webhook_endpoint.errors.any? %>
-    <div class="txt-negative txt-small margin-block-half">
-      <p class="font-weight-bold margin-none">This endpoint couldn't be saved:</p>
-      <ul class="margin-none">
-        <% webhook_endpoint.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/form_errors", record: webhook_endpoint, title: "This endpoint couldn't be saved:" %>
 
   <div class="flex flex-column gap-half">
     <%= form.label :url, "Endpoint URL" %>

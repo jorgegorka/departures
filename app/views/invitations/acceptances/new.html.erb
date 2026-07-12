@@ -4,13 +4,7 @@
   <%= button_to "Accept invitation", invitation_acceptance_path(invitation_token: params[:invitation_token]),
         class: "btn btn--primary btn--large" %>
 <% else %>
-  <% if @user.errors.any? %>
-    <ul class="txt-negative">
-      <% @user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  <% end %>
+  <%= render "shared/form_errors", record: @user %>
 
   <%= form_with url: invitation_acceptance_path(invitation_token: params[:invitation_token]),
         class: "flex flex-column gap" do |form| %>

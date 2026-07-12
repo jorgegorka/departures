@@ -1,5 +1,6 @@
 class Email < ApplicationRecord
   include Statuses, Deliverable, Resendable, Broadcastable
+  include Chronological, TimeRangeFilterable, CsvExportable
 
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
@@ -13,13 +14,8 @@ class Email < ApplicationRecord
 
   validates :from, presence: true
 
-  TIME_RANGES = { "1h" => 1.hour, "24h" => 24.hours, "7d" => 7.days, "30d" => 30.days }.freeze
-
   scope :hard_bounced, -> { bounced.where(bounce_type: "permanent") }
   scope :soft_bounced, -> { bounced.where(bounce_type: "transient") }
-
-  scope :chronologically,         -> { order(created_at: :asc,  id: :asc)  }
-  scope :reverse_chronologically, -> { order(created_at: :desc, id: :desc) }
 
   scope :indexed_by, ->(index) do
     case index
@@ -42,14 +38,6 @@ class Email < ApplicationRecord
     case sort
     when "oldest" then chronologically
     else reverse_chronologically
-    end
-  end
-
-  scope :in_time_range, ->(param) do
-    if (window = TIME_RANGES[param])
-      where(created_at: window.ago..)
-    else
-      all
     end
   end
 
@@ -100,15 +88,11 @@ class Email < ApplicationRecord
     public_id
   end
 
-  def self.csv_safe(value)
-    text = value.to_s
-    if text.match?(/\A[=+\-@\t\r]/)
-      "'#{text}"
-    else
-      text
-    end
+  def addresses_by_kind
+    { to: recipients.kind_to.pluck(:address),
+      cc: recipients.kind_cc.pluck(:address),
+      bcc: recipients.kind_bcc.pluck(:address) }
   end
-  private_class_method :csv_safe
 
   private
     def assign_public_id

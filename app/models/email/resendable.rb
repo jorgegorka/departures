@@ -32,10 +32,7 @@ module Email::Resendable
 
     def resubmission_attributes
       { project: project, source: source, from: from, subject: subject,
-        html: html_body, text: text_body,
-        to: recipients.kind_to.pluck(:address),
-        cc: recipients.kind_cc.pluck(:address),
-        bcc: recipients.kind_bcc.pluck(:address),
+        html: html_body, text: text_body, **addresses_by_kind,
         headers: headers, tags: tags.merge("resent_from" => public_id),
         attachments: archived_attachments }
     end

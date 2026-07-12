@@ -1,4 +1,6 @@
 class AuditEvent < ApplicationRecord
+  include Chronological, TimeRangeFilterable
+
   ACTIONS = %w[
     api_key.issued api_key.revoked api_key.rotated
     invitation.created invitation.accepted
@@ -18,7 +20,6 @@ class AuditEvent < ApplicationRecord
 
   validates :action, inclusion: { in: ACTIONS }
 
-  scope :reverse_chronologically, -> { order(created_at: :desc, id: :desc) }
   scope :preloaded, -> { includes(:user) }
   scope :indexed_by, ->(group) do
     case group
@@ -29,15 +30,6 @@ class AuditEvent < ApplicationRecord
     else all
     end
   end
-  scope :in_time_range, ->(range) do
-    case range
-    when "24h" then where(created_at: 24.hours.ago..)
-    when "7d" then where(created_at: 7.days.ago..)
-    when "30d" then where(created_at: 30.days.ago..)
-    else all
-    end
-  end
-
   class << self
     def record(action, subject: nil, metadata: {}, workspace: Current.workspace, user: Current.user)
       create!(action: action, subject: subject, metadata: metadata, workspace: workspace, user: user, ip: Current.ip)

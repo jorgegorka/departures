@@ -1,4 +1,6 @@
 class WebhookDelivery < ApplicationRecord
+  include Chronological
+
   class DeliveryError < StandardError; end
   class BlockedAddressError < StandardError; end
 
@@ -21,8 +23,6 @@ class WebhookDelivery < ApplicationRecord
   belongs_to :email, optional: true
 
   enum :status, %w[ pending succeeded failed ].index_by(&:itself), default: "pending", validate: true
-
-  scope :reverse_chronologically, -> { order(created_at: :desc, id: :desc) }
 
   validates :event_type, presence: true
 

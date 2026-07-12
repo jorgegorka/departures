@@ -1,15 +1,6 @@
 <h1 class="txt-large margin-block">Send a test email</h1>
 
-<% if @submission.errors.any? %>
-  <div class="txt-negative txt-small margin-block-half">
-    <p class="font-weight-bold margin-none">The test email couldn't be sent:</p>
-    <ul class="margin-none">
-      <% @submission.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
+<%= render "shared/form_errors", record: @submission, title: "The test email couldn't be sent:" %>
 
 <%= form_with model: @submission, url: test_emails_path, class: "flex flex-column gap form-width" do |form| %>
   <div class="flex flex-column gap-half">

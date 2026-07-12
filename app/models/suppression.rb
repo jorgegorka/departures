@@ -1,4 +1,6 @@
 class Suppression < ApplicationRecord
+  include CsvExportable
+
   belongs_to :project
   belongs_to :workspace, default: -> { project.workspace }
 
@@ -36,15 +38,5 @@ class Suppression < ApplicationRecord
         end
       end
     end
-
-    private
-      def csv_safe(value)
-        text = value.to_s
-        if text.match?(/\A[=+\-@\t\r]/)
-          "'#{text}"
-        else
-          text
-        end
-      end
   end
 end

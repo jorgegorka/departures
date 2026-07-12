@@ -20,10 +20,8 @@ class Project::MetricsTest < ActiveSupport::TestCase
     metrics = @project.metrics_for("24h")
 
     assert_equal 3, metrics.sent_count
-    assert_equal 2, metrics.delivered_count
-    assert_equal 1, metrics.opened_count
-    assert_in_delta 66.7, metrics.delivery_rate
-    assert_in_delta 50.0, metrics.open_rate
+    assert_in_delta 66.7, metrics.delivery_rate # 2 of 3 delivered
+    assert_in_delta 50.0, metrics.open_rate # 1 of 2 delivered opened, duplicate ignored
   end
 
   test "rates guard divide-by-zero" do

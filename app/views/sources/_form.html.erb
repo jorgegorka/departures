@@ -1,14 +1,5 @@
 <%= form_with model: source, class: "flex flex-column gap form-width" do |form| %>
-  <% if source.errors.any? %>
-    <div class="txt-negative txt-small margin-block-half">
-      <p class="font-weight-bold margin-none">This source couldn't be saved:</p>
-      <ul class="margin-none">
-        <% source.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/form_errors", record: source, title: "This source couldn't be saved:" %>
 
   <div class="flex flex-column gap-half">
     <%= form.label :name %>

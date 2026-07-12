@@ -1,5 +1,5 @@
 class Project::Metrics
-  RANGES = { "24h" => 24.hours, "7d" => 7.days, "30d" => 30.days }.freeze
+  RANGES = TimeRangeFilterable::TIME_RANGES.slice("24h", "7d", "30d").freeze
   DEFAULT_RANGE = "7d"
   EVENT_COUNTERS = { delivered: "delivery", opened: "open", clicked: "click",
     bounced: "bounce", complained: "complaint" }.freeze
@@ -13,22 +13,6 @@ class Project::Metrics
 
   def sent_count
     current.fetch(:accepted)
-  end
-
-  def delivered_count
-    current.fetch(:delivered)
-  end
-
-  def opened_count
-    current.fetch(:opened)
-  end
-
-  def clicked_count
-    current.fetch(:clicked)
-  end
-
-  def bounced_count
-    current.fetch(:bounced)
   end
 
   def complaint_count
@@ -90,7 +74,7 @@ class Project::Metrics
   end
 
   def cache_key
-    [ "project-metrics", project.id, range, project.emails.maximum(:updated_at)&.to_i ].join("/")
+    @cache_key ||= [ "project-metrics", project.id, range, project.emails.maximum(:updated_at)&.to_i ].join("/")
   end
 
   private

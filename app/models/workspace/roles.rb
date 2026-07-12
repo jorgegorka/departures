@@ -14,7 +14,9 @@ module Workspace::Roles
     ROLE_CAPABILITIES.fetch(role_for(user), []).include?(capability.to_s)
   end
 
+  # Memoized per instance: nav and per-row checks call capability? repeatedly
+  # for the same user within a request.
   def role_for(user)
-    memberships.find_by(user: user)&.role
+    (@roles_by_user ||= {}).fetch(user) { @roles_by_user[user] = memberships.find_by(user: user)&.role }
   end
 end

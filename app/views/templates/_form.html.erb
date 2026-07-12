@@ -1,14 +1,5 @@
 <%= form_with model: template, class: "flex flex-column gap form-width" do |form| %>
-  <% if template.errors.any? %>
-    <div class="txt-negative txt-small margin-block-half">
-      <p class="font-weight-bold margin-none">This template couldn't be saved:</p>
-      <ul class="margin-none">
-        <% template.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/form_errors", record: template, title: "This template couldn't be saved:" %>
 
   <div class="flex flex-column gap-half">
     <%= form.label :name %>

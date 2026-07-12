@@ -27,8 +27,6 @@ module Email::Deliverable
     end
 
     def destination
-      { to_addresses: recipients.kind_to.pluck(:address),
-        cc_addresses: recipients.kind_cc.pluck(:address),
-        bcc_addresses: recipients.kind_bcc.pluck(:address) }
+      addresses_by_kind.transform_keys { |kind| :"#{kind}_addresses" }
     end
 end

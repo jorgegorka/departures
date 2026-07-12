@@ -1,12 +1,6 @@
 <h1>Create your account</h1>
 
-<% if @user.errors.any? %>
-  <ul class="txt-negative">
-    <% @user.errors.full_messages.each do |message| %>
-      <li><%= message %></li>
-    <% end %>
-  </ul>
-<% end %>
+<%= render "shared/form_errors", record: @user %>
 
 <%= form_with url: registration_path, class: "flex flex-column gap" do |form| %>
   <div class="flex flex-column gap-half">

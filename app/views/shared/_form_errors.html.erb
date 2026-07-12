@@ -1,0 +1,18 @@
+<% if record.errors.any? %>
+  <% if local_assigns[:title] %>
+    <div class="txt-negative txt-small margin-block-half">
+      <p class="font-weight-bold margin-none"><%= title %></p>
+      <ul class="margin-none">
+        <% record.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% else %>
+    <ul class="txt-negative">
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
