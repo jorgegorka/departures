@@ -12,7 +12,7 @@
 
 <ol>
   <li>Create an IAM user in the AWS account you send from, with permission to call SES
-    (<code>ses:SendEmail</code> for delivery, plus <code>ses:GetAccount</code> for quota checks).</li>
+    (<code>ses:SendRawEmail</code> for delivery, plus <code>ses:GetAccount</code> for quota checks).</li>
   <li>In <strong>Sources</strong>, add the access key id, secret, and the SES region you operate in.</li>
   <li>Wire delivery events back: the source's page shows its unique webhook URL — follow
     <%= link_to "SES event ingestion", doc_path("ses-sns-ingestion") %> to connect it to your SES
