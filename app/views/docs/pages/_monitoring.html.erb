@@ -1,0 +1,41 @@
+<h1>Monitoring</h1>
+
+<h2>Uptime</h2>
+
+<p>
+  Point an external uptime monitor (UptimeRobot's free tier is fine) at
+  <code>https://your-domain/up</code> every few minutes. The endpoint returns <code>200</code> once
+  the app boots. Note what it does and doesn't prove: it exercises the web process, not the
+  databases or the job worker — the true end-to-end probe is a real send.
+</p>
+
+<h2>Error alerts</h2>
+
+<p>
+  Departures emails you when an unhandled exception occurs in a request or a background job — at most
+  one email per error class every 10 minutes. Alerts are sent through a <em>dedicated</em> set of SES
+  credentials so that a problem in your main sending path can't silence its own alarm. Configure them
+  in Rails credentials (<code>bin/rails credentials:edit</code>); if the block is absent, the
+  notifier is silent:
+</p>
+
+<pre><code>ops:
+  aws_access_key_id: &lt;IAM key allowed only ses:SendRawEmail&gt;
+  aws_secret_access_key: &lt;secret&gt;
+  region: &lt;SES region&gt;
+  from: &lt;verified sender, e.g. alerts@your-domain&gt;
+  to: &lt;where alerts should go&gt;</code></pre>
+
+<p>
+  Known trade-off: a total SES outage also silences alerts — the independent uptime monitor above is
+  the backstop.
+</p>
+
+<h2>When something looks wrong</h2>
+
+<ul>
+  <li><code>bin/kamal logs</code> and <code>bin/kamal logs -r job</code> — app and worker logs.</li>
+  <li><code>bin/kamal console</code> — a production Rails console.</li>
+  <li>The dashboard itself — the activity feed and an email's event timeline usually answer
+    "did it send, and what did the recipient's server say?" faster than logs.</li>
+</ul>

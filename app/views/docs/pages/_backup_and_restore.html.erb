@@ -1,0 +1,50 @@
+<h1>Backup & restore</h1>
+
+<p>
+  Everything that matters lives in the persistent volume: the SQLite databases and the archived
+  <code>.eml</code> files. The repo ships <code>bin/backup</code>, which snapshots all of it nightly
+  to S3-compatible object storage via rclone, with 30-day retention. Recovery point: up to 24 hours.
+</p>
+
+<h2>One-time setup (on the host)</h2>
+
+<ol>
+  <li>Install the tools: <code>apt-get install -y sqlite3 rclone</code>.</li>
+  <li><code>rclone config</code> — create a remote pointing at your S3-compatible provider, and
+    create a bucket for the snapshots.</li>
+  <li>Copy the script to the host:
+    <code>scp bin/backup root@your-server:/usr/local/bin/departures-backup</code>
+    (re-copy whenever <code>bin/backup</code> changes — it's versioned in the repo, executed on the
+    host).</li>
+  <li>Schedule it (<code>crontab -e</code> as root):
+    <pre><code>15 3 * * * /usr/local/bin/departures-backup &gt;&gt; /var/log/departures-backup.log 2&gt;&amp;1</code></pre></li>
+  <li>Run it once by hand and confirm the snapshot exists with <code>rclone ls</code>.</li>
+</ol>
+
+<p>
+  <strong>Warning:</strong> the backup destination must be a dedicated bucket or prefix used only for
+  these snapshots — the retention prune recursively deletes everything older than 30 days under that
+  path.
+</p>
+
+<h2>Restoring</h2>
+
+<ol>
+  <li>Download a snapshot: <code>rclone copy &lt;remote&gt;:&lt;bucket&gt;/&lt;DATE&gt; /root/restore/&lt;DATE&gt;</code>.</li>
+  <li>Check integrity <em>before</em> touching production:
+    <code>sqlite3 production.sqlite3 "PRAGMA integrity_check;"</code> must print <code>ok</code>;
+    spot-check a count, e.g. <code>"SELECT count(*) FROM emails;"</code>.</li>
+  <li>Stop the app: <code>bin/kamal app stop</code>.</li>
+  <li>On the host, swap the database files and unpack the <code>.eml</code> archive into the app's
+    Docker volume (move the live files aside first, including any <code>-wal</code>/<code>-shm</code>
+    siblings).</li>
+  <li>Start the app: <code>bin/kamal app boot</code>, then verify <code>/up</code>, sign in, and open
+    the activity page.</li>
+</ol>
+
+<p>
+  The database snapshots are taken sequentially, seconds apart — after a restore, expect a handful of
+  duplicate sends or orphaned jobs. Delivery is at-least-once by design, so the platform tolerates
+  this. Run the download-and-integrity-check half of this as a drill now and then; a backup you've
+  never restored is a hope, not a backup.
+</p>

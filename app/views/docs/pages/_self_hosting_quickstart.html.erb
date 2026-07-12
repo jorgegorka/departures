@@ -1,0 +1,48 @@
+<h1>Self-hosting quickstart</h1>
+
+<p>
+  Departures runs as a single Rails app plus a job worker — SQLite for storage, no Redis, no Node.
+  This page takes you from an empty server to your first delivered email. The short version: deploy
+  with Kamal, register, and let onboarding walk you through connecting SES.
+</p>
+
+<h2>What you need</h2>
+
+<ul>
+  <li>A server (any VPS works) with Docker installed and ports 80 and 443 open.</li>
+  <li>A domain for the app, with an A record pointing at the server — Kamal's proxy uses it to obtain
+    a Let's Encrypt certificate automatically.</li>
+  <li>A container registry to push the image to (GitHub Container Registry, Docker Hub, …).</li>
+  <li>An AWS account with SES access in your region. If the account is new, SES starts in sandbox
+    mode — request production access early, approval can take a day.</li>
+</ul>
+
+<h2>Deploy</h2>
+
+<ol>
+  <li>Clone the repository and fill in <code>config/deploy.yml</code>: your server's IP (web and job
+    roles), your app domain (<code>proxy.host</code>), and your registry image name. Set the same
+    domain as the mailer host in <code>config/environments/production.rb</code>.</li>
+  <li>Create <code>.kamal/secrets</code> (git-ignored) forwarding your registry credential and the
+    Rails master key — see <%= link_to "Deployment", doc_path("deployment") %> for the exact
+    contents.</li>
+  <li>Run <code>bin/kamal setup</code>. The image builds, pushes, and the web and job containers come
+    up behind kamal-proxy with TLS.</li>
+</ol>
+
+<h2>First run</h2>
+
+<ol>
+  <li>Open the app and register — registration is open only for this first user, who becomes the
+    workspace owner (see <%= link_to "Account security", doc_path("account-security") %>).</li>
+  <li>Follow the onboarding checklist: add a <%= link_to "source", doc_path("sources") %>, verify a
+    domain, issue an API key, send a test email.</li>
+  <li>Wire delivery events back from SES —
+    <%= link_to "SES event ingestion", doc_path("ses-sns-ingestion") %> — so statuses, bounces, and
+    suppressions flow into the dashboard.</li>
+</ol>
+
+<p>
+  Then set up <%= link_to "monitoring", doc_path("monitoring") %> and
+  <%= link_to "backups", doc_path("backup-and-restore") %> — twenty minutes now, saved weekends later.
+</p>

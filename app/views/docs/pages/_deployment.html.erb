@@ -1,0 +1,59 @@
+<h1>Deployment</h1>
+
+<p>
+  Departures deploys with <a href="https://kamal-deploy.org">Kamal</a>: one <code>web</code> container
+  and one <code>job</code> container (Solid Queue) behind kamal-proxy, which terminates TLS with an
+  automatic Let's Encrypt certificate. State lives in a persistent Docker volume — the SQLite
+  databases and the archived <code>.eml</code> files.
+</p>
+
+<h2>Configuration</h2>
+
+<p>In <code>config/deploy.yml</code>, set:</p>
+
+<ul>
+  <li><code>image</code> — where to push, e.g. <code>ghcr.io/your-org/departures</code>.</li>
+  <li>the server IP under both the <code>web</code> and <code>job</code> roles.</li>
+  <li><code>proxy.host</code> — your app domain (must already resolve to the server, or the
+    certificate request fails).</li>
+</ul>
+
+<p>
+  Set the same domain as the mailer host in <code>config/environments/production.rb</code>
+  (<code>config.action_mailer.default_url_options</code>) so links in transactional mail resolve.
+</p>
+
+<p><code>.kamal/secrets</code> (git-ignored — never commit it) forwards two values:</p>
+
+<pre><code>KAMAL_REGISTRY_PASSWORD=$KAMAL_REGISTRY_PASSWORD
+RAILS_MASTER_KEY=$(cat config/master.key)</code></pre>
+
+<p>
+  Export a registry credential with push access (for GitHub Container Registry, a PAT with
+  <code>write:packages</code>) as <code>KAMAL_REGISTRY_PASSWORD</code> before deploying.
+</p>
+
+<h2>First deploy and updates</h2>
+
+<pre><code>bin/kamal setup    # first time: provisions the proxy and boots everything
+bin/kamal deploy   # every deploy after that</code></pre>
+
+<h2>Verifying a fresh deploy</h2>
+
+<ul>
+  <li><code>https://your-domain/up</code> returns <code>200</code> with a valid certificate.</li>
+  <li>Plain <code>http://</code> redirects to <code>https://</code>, and responses carry
+    <code>Strict-Transport-Security</code> and <code>Content-Security-Policy</code> headers.</li>
+  <li><code>bin/kamal logs -r job</code> shows Solid Queue polling.</li>
+  <li>A real send arrives in a real inbox, and after
+    <%= link_to "SNS wiring", doc_path("ses-sns-ingestion") %>, its delivery event advances the
+    status live in the dashboard.</li>
+</ul>
+
+<h2>Useful commands</h2>
+
+<pre><code>bin/kamal logs           # web logs
+bin/kamal logs -r job    # worker logs
+bin/kamal console        # production Rails console
+bin/kamal app stop       # stop the app (e.g. before a restore)
+bin/kamal app boot       # start it again</code></pre>

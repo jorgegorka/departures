@@ -24,7 +24,12 @@ class Docs::Page
     Entry.new(slug: "activity-and-inspecting-email", title: "Activity & inspecting email", section: "Dashboard guides"),
     Entry.new(slug: "suppressions-and-bounces", title: "Suppressions & bounces", section: "Dashboard guides"),
     Entry.new(slug: "workspaces-and-access", title: "Workspaces & access", section: "Dashboard guides"),
-    Entry.new(slug: "account-security", title: "Account security", section: "Dashboard guides")
+    Entry.new(slug: "account-security", title: "Account security", section: "Dashboard guides"),
+    Entry.new(slug: "self-hosting-quickstart", title: "Self-hosting quickstart", section: "Getting started"),
+    Entry.new(slug: "deployment", title: "Deployment", section: "Self-hosting & operations"),
+    Entry.new(slug: "monitoring", title: "Monitoring", section: "Self-hosting & operations"),
+    Entry.new(slug: "backup-and-restore", title: "Backup & restore", section: "Self-hosting & operations"),
+    Entry.new(slug: "configuration", title: "Configuration", section: "Self-hosting & operations")
   ].freeze
 
   class << self

@@ -1,0 +1,39 @@
+<h1>Configuration</h1>
+
+<h2>Environment variables</h2>
+
+<table>
+  <thead>
+    <tr><th>Variable</th><th>Effect</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>RAILS_MASTER_KEY</code></td>
+      <td>Decrypts Rails credentials in production (the content of <code>config/master.key</code>).
+        Forwarded to the container by Kamal via <code>.kamal/secrets</code>.</td>
+    </tr>
+    <tr>
+      <td><code>OPEN_REGISTRATION</code></td>
+      <td>When set, anyone can register. Otherwise registration is open only while the instance has
+        no users; after that, teammates join by invitation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Credentials</h2>
+
+<p>
+  Secrets live in encrypted Rails credentials (<code>bin/rails credentials:edit</code>). The one
+  documented block is <code>ops:</code> for error-alert email — see
+  <%= link_to "Monitoring", doc_path("monitoring") %>. SES credentials for <em>sending</em> are not
+  configured here: they're entered per <%= link_to "source", doc_path("sources") %> in the dashboard
+  and stored encrypted in the database.
+</p>
+
+<h2>Data retention</h2>
+
+<p>
+  Recurring jobs keep the database tidy: old emails and their archived <code>.eml</code> files,
+  webhook delivery logs (30 days), expired idempotency keys, and expired invitations are pruned on
+  schedule. Suppressions are kept — they're reputation-critical.
+</p>
