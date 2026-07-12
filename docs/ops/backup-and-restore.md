@@ -18,6 +18,11 @@ S3-compatible object storage via rclone. RPO: 24 h (accepted in the Phase 9 spec
 5. Verify the first run manually: `/usr/local/bin/departures-backup` then
    `rclone ls departures-backups:departures-backups`.
 
+**Warning:** `DEPARTURES_BACKUP_REMOTE` MUST point at a dedicated bucket/prefix
+used only for these snapshots. The prune step (`rclone delete --min-age`)
+recursively deletes everything older than the retention window under that path,
+so anything else stored there will be destroyed.
+
 Cron mails/logs handle script failures (`set -euo pipefail` — any failing step
 exits non-zero). This is deliberately independent of the app's error notifier.
 
@@ -40,7 +45,7 @@ Retention: 30 days (pruned by the script).
    `/var/lib/docker/volumes/departures_storage/_data/`:
    move the live `production.sqlite3` (and `-wal`/`-shm` siblings, if present) aside,
    copy the restored file in; same for `production_queue.sqlite3`;
-   `tar -xzf emails.tar.gz -C /var/lib/docker/volumes/departures_storage/_data/` to restore the archive.
+   `tar -xzf /root/restore/<DATE>/emails.tar.gz -C /var/lib/docker/volumes/departures_storage/_data/` to restore the archive.
 5. Start the app: `bin/kamal app boot`. Verify `/up`, sign in, open the activity page.
 
 ## Restore drill (run at phase close and after any script change)

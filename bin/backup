@@ -12,10 +12,12 @@ trap 'rm -rf "$WORKDIR"' EXIT
 
 # Consistent online copies of the databases that matter (cache/cable are disposable).
 for db in production production_queue; do
+  [[ -f "$VOLUME/${db}.sqlite3" ]] || { echo "missing ${db}.sqlite3" >&2; exit 1; }
   sqlite3 "$VOLUME/${db}.sqlite3" ".backup '$WORKDIR/${db}.sqlite3'"
 done
 
-# Archived MIME messages.
+# Archived MIME messages (mkdir -p: the tree may not exist yet on a fresh host).
+mkdir -p "$VOLUME/emails"
 tar -czf "$WORKDIR/emails.tar.gz" -C "$VOLUME" emails
 
 rclone copy "$WORKDIR" "$REMOTE/$STAMP"
