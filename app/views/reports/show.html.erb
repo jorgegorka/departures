@@ -2,6 +2,7 @@
 
 <div data-workspace-slug="<%= Current.workspace&.slug %>" data-project-slug="<%= Current.project&.slug %>">
 <% if Current.project %>
+  <%= render "shared/overview_tabs" %>
   <div class="page-head">
     <h1 class="page-head__title"><%= Current.project.name %> reports</h1>
     <%= form_with url: report_path, method: :get, data: { controller: "auto-submit" } do |form| %>

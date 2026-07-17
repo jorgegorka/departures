@@ -8,6 +8,7 @@
    */
   .icon--add { --svg: url("add.svg"); }
   .icon--alert-circle { --svg: url("alert-circle.svg"); }
+  .icon--caret-down { --svg: url("caret-down.svg"); }
   .icon--check { --svg: url("check.svg"); }
   .icon--check-circle { --svg: url("check-circle.svg"); }
   .icon--close { --svg: url("close.svg"); }

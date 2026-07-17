@@ -3,14 +3,29 @@
   <%= render "layouts/head" %>
 
   <body>
+    <a href="#main" class="skip-link">Skip to content</a>
     <% if authenticated? %>
       <header class="shell-header">
         <div class="shell-header__identity center main-width">
           <%= link_to root_path, class: "wordmark" do %>Departures<span class="wordmark__dot" aria-hidden="true">.</span><% end %>
           <div class="shell-header__actions">
+            <%= link_to "Send test", new_test_email_path, class: "btn btn--secondary" %>
             <%= link_to "Docs", docs_path, class: "btn btn--plain" %>
             <%= render "workspaces/switcher" %>
-            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--plain" %>
+            <div class="nav__group" data-controller="menu"
+                data-action="keydown.esc->menu#closeAndFocus keydown.down->menu#moveDown keydown.up->menu#moveUp focusout->menu#closeOnFocusOut">
+              <%= button_tag type: "button", class: "btn btn--plain",
+                    data: { menu_target: "button", action: "menu#toggle" },
+                    aria: { expanded: "false" } do %>
+                Account<%= icon_tag "caret-down", class: "nav__caret" %>
+              <% end %>
+              <div class="menu menu--end" data-menu-target="panel" hidden>
+                <p class="menu__heading"><%= Current.user.email_address %></p>
+                <%= menu_link_to "Security", user_sessions_path %>
+                <hr class="menu__rule">
+                <%= button_to "Sign out", session_path, method: :delete, class: "menu__item" %>
+              </div>
+            </div>
           </div>
         </div>
         <div class="shell-header__nav center main-width">

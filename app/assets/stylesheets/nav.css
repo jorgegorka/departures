@@ -8,7 +8,8 @@
   .shell-header__identity {
     align-items: center;
     display: flex;
-    gap: var(--space-md);
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
     justify-content: space-between;
     padding: var(--space-xs) var(--main-padding) 0;
   }
@@ -16,8 +17,10 @@
   .shell-header__actions {
     align-items: center;
     display: flex;
+    flex-wrap: wrap;
     font-size: var(--text-small);
     gap: var(--space-xs);
+    justify-content: flex-end;
     min-inline-size: 0;
   }
 
@@ -40,9 +43,13 @@
 
   .nav {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2xs);
-    overflow-x: auto;
-    scrollbar-width: none;
+  }
+
+  .nav__group {
+    display: flex;
+    position: relative;
   }
 
   .nav__link {
@@ -67,63 +74,155 @@
       outline-offset: -2px;
     }
 
-    &[aria-current="page"] {
+    &[aria-current] {
       border-block-end-color: var(--color-accent);
       color: var(--color-ink);
       font-weight: 600;
     }
   }
 
-  .workspace-switcher {
-    align-items: center;
-    display: flex;
-    gap: var(--space-2xs);
-    min-inline-size: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .workspace-switcher form {
-    display: contents;
-  }
-
-  .workspace-switcher__item {
+  .nav__trigger {
     background-color: transparent;
-    border: 0;
-    border-radius: 0.375rem;
-    color: var(--color-ink-light);
     cursor: pointer;
     font: inherit;
     font-size: var(--text-small);
-    padding: 0.3em 0.7em;
-    transition: background-color var(--duration-fast) var(--ease-out-quart),
-      color var(--duration-fast) var(--ease-out-quart);
-    white-space: nowrap;
-
-    &:hover {
-      background-color: var(--color-surface-sunken);
-      color: var(--color-ink);
-    }
-
-    &.workspace-switcher__item--current {
-      background-color: var(--color-surface-sunken);
-      color: var(--color-ink);
-      font-weight: 600;
-    }
+    border-block-start: 0;
+    border-inline: 0;
   }
 
-  .workspace-switcher__new {
+  .nav__caret {
+    --icon-size: 0.8em;
+    margin-inline-start: 0.4ch;
+    transition: rotate var(--duration-fast) var(--ease-out-quart);
+  }
+
+  [aria-expanded="true"] > .nav__caret {
+    rotate: 180deg;
+  }
+
+  /* Dropdown panel shared by nav groups, the workspace menu, and the
+     account menu. Shadow responds to the open state per the elevation
+     doctrine: flat at rest, depth only while a menu is up. */
+  .menu {
+    animation: menu-in var(--duration-fast) var(--ease-out-quart);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-overlay);
+    display: flex;
+    flex-direction: column;
+    inset-block-start: calc(100% + var(--space-2xs));
+    inset-inline-start: 0;
+    min-inline-size: 11rem;
+    padding: var(--space-2xs);
+    position: absolute;
+    z-index: var(--z-dropdown);
+  }
+
+  .menu[hidden] {
+    display: none;
+  }
+
+  .menu--end {
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+  }
+
+  .menu form {
+    display: contents;
+  }
+
+  .menu__item {
+    background-color: transparent;
+    border: 0;
     border-radius: 0.375rem;
-    color: var(--color-link);
+    color: var(--color-ink);
+    cursor: pointer;
+    font: inherit;
     font-size: var(--text-small);
-    font-weight: 500;
-    padding: 0.3em 0.5em;
+    padding: var(--space-2xs) var(--space-xs);
+    text-align: start;
     text-decoration: none;
     white-space: nowrap;
 
     &:hover {
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
+      background-color: var(--color-surface-sunken);
+    }
+
+    &[aria-current] {
+      font-weight: 600;
+    }
+  }
+
+  .menu__heading {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-x-small);
+    margin: 0;
+    padding: var(--space-2xs) var(--space-xs);
+  }
+
+  .menu__rule {
+    border: 0;
+    border-block-start: 1px solid var(--color-border);
+    margin-block: var(--space-2xs);
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      translate: 0 -0.25rem;
+    }
+  }
+
+  /* Skip link: first focusable element on the page, visible only on focus. */
+  .skip-link {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 0.5rem 0;
+    color: var(--color-link);
+    font-size: var(--text-small);
+    font-weight: 500;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    padding: var(--space-xs) var(--space-sm);
+    position: absolute;
+    text-decoration: none;
+    translate: 0 -110%;
+    z-index: var(--z-dropdown);
+
+    &:focus-visible {
+      translate: none;
+    }
+  }
+
+  /* In-page tabs joining Overview and Reports under one nav section. */
+  .page-tabs {
+    border-block-end: 1px solid var(--color-border);
+    display: flex;
+    gap: var(--space-2xs);
+    margin-block-end: var(--block-space);
+  }
+
+  .page-tabs__link {
+    border-block-end: 2px solid transparent;
+    color: var(--color-ink-light);
+    font-size: var(--text-small);
+    font-weight: 500;
+    margin-block-end: -1px;
+    padding: var(--space-2xs) var(--space-xs) calc(var(--space-2xs) + 1px);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out-quart),
+      border-color var(--duration-fast) var(--ease-out-quart);
+
+    &:hover {
+      border-block-end-color: var(--color-border-strong);
+      color: var(--color-ink);
+    }
+
+    &[aria-current="page"] {
+      border-block-end-color: var(--color-accent);
+      color: var(--color-ink);
+      font-weight: 600;
     }
   }
 

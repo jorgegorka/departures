@@ -1,0 +1,6 @@
+<nav class="page-tabs" aria-label="Overview sections">
+  <%= link_to "Overview", root_path, class: "page-tabs__link",
+        aria: { current: nav_current?(root_path, exact: true) ? "page" : nil } %>
+  <%= link_to "Reports", report_path, class: "page-tabs__link",
+        aria: { current: nav_current?(report_path) ? "page" : nil } %>
+</nav>
