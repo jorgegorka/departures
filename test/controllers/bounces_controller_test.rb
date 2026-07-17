@@ -17,4 +17,14 @@ class BouncesControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Mailbox full retry/
     assert_select "body", { text: /Password reset/, count: 0 }
   end
+
+  test "index shows a 30-day bounce summary" do
+    sign_in_as users(:owner)
+    get bounces_url
+
+    assert_response :success
+    assert_select ".report-stats .chart-grid__title", text: "Hard bounces"
+    assert_select ".report-stats .chart-grid__title", text: "Soft bounces"
+    assert_select ".report-stats .chart-grid__title", text: "Bounce rate"
+  end
 end

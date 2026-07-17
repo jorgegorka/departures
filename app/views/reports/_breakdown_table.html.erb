@@ -1,0 +1,38 @@
+<%# Locals: title, key_header, rows ([{ key:, sent:, delivered:, opened:, clicked:, bounce_rate: }]). %>
+<section class="report-section">
+  <h2 class="report-section__title"><%= title %></h2>
+  <% if rows.any? %>
+    <table class="settings-table report-breakdown">
+      <thead>
+        <tr>
+          <th scope="col"><%= key_header %></th>
+          <th scope="col" class="report-breakdown__number">Sent</th>
+          <th scope="col" class="report-breakdown__number">Delivered</th>
+          <th scope="col" class="report-breakdown__number">Opened</th>
+          <th scope="col" class="report-breakdown__number">Clicked</th>
+          <th scope="col" class="report-breakdown__number">Bounce rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows.each do |row| %>
+          <tr>
+            <td><%= row[:key] %></td>
+            <td class="report-breakdown__number"><%= row[:sent] %></td>
+            <td class="report-breakdown__number"><%= row[:delivered] %></td>
+            <td class="report-breakdown__number"><%= row[:opened] %></td>
+            <td class="report-breakdown__number"><%= row[:clicked] %></td>
+            <td class="report-breakdown__number">
+              <% if row[:bounce_rate] >= Project::RangedReport::BOUNCE_ALERT_RATE %>
+                <span class="status-pill status-pill--bounced"><%= row[:bounce_rate] %>% high</span>
+              <% else %>
+                <%= row[:bounce_rate] %>%
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="board-hint">Nothing to break down in this period.</p>
+  <% end %>
+</section>

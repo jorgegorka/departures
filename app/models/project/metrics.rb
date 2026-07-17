@@ -1,15 +1,8 @@
-class Project::Metrics
-  RANGES = TimeRangeFilterable::TIME_RANGES.slice("24h", "7d", "30d").freeze
+class Project::Metrics < Project::RangedReport
   DEFAULT_RANGE = "7d"
-  EVENT_COUNTERS = { delivered: "delivery", opened: "open", clicked: "click",
-    bounced: "bounce", complained: "complaint" }.freeze
-
-  attr_reader :project, :range
-
-  def initialize(project, range: DEFAULT_RANGE)
-    @project = project
-    @range = RANGES.key?(range.to_s) ? range.to_s : DEFAULT_RANGE
-  end
+  # Don't cry wolf on tiny cohorts (1 send + 1 bounce is 100%): reuse the SES
+  # breaker's minimum before rate warnings can fire.
+  WARNING_MINIMUM_VOLUME = Source::Quota::COMPLAINT_BREAKER_MINIMUM_SENDS
 
   def sent_count
     current.fetch(:accepted)
@@ -73,8 +66,18 @@ class Project::Metrics
     end.join(" ")
   end
 
+  def event_series
+    computed.fetch(:event_series)
+  end
+
+  # Plain-language deliverability flags for the dashboard warning strip.
+  # Empty when sending is healthy — the strip only renders on real anomalies.
+  def warnings
+    @warnings ||= [ bounce_warning, complaint_warning ].compact + source_warnings
+  end
+
   def cache_key
-    @cache_key ||= [ "project-metrics", project.id, range, project.emails.maximum(:updated_at)&.to_i ].join("/")
+    @cache_key ||= [ "project-metrics", *cache_key_segments ].join("/")
   end
 
   private
@@ -88,57 +91,48 @@ class Project::Metrics
 
     def computed
       @computed ||= Rails.cache.fetch(cache_key, expires_in: 60.seconds) do
-        { current: totals_in(current_period), previous: totals_in(previous_period),
-          sparkline: zero_filled_buckets }
+        { current: cohort_totals(period), previous: cohort_totals(previous_period),
+          sparkline: zero_filled_buckets, event_series: funnel_series.slice(:delivered, :bounced) }
       end
     end
 
-    def current_period
-      window.ago..Time.current
-    end
-
+    # The window of equal length immediately preceding the current one,
+    # exclusive of the boundary so no email lands in both cohorts.
     def previous_period
-      (window * 2).ago..window.ago
-    end
-
-    def window
-      RANGES.fetch(range)
-    end
-
-    def totals_in(period)
-      event_counts = EmailEvent.where(email_id: project.emails.select(:id), occurred_at: period)
-        .group(:event_type).distinct.count(:email_id)
-
-      EVENT_COUNTERS.transform_values { |event_type| event_counts.fetch(event_type, 0) }
-        .merge(accepted: project.emails.where(created_at: period).count)
+      (buckets.starts_at - window)...buckets.starts_at
     end
 
     def zero_filled_buckets
-      counts = project.emails.where(created_at: current_period)
-        .group(Arel.sql("strftime('#{bucket_format}', created_at)")).count
+      counts = emails_in_period.group(Arel.sql("strftime('#{buckets.format}', created_at)")).count
 
-      bucket_labels.map { |label| counts.fetch(label, 0) }
+      buckets.fill(counts)
     end
 
-    def bucket_format
-      range == "24h" ? "%Y-%m-%dT%H" : "%Y-%m-%d"
+    def bounce_warning
+      return if current[:accepted] < WARNING_MINIMUM_VOLUME
+
+      if bounce_rate >= BOUNCE_ALERT_RATE
+        "Bounce rate is #{bounce_rate}% — above the #{BOUNCE_ALERT_RATE.round}% alert threshold. Check the bounces page."
+      end
     end
 
-    # created_at is stored UTC, so bucket labels are computed in UTC to match
-    # what SQLite's strftime sees.
-    def bucket_labels
-      step = range == "24h" ? 1.hour : 1.day
-      count = (window / step).to_i
-      newest = range == "24h" ? Time.current.utc.beginning_of_hour : Time.current.utc.beginning_of_day
+    def complaint_warning
+      return if current[:accepted] < WARNING_MINIMUM_VOLUME
 
-      (0...count).map { |index| (newest - (count - 1 - index) * step).strftime(bucket_format) }
+      complaint_rate = rate(current[:complained], current[:accepted])
+      if complaint_rate >= Source::Quota::COMPLAINT_BREAKER_RATE
+        "Complaint rate is #{complaint_rate}% — SES pauses sending at #{Source::Quota::COMPLAINT_BREAKER_RATE}%."
+      end
     end
 
-    def rate(numerator, denominator)
-      if denominator.zero?
-        0.0
-      else
-        (numerator * 100.0 / denominator).round(1)
+    def source_warnings
+      project.sources.flat_map do |source|
+        [ (%(SES has paused sending for "#{source.name}".) if (source.last_quota || {})["sending_enabled"] == false),
+          ("\"#{source.name}\" has used #{source.quota_usage.round}% of its 24-hour SES quota." if source.quota_high?),
+          # A never-synced source hasn't gone stale — quota_stale? is also true
+          # for nil last_quota_checked_at because EmailSubmission uses it to
+          # force a first sync, but that's not a dashboard anomaly.
+          (%(Quota data for "#{source.name}" is stale — last checked #{ActionController::Base.helpers.time_ago_in_words(source.last_quota_checked_at)} ago.) if source.last_quota_checked_at && source.quota_stale?) ].compact
       end
     end
 end

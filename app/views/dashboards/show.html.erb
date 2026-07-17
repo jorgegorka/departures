@@ -4,7 +4,7 @@
     <h1 class="page-head__title"><%= Current.project.name %> overview</h1>
     <%= form_with url: root_path, method: :get, data: { controller: "auto-submit" } do |form| %>
       <%= form.select :range,
-            options_for_select({ "Last 24 hours" => "24h", "Last 7 days" => "7d", "Last 30 days" => "30d" }, @metrics.range),
+            metric_range_options(@metrics.range),
             {}, class: "input input--select", aria: { label: "Time range" },
             data: { action: "change->auto-submit#submit" } %>
     <% end %>
@@ -12,6 +12,15 @@
 
   <% cache @metrics.cache_key, expires_in: 60.seconds do %>
     <% no_sends = @metrics.sent_count.zero? %>
+    <% if @metrics.warnings.any? %>
+      <aside class="warning-strip" aria-label="Deliverability warnings">
+        <ul class="warning-strip__list">
+          <% @metrics.warnings.each do |warning| %>
+            <li class="warning-strip__item"><%= icon_tag "alert-circle" %> <%= warning %></li>
+          <% end %>
+        </ul>
+      </aside>
+    <% end %>
     <div class="board">
       <%= render "metric", label: "Sent", value: @metrics.sent_count, suffix: "",
             delta: @metrics.sent_delta, up_is_good: true, blank: false,
@@ -41,8 +50,16 @@
         <polygon class="sparkline__area" points="0,32 <%= @metrics.sparkline_points %> 120,32" />
         <polyline class="sparkline__line" points="<%= @metrics.sparkline_points %>" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" />
       </svg>
-      <figcaption class="sparkline__caption">Send volume, <%= { "24h" => "last 24 hours", "7d" => "last 7 days", "30d" => "last 30 days" }[@metrics.range] %></figcaption>
+      <figcaption class="sparkline__caption">Send volume, <%= metric_range_caption(@metrics.range) %></figcaption>
     </figure>
+
+    <% unless no_sends %>
+      <%= render "shared/series_chart",
+            caption: "Delivered vs bounced, #{metric_range_caption(@metrics.range)}",
+            labels: chart_display_labels(@metrics.labels, @metrics.range),
+            datasets: [ { label: "Delivered", data: @metrics.event_series[:delivered], role: "primary" },
+                        { label: "Bounced", data: @metrics.event_series[:bounced], role: "attention" } ] %>
+    <% end %>
   <% end %>
 <% else %>
   <div class="empty-state">

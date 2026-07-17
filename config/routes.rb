@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     as: :invitation_acceptance, controller: "invitations/acceptances"
 
   resource :activity, only: :show, controller: "activity"
+  resource :report, only: :show
 
   resources :emails, only: %i[ index show ] do
     member do

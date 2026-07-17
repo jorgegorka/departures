@@ -11,6 +11,22 @@
 
   <p class="txt-subtle margin-block"><%= docs_link_to "Learn more about bounces", "suppressions-and-bounces" %></p>
 
+  <div class="report-stats" aria-label="Bounce summary, last 30 days">
+    <div class="report-stats__item">
+      <p class="chart-grid__title">Hard bounces</p>
+      <p class="chart-grid__total"><%= number_with_delimiter(@report.hard_bounce_count) %></p>
+    </div>
+    <div class="report-stats__item">
+      <p class="chart-grid__title">Soft bounces</p>
+      <p class="chart-grid__total"><%= number_with_delimiter(@report.soft_bounce_count) %></p>
+    </div>
+    <div class="report-stats__item">
+      <p class="chart-grid__title">Bounce rate</p>
+      <p class="chart-grid__total"><%= @report.bounce_rate %>%</p>
+    </div>
+    <p class="board-hint">Last 30 days · <%= link_to "full report", report_path(range: "30d") %></p>
+  </div>
+
   <nav class="flex gap-half margin-block" aria-label="Bounce type">
     <%= link_to "All", bounces_path, class: "btn btn--plain btn--medium #{"btn--current" if params[:filter].blank?}" %>
     <%= link_to "Hard", bounces_path(filter: "hard_bounces"), class: "btn btn--plain btn--medium #{"btn--current" if params[:filter] == "hard_bounces"}" %>

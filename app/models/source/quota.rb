@@ -2,6 +2,7 @@ module Source::Quota
   extend ActiveSupport::Concern
 
   QUOTA_TTL = 6.hours
+  USAGE_ALERT_RATE = 80.0 # percent
   COMPLAINT_BREAKER_WINDOW = 30.days
   COMPLAINT_BREAKER_MINIMUM_SENDS = 100
   COMPLAINT_BREAKER_RATE = 0.1 # percent
@@ -35,6 +36,17 @@ module Source::Quota
 
   def quota_fresh?
     !quota_stale?
+  end
+
+  def quota_usage
+    quota = last_quota || {}
+    max = quota["max_24_hour_send"].to_f
+    (quota["sent_last_24_hours"].to_f * 100.0 / max).round(1) if max.positive?
+  end
+
+  def quota_high?
+    usage = quota_usage
+    usage.present? && usage >= USAGE_ALERT_RATE
   end
 
   def complaint_rate_exceeded?

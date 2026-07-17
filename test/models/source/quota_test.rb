@@ -65,6 +65,31 @@ class Source::QuotaTest < ActiveSupport::TestCase
     assert Source.all.all? { |source| source.last_quota_checked_at.present? }
   end
 
+  test "quota_usage returns the percentage of the 24-hour quota used" do
+    @source.update!(last_quota: { "max_24_hour_send" => 200.0, "sent_last_24_hours" => 7.0 })
+
+    assert_equal 3.5, @source.quota_usage
+  end
+
+  test "quota_usage is nil without quota data or a positive max" do
+    @source.update!(last_quota: nil)
+    assert_nil @source.quota_usage
+
+    @source.update!(last_quota: { "max_24_hour_send" => 0.0, "sent_last_24_hours" => 7.0 })
+    assert_nil @source.quota_usage
+  end
+
+  test "quota_high? trips at or above 80 percent usage" do
+    @source.update!(last_quota: { "max_24_hour_send" => 100.0, "sent_last_24_hours" => 80.0 })
+    assert @source.quota_high?
+
+    @source.update!(last_quota: { "max_24_hour_send" => 100.0, "sent_last_24_hours" => 79.9 })
+    assert_not @source.quota_high?
+
+    @source.update!(last_quota: nil)
+    assert_not @source.quota_high?
+  end
+
   test "complaint breaker stays open under the minimum send volume" do
     wipe_send_domain
     insert_emails(@source, count: 99)

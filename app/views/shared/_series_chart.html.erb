@@ -1,0 +1,19 @@
+<%# A time-series line chart. Data ships as a non-executable JSON payload
+    (CSP-safe) that chart_controller feeds to Chart.js.
+    Locals: labels, datasets ([{ label:, data:, role: }]), title: nil,
+    total: nil, caption: nil, small: false. %>
+<figure class="chart <%= "chart--small" if local_assigns[:small] %>" data-controller="chart">
+  <% if local_assigns[:title] %>
+    <div>
+      <p class="chart-grid__title"><%= title %></p>
+      <% if local_assigns[:total] %><p class="chart-grid__total"><%= total %></p><% end %>
+    </div>
+  <% end %>
+  <div class="chart__plot">
+    <canvas data-chart-target="canvas" role="img" aria-label="<%= local_assigns[:title] || local_assigns[:caption] %>"></canvas>
+  </div>
+  <script type="application/json" data-chart-target="data"><%= raw json_escape({ labels: labels, datasets: datasets }.to_json) %></script>
+  <% if local_assigns[:caption] %>
+    <figcaption class="chart__caption"><%= caption %></figcaption>
+  <% end %>
+</figure>

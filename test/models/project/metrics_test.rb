@@ -32,6 +32,32 @@ class Project::MetricsTest < ActiveSupport::TestCase
     assert_equal 0.0, metrics.open_rate
   end
 
+  test "tile rates are cohort-based: events on emails created outside the window don't skew them" do
+    old_email = create_email(created_at: 3.days.ago) # outside the 24h cohort
+    record_event(old_email, "delivery", 1.hour.ago)
+    record_event(old_email, "complaint", 1.hour.ago)
+    fresh = create_email(created_at: 1.hour.ago)
+    record_event(fresh, "delivery", 30.minutes.ago)
+
+    metrics = @project.metrics_for("24h")
+
+    assert_equal 1, metrics.sent_count
+    assert_in_delta 100.0, metrics.delivery_rate # not 200% — old email's event ignored
+    assert_equal 0, metrics.complaint_count # complaint belongs to the old cohort
+  end
+
+  test "cohort events count even when they occur after the email's window" do
+    previous = create_email(created_at: 30.hours.ago) # previous 24h cohort
+    record_event(previous, "delivery", 1.hour.ago) # delivered in the current window
+    current = create_email(created_at: 1.hour.ago)
+    record_event(current, "delivery", 30.minutes.ago)
+
+    metrics = @project.metrics_for("24h")
+
+    assert_in_delta 100.0, metrics.delivery_rate
+    assert_in_delta 0.0, metrics.delivery_rate_delta # previous cohort also 100% delivered
+  end
+
   test "deltas compare against the immediately preceding window of equal length" do
     create_email(created_at: 2.hours.ago)
     create_email(created_at: 3.hours.ago)
@@ -48,7 +74,89 @@ class Project::MetricsTest < ActiveSupport::TestCase
     assert_equal 24, @project.metrics_for("24h").sparkline_values.size
     assert_equal 7, @project.metrics_for("7d").sparkline_values.size
     assert_equal 30, @project.metrics_for("30d").sparkline_values.size
+    assert_equal 90, @project.metrics_for("90d").sparkline_values.size
     assert_equal 1, @project.metrics_for("24h").sparkline_values.sum
+  end
+
+  test "queried period is aligned with the labeled buckets so nothing is silently dropped" do
+    starts_at = Time.current.utc.beginning_of_hour - 23.hours # oldest 24h bucket
+    leading = create_email(created_at: starts_at)
+    record_event(leading, "delivery", starts_at)
+    create_email(created_at: starts_at - 1.minute) # before the first bucket: excluded everywhere
+
+    metrics = @project.metrics_for("24h")
+
+    assert_equal 1, metrics.event_series[:delivered].sum
+    assert_equal 1, metrics.event_series[:delivered].first # lands in the leading bucket
+    assert_equal metrics.sent_count, metrics.sparkline_values.sum # sparkline and tile agree
+  end
+
+  test "event_series buckets delivered and bounced by first occurrence per email" do
+    delivered = create_email(created_at: 3.hours.ago)
+    record_event(delivered, "delivery", 2.hours.ago)
+    record_event(delivered, "delivery", 1.hour.ago) # repeat, same email
+
+    series = @project.metrics_for("24h").event_series
+
+    assert_equal 24, series[:delivered].size
+    assert_equal 24, series[:bounced].size
+    assert_equal 1, series[:delivered].sum
+    assert_equal 0, series[:bounced].sum
+  end
+
+  test "warnings are empty when sending is healthy" do
+    create_email(created_at: 1.hour.ago)
+
+    assert_empty @project.metrics_for("24h").warnings
+  end
+
+  test "warns when the bounce rate crosses the alert threshold at meaningful volume" do
+    emails = create_emails(Project::Metrics::WARNING_MINIMUM_VOLUME, created_at: 1.hour.ago)
+    emails.first(5).each { |email| record_event(email, "bounce", 1.hour.ago) } # 5% of 100
+
+    assert @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/bounce/i) }
+  end
+
+  test "warns when the complaint rate nears the SES breaker at meaningful volume" do
+    emails = create_emails(Project::Metrics::WARNING_MINIMUM_VOLUME, created_at: 1.hour.ago)
+    record_event(emails.first, "complaint", 1.hour.ago) # 1% of 100, breaker is 0.1%
+
+    assert @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/complaint/i) }
+  end
+
+  test "rate warnings stay quiet below the minimum volume even at 100% rates" do
+    bounced = create_email(created_at: 1.hour.ago)
+    record_event(bounced, "bounce", 1.hour.ago)
+    record_event(bounced, "complaint", 1.hour.ago)
+
+    metrics = @project.metrics_for("24h")
+
+    assert_in_delta 100.0, metrics.bounce_rate
+    assert_not metrics.warnings.any? { |warning| warning.match?(/bounce|complaint/i) }
+  end
+
+  test "warns when SES has paused sending for a source" do
+    sources(:acme_production).update!(last_quota: sources(:acme_production).last_quota.merge("sending_enabled" => false))
+
+    assert @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/paused/i) }
+  end
+
+  test "warns when a source nears its 24-hour quota" do
+    sources(:acme_production).update!(last_quota: sources(:acme_production).last_quota.merge("sent_last_24_hours" => 45_000.0))
+
+    assert @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/quota/i) }
+  end
+
+  test "warns when quota data has gone stale" do
+    sources(:acme_production).update!(last_quota_checked_at: 7.hours.ago)
+
+    assert @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/stale|checked/i) }
+  end
+
+  test "never-synced sources produce no staleness warning" do
+    sources(:acme_production).update!(last_quota_checked_at: nil)
+
+    assert_not @project.metrics_for("24h").warnings.any? { |warning| warning.match?(/stale|checked/i) }
   end
 
   test "unknown ranges fall back to 7d" do
@@ -67,6 +175,10 @@ class Project::MetricsTest < ActiveSupport::TestCase
     def create_email(created_at:)
       @project.emails.create!(source: sources(:acme_production), from: "hello@acme.com",
         subject: "Metric", text_body: "Body", created_at: created_at)
+    end
+
+    def create_emails(count, created_at:)
+      count.times.map { create_email(created_at: created_at) }
     end
 
     def record_event(email, event_type, occurred_at)

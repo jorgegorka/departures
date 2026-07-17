@@ -1,0 +1,27 @@
+<%# Locals: source. Reads the cached SES account quota straight off the row. %>
+<% quota = source.last_quota || {} %>
+<% max = quota["max_24_hour_send"].to_f %>
+<% sent = quota["sent_last_24_hours"].to_f %>
+<% usage = source.quota_usage %>
+<article class="quota">
+  <header class="quota__header">
+    <h3 class="quota__name"><%= source.name %></h3>
+    <% if quota["sending_enabled"] == false %>
+      <span class="status-pill status-pill--failed">sending paused</span>
+    <% end %>
+    <% if source.quota_stale? %>
+      <span class="quota__stale">quota last checked <%= source.last_quota_checked_at ? "#{time_ago_in_words(source.last_quota_checked_at)} ago" : "never" %></span>
+    <% end %>
+  </header>
+  <% if usage %>
+    <progress class="quota__meter <%= "quota__meter--high" if source.quota_high? %>"
+      value="<%= [ usage, 100 ].min %>" max="100"
+      aria-label="24-hour send quota used for <%= source.name %>"><%= usage %>%</progress>
+    <p class="quota__caption">
+      <%= number_with_delimiter(sent.round) %> of <%= number_with_delimiter(max.round) %> sends in the last 24 hours
+      (<%= usage %>%) · up to <%= quota["max_send_rate"].to_f.round %>/second
+    </p>
+  <% else %>
+    <p class="quota__caption">No quota data yet — sync the source to fetch it from SES.</p>
+  <% end %>
+</article>

@@ -26,6 +26,10 @@ class Project < ApplicationRecord
     Project::Metrics.new(self, range: range.to_s)
   end
 
+  def report_for(range)
+    Project::Report.new(self, range: range.to_s)
+  end
+
   private
     def assign_slug
       self.slug ||= name&.parameterize

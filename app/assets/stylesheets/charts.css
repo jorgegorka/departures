@@ -1,0 +1,154 @@
+@layer modules {
+  /*
+   * Chart series tokens. Validated (dataviz six checks) against the light and
+   * dark surfaces: CVD-safe pairs, chroma floor, 3:1 contrast. The attention
+   * hue is the coral signal — bounces, complaints, suppressions only.
+   */
+  :root {
+    --chart-primary: oklch(57.5% 0.163 255.5);
+    --chart-attention: oklch(64.8% 0.17 35.4);
+    --chart-neutral: oklch(53% 0.012 35);
+  }
+
+  html[data-theme="dark"] {
+    --chart-primary: oklch(62.2% 0.161 255.1);
+    --chart-attention: oklch(63.8% 0.174 37.4);
+    --chart-neutral: oklch(63% 0.01 35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      --chart-primary: oklch(62.2% 0.161 255.1);
+      --chart-attention: oklch(63.8% 0.174 37.4);
+      --chart-neutral: oklch(63% 0.01 35);
+    }
+  }
+
+  .chart {
+    margin: 0;
+  }
+
+  .chart__plot {
+    height: 220px;
+    position: relative;
+  }
+
+  .chart--small .chart__plot {
+    height: 120px;
+  }
+
+  .chart__caption {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-small);
+    margin-block-start: var(--space-xs);
+  }
+
+  /* Small-multiple grid: one calm panel per metric, titles carry identity. */
+  .chart-grid {
+    display: grid;
+    gap: var(--space-lg) var(--space-xl);
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    margin-block: var(--space-lg);
+  }
+
+  .chart-grid__title {
+    color: var(--color-ink-light);
+    font-size: var(--text-small);
+    font-weight: 600;
+    margin: 0 0 var(--space-xs);
+  }
+
+  .chart-grid__total {
+    color: var(--color-ink);
+    font-size: var(--text-large);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    margin: 0 0 var(--space-sm);
+  }
+
+  .report-section {
+    margin-block: var(--space-xl);
+  }
+
+  .report-section__title {
+    border-block-end: 1px solid var(--color-border);
+    font-size: var(--text-base);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--space-md);
+    padding-block-end: var(--space-xs);
+  }
+
+  .report-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xl);
+    margin-block-end: var(--space-lg);
+  }
+
+  .report-breakdown__number {
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  .quota {
+    margin-block-end: var(--space-lg);
+  }
+
+  .quota__header {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .quota__name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .quota__stale {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-small);
+  }
+
+  /* Native progress element: fill width without inline styles (CSP-safe). */
+  .quota__meter {
+    appearance: none;
+    background-color: var(--color-surface-sunken);
+    block-size: 6px;
+    border: none;
+    border-radius: 999px;
+    display: block;
+    inline-size: 100%;
+    margin-block: var(--space-xs);
+    overflow: hidden;
+
+    &::-webkit-progress-bar {
+      background-color: var(--color-surface-sunken);
+      border-radius: 999px;
+    }
+
+    &::-webkit-progress-value {
+      background-color: var(--chart-primary);
+      border-radius: 999px;
+    }
+
+    &::-moz-progress-bar {
+      background-color: var(--chart-primary);
+      border-radius: 999px;
+    }
+  }
+
+  .quota__meter--high {
+    &::-webkit-progress-value { background-color: var(--chart-attention); }
+    &::-moz-progress-bar { background-color: var(--chart-attention); }
+  }
+
+  .quota__caption {
+    color: var(--color-ink-lighter);
+    font-size: var(--text-small);
+    margin: 0;
+  }
+}

@@ -25,6 +25,18 @@ class DashboardsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".sparkline svg polyline"
   end
 
+  test "shows the deliverability chart when the project has sends" do
+    sign_in_as users(:owner)
+    projects(:acme_default).emails.create!(source: sources(:acme_production), from: "hello@acme.com",
+      subject: "Chart", text_body: "Body")
+
+    get root_url
+
+    assert_response :success
+    assert_select "[data-controller=chart] canvas"
+    assert_select "script[type='application/json']"
+  end
+
   test "range param drives the metrics window" do
     sign_in_as users(:owner)
     get root_url(range: "24h")
